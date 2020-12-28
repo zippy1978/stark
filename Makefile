@@ -2,21 +2,18 @@ all: test
 
 OUT_DIR = bin
 SRC_DIR = src
+CC = llvm-g++
 
 LLVMCONFIG = /usr/local/opt/llvm/bin/llvm-config
 #CPPFLAGS = `${LLVMCONFIG} --cppflags` -std=c++11 -I/usr/local/opt/flex/include
 #LDFLAGS = `${LLVMCONFIG} --ldflags` -lpthread -ldl -lz -lncurses -rdynamic -L/usr/local/opt/flex/lib
-LIBS = `${LLVMCONFIG} --libs`
+#LIBS = `${LLVMCONFIG} --libs`
 
 LDFLAGS="-L/usr/local/opt/flex/lib"
 CPPFLAGS="-I/usr/local/opt/flex/include"
 
-#`$LLVM_PATH/llvm-config --libs core executionengine interpreter mc support nativecodegen --cxxflags --ldflags`
-
 stark: bison
-	g++ -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --libs core  executionengine interpreter mc support nativecodegen --cxxflags --ldflags` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/*.cc
-	#echo $(LIBS)
-	#g++ -g -O3 -o $(OUT_DIR)/stark $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/*.cc
+	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/*.cc
 
 bison: flex
 	/usr/local/opt/bison/bin/bison -d -o $(SRC_DIR)/parser.cc $(SRC_DIR)/parser.y

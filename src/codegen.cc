@@ -1,4 +1,13 @@
+#include <llvm/IR/LLVMContext.h>
 #include "codegen.hh"
+
+using namespace llvm;
+
+static LLVMContext TheContext;
+//static IRBuilder<> Builder(TheContext);
+//static std::unique_ptr<Module> TheModule;
+//static std::map<std::string, Value *> NamedValues;
+
 
 void CodeGenVisitor::visit(ASTExpression *node) {
     // TODO
