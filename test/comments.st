@@ -2,6 +2,6 @@
     Multiline 
     comment
 */
-int a  = 10
+a: int = 10
 
 // Single line comment

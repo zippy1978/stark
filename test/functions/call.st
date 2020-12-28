@@ -1,7 +1,7 @@
 // Call with no arg
-int test() {}
-test()
+func func1(): int {}
+func1()
 
 // Call with args
-int testWithArgs(int a, int b) {}
-testWithArgs(1, 2)
+func func2(a: int, b: int): int {}
+func2(1, 2)

@@ -1,7 +1,9 @@
 // No arg declaration
-int test() {}
+func func1(): int {
+    // Code here
+}
 
 // With args
-int testWithArgs(int a, int b) {
-    
+func func2(a: int, b: int): int {
+    // Code here
 }

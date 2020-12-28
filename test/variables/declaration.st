@@ -1,5 +1,5 @@
 // Simple declaration
-double var1
+var1: double
 
 // Declaration with assignement
-int var2 = 1
+var2: int = 1

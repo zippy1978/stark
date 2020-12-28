@@ -30,6 +30,8 @@
 %token LPAREN RPAREN
 %token LBRACE RBRACE
 %token COMMA
+%token COLON
+%token FUNC
 
 %type <ident> ident
 %type <expr> numeric expr 
@@ -83,21 +85,21 @@ block :
 ;
 
 var_decl : 
-      ident ident 
+      ident COLON ident 
       { 
-            $$ = new ASTVariableDeclaration(*$1, *$2); 
+            $$ = new ASTVariableDeclaration(*$3, *$1); 
       }
 | 
-      ident ident EQUAL expr 
+      ident COLON ident EQUAL expr 
       { 
-            $$ = new ASTVariableDeclaration(*$1, *$2, $4); 
+            $$ = new ASTVariableDeclaration(*$3, *$1, $5); 
       }
 ;
 
 func_decl : 
-      ident ident LPAREN func_decl_args RPAREN block 
+      FUNC ident LPAREN func_decl_args RPAREN COLON ident block
       { 
-            $$ = new ASTFunctionDeclaration(*$1, *$2, *$4, *$6); 
+            $$ = new ASTFunctionDeclaration(*$7, *$2, *$4, *$8); 
             delete $4; 
       }
 ;
