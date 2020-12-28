@@ -2,8 +2,8 @@
 %locations
 
 %code top {
-      #include "node.hh"
-      NBlock *programBlock;
+      #include "ast.hh"
+      ASTBlock *programBlock;
 }
 
 %code provides {
@@ -11,14 +11,14 @@
 }
 
 %union {
-    Node *node;
-    NBlock *block;
-    NExpression *expr;
-    NStatement *stmt;
-    NIdentifier *ident;
-    NVariableDeclaration *var_decl;
-    std::vector<NVariableDeclaration*> *varvec;
-    std::vector<NExpression*> *exprvec;
+    ASTNode *node;
+    ASTBlock *block;
+    ASTExpression *expr;
+    ASTStatement *stmt;
+    ASTIdentifier *ident;
+    ASTVariableDeclaration *var_decl;
+    std::vector<ASTVariableDeclaration*> *varvec;
+    std::vector<ASTExpression*> *exprvec;
     std::string *string;
     int token;
 }
@@ -52,7 +52,7 @@ program :
 stmts : 
       stmt 
       { 
-            $$ = new NBlock(); 
+            $$ = new ASTBlock(); 
             $$->statements.push_back($<stmt>1); 
       }
 | 
@@ -69,7 +69,7 @@ stmt :
 | 
       expr 
       { 
-            $$ = new NExpressionStatement(*$1); 
+            $$ = new ASTExpressionStatement(*$1); 
       }
 ;
 
@@ -79,25 +79,25 @@ block :
             $$ = $2; 
       }
 |     
-      LBRACE RBRACE { $$ = new NBlock(); }
+      LBRACE RBRACE { $$ = new ASTBlock(); }
 ;
 
 var_decl : 
       ident ident 
       { 
-            $$ = new NVariableDeclaration(*$1, *$2); 
+            $$ = new ASTVariableDeclaration(*$1, *$2); 
       }
 | 
       ident ident EQUAL expr 
       { 
-            $$ = new NVariableDeclaration(*$1, *$2, $4); 
+            $$ = new ASTVariableDeclaration(*$1, *$2, $4); 
       }
 ;
 
 func_decl : 
       ident ident LPAREN func_decl_args RPAREN block 
       { 
-            $$ = new NFunctionDeclaration(*$1, *$2, *$4, *$6); 
+            $$ = new ASTFunctionDeclaration(*$1, *$2, *$4, *$6); 
             delete $4; 
       }
 ;
@@ -105,12 +105,12 @@ func_decl :
 func_decl_args : 
       /*blank*/  
       { 
-            $$ = new VariableList(); 
+            $$ = new ASTVariableList(); 
       }
 | 
       var_decl 
       { 
-            $$ = new VariableList(); 
+            $$ = new ASTVariableList(); 
             $$->push_back($<var_decl>1); 
       }
 | 
@@ -123,7 +123,7 @@ func_decl_args :
 ident : 
       IDENTIFIER 
       { 
-            $$ = new NIdentifier(*$1); 
+            $$ = new ASTIdentifier(*$1); 
             delete $1; 
       }
 ;
@@ -131,13 +131,13 @@ ident :
 numeric : 
       INTEGER 
       { 
-            $$ = new NInteger(atol($1->c_str()));
+            $$ = new ASTInteger(atol($1->c_str()));
             delete $1; 
       }
 | 
       DOUBLE 
       { 
-            $$ = new NDouble(atof($1->c_str())); 
+            $$ = new ASTDouble(atof($1->c_str())); 
             delete $1; 
       }
 ;
@@ -145,7 +145,7 @@ numeric :
 expr : 
       ident EQUAL expr 
       { 
-            $$ = new NAssignment(*$<ident>1, *$3); 
+            $$ = new ASTAssignment(*$<ident>1, *$3); 
       }
 | 
       ident 
@@ -155,7 +155,7 @@ expr :
 |
       ident LPAREN call_args RPAREN 
       { 
-            $$ = new NMethodCall(*$1, *$3); 
+            $$ = new ASTMethodCall(*$1, *$3); 
             delete $3; 
       }
 | 
@@ -165,12 +165,12 @@ expr :
 call_args : 
       /*blank*/  
       { 
-            $$ = new ExpressionList(); 
+            $$ = new ASTExpressionList(); 
       }
 | 
       expr 
       { 
-            $$ = new ExpressionList(); 
+            $$ = new ASTExpressionList(); 
             $$->push_back($1); 
       }
 | 

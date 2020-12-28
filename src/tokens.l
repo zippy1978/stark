@@ -5,7 +5,7 @@
     #include <iostream>
     #include <cstdlib>
     #include <list>
-    #include "node.hh"
+    #include "ast.hh"
     #include "parser.hh"
 
     using namespace yy;

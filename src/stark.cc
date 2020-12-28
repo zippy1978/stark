@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <FlexLexer.h>
-#include "node.hh"
+#include "ast.hh"
 #include "parser.hh"
 #include "codegen.hh"
 

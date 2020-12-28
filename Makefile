@@ -26,7 +26,7 @@ flex:
 
 clean:
 	rm -rf $(OUT_DIR)/*
-	rm $(SRC_DIR)/parser.cc $(SRC_DIR)/parser.hh $(SRC_DIR)/tokens.cc
+	rm $(SRC_DIR)/parser.cc $(SRC_DIR)/parser.hh $(SRC_DIR)/tokens.cc $(SRC_DIR)/location.hh $(SRC_DIR)/position.hh
 
 test: stark
 	./$(OUT_DIR)/stark test/comments.st
