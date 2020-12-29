@@ -48,7 +48,8 @@ int main(int argc, char *argv[]) {
     // Generate and run code
     CodeGenContext context;
     context.generateCode(*programBlock);
-	//context.runCode();
+    // Segfault at runtime !
+	context.runCode();
 
 
     return 0;

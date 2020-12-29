@@ -28,5 +28,6 @@ clean:
 test: stark
 	./$(OUT_DIR)/stark test/comments.st
 	./$(OUT_DIR)/stark test/variables/declaration.st
+	./$(OUT_DIR)/stark test/variables/assignement.st
 	./$(OUT_DIR)/stark test/functions/declaration.st
 	./$(OUT_DIR)/stark test/functions/call.st

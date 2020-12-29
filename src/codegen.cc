@@ -6,7 +6,7 @@ void CodeGenContext::generateCode(ASTBlock& root)
 {
 	std::cout << "Generating code...\n";
 
-    visitor = new CodeGenVisitor(this);
+    CodeGenVisitor visitor(this);
 	
 	// Create the top level interpreter function to call as entry
 	vector<Type*> argTypes;
@@ -16,10 +16,10 @@ void CodeGenContext::generateCode(ASTBlock& root)
 	
 	/* Push a new variable/block context */
 	pushBlock(bblock);
-	// TODO
-    //root.codeGen(*this); /* emit bytecode for the toplevel block */
-    //std::cout << "Root type = " << typeid(root).name() << std::endl;
-    visitor->visit(&root);
+
+    std::cout << "Root type = " << typeid(root).name() << std::endl;
+    root.accept(&visitor);
+
 	ReturnInst::Create(MyContext, bblock);
 	popBlock();
 	
@@ -35,14 +35,22 @@ void CodeGenContext::generateCode(ASTBlock& root)
 	pm.add(createPrintModulePass(outs()));
 	pm.run(*module);*/
 
-    delete visitor;
-    visitor = NULL;
 }
 
 /* Executes the AST by running the main function */
 GenericValue CodeGenContext::runCode() {
 	std::cout << "Running code...\n";
-	ExecutionEngine *ee = EngineBuilder( unique_ptr<Module>(module) ).create();
+    std::string err;
+    
+    LLVMInitializeNativeTarget();
+	LLVMInitializeNativeAsmPrinter();
+	LLVMInitializeNativeAsmParser();
+
+	ExecutionEngine *ee = EngineBuilder( unique_ptr<Module>(module) ).setErrorStr(&err).create();
+    if (!ee) {
+       std::cout << "JIT Error: " << err << std::endl;
+       exit(-1);
+    }
 	ee->finalizeObject();
 	vector<GenericValue> noargs;
 	GenericValue v = ee->runFunction(mainFunction, noargs);
@@ -69,69 +77,73 @@ Value *logError(const char *message) {
 
 /* Code generation */
 
-void CodeGenVisitor::visit(ASTExpression *node) {
-    // TODO
-}
-
 void CodeGenVisitor::visit(ASTInteger *node) {
-    // TODO
+    
     std::cout << "Creating integer: " << node->value << endl;
-
-	//return ConstantInt::get(Type::getInt64Ty(MyContext), value, true);
+    this->result = ConstantInt::get(Type::getInt64Ty(MyContext), node->value, true);
 }
 
 void CodeGenVisitor::visit(ASTDouble *node) {
-    // TODO
+    
+    std::cout << "Creating double: " << node->value << endl;
+	this->result = ConstantFP::get(Type::getDoubleTy(MyContext), node->value);
 }
 
 void CodeGenVisitor::visit(ASTIdentifier *node) {
     // TODO
+    std::cout << "Creating identifier reference: " << node->name << endl;
+	if (context->locals().find(node->name) == context->locals().end()) {
+		std::cerr << "undeclared variable " << node->name << endl;
+	}
+	this->result = new LoadInst(context->locals()[node->name]->getType(), context->locals()[node->name], "", false, context->currentBlock());
 }
 
 void CodeGenVisitor::visit(ASTBlock *node) {
-    // TODO
+    
     ASTStatementList::const_iterator it;
 	Value *last = NULL;
 
 	for (it = node->statements.begin(); it != node->statements.end(); it++) {
 		std::cout << "Generating code for " << typeid(**it).name() << endl;
-        (**it).accept(this);
-		//last = (**it).codeGen(context);
+        CodeGenVisitor v(context);
+        (**it).accept(&v);
+		last = v.result;
 	}
 	std::cout << "Creating block" << endl;
-	//return last;
+	this->result = last;
 }
 
 void CodeGenVisitor::visit(ASTAssignment *node) {
-    // TODO
+    
     std::cout << "Creating assignment for " << node->lhs.name << endl;
-	/*if (context.locals().find(lhs.name) == context.locals().end()) {
-		std::cerr << "undeclared variable " << lhs.name << endl;
-		return NULL;
+	if (context->locals().find(node->lhs.name) == context->locals().end()) {
+		std::cerr << "undeclared variable " << node->lhs.name << endl;
 	}
-	return new StoreInst(rhs.codeGen(context), context.locals()[lhs.name], false, context.currentBlock());*/
+    CodeGenVisitor v(context);
+    node->rhs.accept(&v);
+	this->result = new StoreInst(v.result, context->locals()[node->lhs.name], false, context->currentBlock());
 }
 
 void CodeGenVisitor::visit(ASTExpressionStatement *node) {
-    // TODO
+    
+    std::cout << "Generating code for " << typeid(node->expression).name() << endl;
+    CodeGenVisitor v(context);
+    node->expression.accept(&v);
+    this->result = v.result;
 }
 
-void CodeGenVisitor::visit(ASTVariableDeclaration *node) {
-    // TODO
-    std::cout << "Creating variable declaration " << node->type.name << " " << node->id.name << endl;
-    //AllocaInst *alloc = Builder.CreateAlloca (typeOf(node->type), nullptr, node->id.name);
-	/*context->locals()[node->id.name] = alloc;
-	if (node->assignmentExpr != NULL) {
-        std::cout << ">>> assign" << endl;
-		ASTAssignment assn(node->id, *node->assignmentExpr);
-        //this->visit(&assn);
-        assn.accept(this);
-		//assn.codeGen(context);
-	}*/
-	//return alloc;
 
-    // Use builder
-    //  AllocaInst *CreateAlloca(Type *Ty, unsigned AddrSpace, Value *ArraySize = nullptr, const Twine &Name = "")
+void CodeGenVisitor::visit(ASTVariableDeclaration *node) {
+
+    std::cout << "Creating variable declaration " << node->type.name << " " << node->id.name << endl;
+    AllocaInst *alloc = new AllocaInst(typeOf(node->type), 0, node->id.name.c_str(), context->currentBlock());
+	context->locals()[node->id.name] = alloc;
+	if (node->assignmentExpr != NULL) {
+        ASTAssignment assn(node->id, *(node->assignmentExpr));
+        CodeGenVisitor v(context);
+        assn.accept(&v);
+	}
+    this->result = alloc;
 }
 
 void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
@@ -152,7 +164,8 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
 
 	for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
 		//(**it).codeGen(context);
-        (**it).accept(this);
+        CodeGenVisitor v(context);
+        (**it).accept(&v);
 		
 		argumentValue = &*argsValues++;
 		argumentValue->setName((*it)->id.name.c_str());
@@ -160,18 +173,35 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
 	}
 	
 	//block.codeGen(context);
-    node->block.accept(this);
+    CodeGenVisitor v(context);
+    node->block.accept(&v);
 	ReturnInst::Create(MyContext, context->getCurrentReturnValue(), bblock);
 
 	context->popBlock();
 	std::cout << "Creating function: " << node->id.name << endl;
-	//return function;
+	this->result = function;
 }
 
 void CodeGenVisitor::visit(ASTMethodCall *node) {
     
     // TODO
-    
+    Function *function = context->module->getFunction(node->id.name.c_str());
+	if (function == NULL) {
+		std::cerr << "no such function " << node->id.name << endl;
+	}
+	std::vector<Value*> args;
+	ASTExpressionList::const_iterator it;
+	for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
+        CodeGenVisitor v(context);
+        (**it).accept(&v);
+        args.push_back(v.result);
+		//Value* generatedCode = 
+        //args.push_back((**it).codeGen(context));
+	}
+	CallInst *call = CallInst::Create(function, makeArrayRef(args), "", context->currentBlock());
+	std::cout << "Creating method call: " << node->id.name << endl;
+	this->result = call;
+
 }
 
 

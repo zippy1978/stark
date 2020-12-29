@@ -1,5 +1,7 @@
 // Simple declaration
-var1: double
+var1: int
+var2: double
 
 // Declaration with assignement
-var2: int = 1
+var3: int = 1
+var4: double = 20.3

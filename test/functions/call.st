@@ -1,9 +1,12 @@
-// Call with no arg
+// Delcarations
 func func1(): int {}
-func1()
-
-// Call with args
 func func2(a: int, b: double): int {
-    z: int = a
+    z: int = 12
+    func1()
 }
-func2(1, 2)
+
+// Calls
+// For the moment calling a function before all functions are declared crash
+func1()
+func2(1, 2.0)
+

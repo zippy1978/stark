@@ -13,12 +13,15 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+// This is the interpreter implementation
+#include <llvm/ExecutionEngine/MCJIT.h>
+
 #include "ast.hh"
 
 using namespace llvm;
 
 static LLVMContext MyContext;
-static IRBuilder<> Builder(MyContext);
+//static IRBuilder<> Builder(MyContext); // Not used at the moment
 
 class CodeGenVisitor;
 
@@ -32,10 +35,10 @@ class CodeGenBlock {
 class CodeGenContext {
   std::stack<CodeGenBlock *> blocks;
   Function *mainFunction;
-  CodeGenVisitor *visitor;
 
   public:
     Module *module;
+    // TOTO : "main" should be the source file name
     CodeGenContext() { module = new Module("main", MyContext); }
     
     void generateCode(ASTBlock& root);
@@ -54,7 +57,6 @@ class CodeGenVisitor: public ASTVisitor {
   public:  
     CodeGenVisitor(CodeGenContext *context) : context(context) {}
     Value *result;
-    void visit(ASTExpression *node);
     void visit(ASTInteger *node);
     void visit(ASTDouble *node);
     void visit(ASTIdentifier *node);

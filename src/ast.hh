@@ -77,7 +77,7 @@ class ASTVariableDeclaration : public ASTStatement {
   public:
     const ASTIdentifier& type;
     ASTIdentifier& id;
-    ASTExpression *assignmentExpr;
+    ASTExpression *assignmentExpr; // Pointer, because nullable
     ASTVariableDeclaration(const ASTIdentifier& type, ASTIdentifier& id) : type(type), id(id) {}
     ASTVariableDeclaration(const ASTIdentifier& type, ASTIdentifier& id, ASTExpression *assignmentExpr) : type(type), id(id), assignmentExpr(assignmentExpr) {}
     void accept(ASTVisitor *visitor);
@@ -105,7 +105,6 @@ class ASTMethodCall : public ASTExpression {
 
 class ASTVisitor {
   public:
-    virtual void visit(ASTExpression *node) = 0;
     virtual void visit(ASTInteger *node) = 0;
     virtual void visit(ASTDouble *node) = 0;
     virtual void visit(ASTIdentifier *node) = 0;
