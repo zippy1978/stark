@@ -39,8 +39,18 @@ void CodeGenContext::generateCode(ASTBlock& root)
     visitor = NULL;
 }
 
-/* Returns an LLVM type based on the identifier */
+/* Executes the AST by running the main function */
+GenericValue CodeGenContext::runCode() {
+	std::cout << "Running code...\n";
+	ExecutionEngine *ee = EngineBuilder( unique_ptr<Module>(module) ).create();
+	ee->finalizeObject();
+	vector<GenericValue> noargs;
+	GenericValue v = ee->runFunction(mainFunction, noargs);
+	std::cout << "Code was run.\n";
+	return v;
+}
 
+/* Returns an LLVM type based on the identifier */
 static Type *typeOf(const ASTIdentifier& type) 
 {
 	if (type.name.compare("int") == 0) {

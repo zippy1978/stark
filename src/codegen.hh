@@ -12,6 +12,7 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include "ast.hh"
 
 using namespace llvm;
@@ -52,6 +53,7 @@ class CodeGenVisitor: public ASTVisitor {
 
   public:  
     CodeGenVisitor(CodeGenContext *context) : context(context) {}
+    Value *result;
     void visit(ASTExpression *node);
     void visit(ASTInteger *node);
     void visit(ASTDouble *node);
