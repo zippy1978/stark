@@ -31,14 +31,19 @@
 %token LBRACE RBRACE
 %token COMMA
 %token COLON
-%token FUNC
+%token FUNC EXTERN RETURN
+%token PLUS MINUS MUL DIV
 
 %type <ident> ident
 %type <expr> numeric expr 
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl
+%type <stmt> stmt var_decl func_decl extern_decl
 %type <varvec> func_decl_args
 %type <exprvec> call_args
+
+/* Operator precedence for mathematical operators */
+%left PLUS MINUS
+%left MUL DIV
 
 %start program
 
@@ -69,6 +74,8 @@ stmt :
 | 
       func_decl
 | 
+      extern_decl
+| 
       expr 
       { 
             $$ = new ASTExpressionStatement(*$1); 
@@ -93,6 +100,18 @@ var_decl :
       ident COLON ident EQUAL expr 
       { 
             $$ = new ASTVariableDeclaration(*$3, *$1, $5); 
+      }
+|
+      RETURN expr 
+      { 
+            $$ = new ASTReturnStatement(*$2); 
+      }
+;
+
+extern_decl :
+      EXTERN ident LPAREN func_decl_args RPAREN COLON ident
+      { 
+            $$ = new ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
       }
 ;
 
@@ -162,6 +181,31 @@ expr :
       }
 | 
       numeric
+|     
+      expr MUL expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, "*", *$3); 
+      }
+| 
+      expr DIV expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, "/", *$3); 
+      }
+|     
+      expr PLUS expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, "+", *$3); 
+      }
+| 
+      expr MINUS expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, "-", *$3); 
+      }
+|
+      LPAREN expr RPAREN 
+      { 
+            $$ = $2; 
+      }
 ;
 
 call_args : 

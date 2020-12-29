@@ -1,3 +1,6 @@
+#ifndef CODEGEN_HH
+#define CODEGEN_HH
+
 #include <stack>
 #include <typeinfo>
 #include <llvm/ADT/APFloat.h>
@@ -66,4 +69,9 @@ class CodeGenVisitor: public ASTVisitor {
     void visit(ASTVariableDeclaration *node);
     void visit(ASTFunctionDeclaration *node);
     void visit(ASTMethodCall *node);
+    void visit(ASTExternDeclaration *node);
+    void visit(ASTReturnStatement *node);
+    void visit(ASTBinaryOperator *node);
 };
+
+#endif

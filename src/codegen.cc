@@ -1,7 +1,9 @@
 #include "codegen.hh"
+#include "builtin.hh"
 
 using namespace std;
 
+// TODO : add proper error function
 void CodeGenContext::generateCode(ASTBlock& root)
 {
 	std::cout << "Generating code...\n";
@@ -14,8 +16,11 @@ void CodeGenContext::generateCode(ASTBlock& root)
 	mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
 	BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", mainFunction, 0);
 	
-	/* Push a new variable/block context */
+	// Push a new variable/block context
 	pushBlock(bblock);
+
+    // Add builtin functions 
+    createPrintfFunction(*this);
 
     std::cout << "Root type = " << typeid(root).name() << std::endl;
     root.accept(&visitor);
@@ -163,7 +168,6 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     Value* argumentValue;
 
 	for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
-		//(**it).codeGen(context);
         CodeGenVisitor v(context);
         (**it).accept(&v);
 		
@@ -184,7 +188,6 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
 
 void CodeGenVisitor::visit(ASTMethodCall *node) {
     
-    // TODO
     Function *function = context->module->getFunction(node->id.name.c_str());
 	if (function == NULL) {
 		std::cerr << "no such function " << node->id.name << endl;
@@ -195,8 +198,6 @@ void CodeGenVisitor::visit(ASTMethodCall *node) {
         CodeGenVisitor v(context);
         (**it).accept(&v);
         args.push_back(v.result);
-		//Value* generatedCode = 
-        //args.push_back((**it).codeGen(context));
 	}
 	CallInst *call = CallInst::Create(function, makeArrayRef(args), "", context->currentBlock());
 	std::cout << "Creating method call: " << node->id.name << endl;
@@ -204,4 +205,48 @@ void CodeGenVisitor::visit(ASTMethodCall *node) {
 
 }
 
+void CodeGenVisitor::visit(ASTExternDeclaration *node) {
+
+    vector<Type*> argTypes;
+    ASTVariableList::const_iterator it;
+    for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
+        argTypes.push_back(typeOf((**it).type));
+    }
+    FunctionType *ftype = FunctionType::get(typeOf(node->type), makeArrayRef(argTypes), false);
+    Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
+    this->result = function;
+
+}
+
+void CodeGenVisitor::visit(ASTReturnStatement *node) {
+    
+    std::cout << "Generating return code for " << typeid(node->expression).name() << endl;
+    CodeGenVisitor v(context);
+    node->expression.accept(&v);
+	Value *returnValue = v.result;
+	context->setCurrentReturnValue(returnValue);
+	this->result = returnValue;
+}
+
+void CodeGenVisitor::visit(ASTBinaryOperator *node) {
+    
+    std::cout << "Creating binary operation " << node->op << endl;
+	Instruction::BinaryOps instr;
+    if (node->op == "+") {
+        instr = Instruction::Add;
+    } else if (node->op == "-") {
+        instr = Instruction::Sub;
+    } else if (node->op == "*") {
+        instr = Instruction::Mul;
+    } else if (node->op == "/") {
+        instr = Instruction::SDiv;
+    }
+
+    CodeGenVisitor vl(context);
+    node->lhs.accept(&vl);
+    CodeGenVisitor vr(context);
+    node->rhs.accept(&vr);
+	this->result = BinaryOperator::Create(instr, vl.result, vr.result, "", context->currentBlock());
+    
+}
 

@@ -5,5 +5,5 @@ func func1(): int {
 
 // With args
 func func2(a: int, b: int): int {
-    // Code here
+    return a
 }

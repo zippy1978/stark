@@ -102,7 +102,34 @@ class ASTMethodCall : public ASTExpression {
     void accept(ASTVisitor *visitor);
 };
 
+class ASTExternDeclaration : public ASTStatement {
+public:
+    const ASTIdentifier& type;
+    const ASTIdentifier& id;
+    ASTVariableList arguments;
+    ASTExternDeclaration(const ASTIdentifier& type, const ASTIdentifier& id, const ASTVariableList& arguments) : type(type), id(id), arguments(arguments) {}
+    void accept(ASTVisitor *visitor);
+};
 
+class ASTReturnStatement : public ASTStatement {
+public:
+	ASTExpression& expression;
+	ASTReturnStatement(ASTExpression& expression) : expression(expression) {}
+	void accept(ASTVisitor *visitor);
+};
+
+class ASTBinaryOperator : public ASTExpression {
+public:
+	std::string op;
+	ASTExpression& lhs;
+	ASTExpression& rhs;
+	ASTBinaryOperator(ASTExpression& lhs, std::string op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
+	void accept(ASTVisitor *visitor);
+};
+
+/*
+ * Virtual class to visit the AST.
+ */
 class ASTVisitor {
   public:
     virtual void visit(ASTInteger *node) = 0;
@@ -114,6 +141,9 @@ class ASTVisitor {
     virtual void visit(ASTVariableDeclaration *node) = 0;
     virtual void visit(ASTFunctionDeclaration *node) = 0;
     virtual void visit(ASTMethodCall *node) = 0;
+    virtual void visit(ASTExternDeclaration *node) = 0;
+    virtual void visit(ASTReturnStatement *node) = 0;
+    virtual void visit(ASTBinaryOperator *node) = 0;
 };
 
 #endif
