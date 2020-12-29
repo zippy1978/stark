@@ -78,7 +78,6 @@ class ASTVariableDeclaration : public ASTStatement {
     const ASTIdentifier& type;
     ASTIdentifier& id;
     ASTExpression *assignmentExpr; // Pointer, because nullable
-    ASTVariableDeclaration(const ASTIdentifier& type, ASTIdentifier& id) : type(type), id(id) {}
     ASTVariableDeclaration(const ASTIdentifier& type, ASTIdentifier& id, ASTExpression *assignmentExpr) : type(type), id(id), assignmentExpr(assignmentExpr) {}
     void accept(ASTVisitor *visitor);
 };

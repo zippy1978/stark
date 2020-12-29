@@ -1,9 +1,9 @@
 extern printi(val: int): void
 
-// Declaring a function here crashes !
-/*
 func test(a: int): int {
-    printi(a)
-}*/
+    res: int = a * 2
+    printi(res)
+}
 
 printi(12)
+printi(test(2))

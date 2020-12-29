@@ -168,6 +168,7 @@ void CodeGenVisitor::visit(ASTVariableDeclaration *node) {
 
 void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     
+    context->logger.logDebug(formatv("creating function declaration for {0}", node->id.name));
     vector<Type*> argTypes;
 	ASTVariableList::const_iterator it;
 	for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
@@ -220,6 +221,7 @@ void CodeGenVisitor::visit(ASTMethodCall *node) {
 
 void CodeGenVisitor::visit(ASTExternDeclaration *node) {
 
+    context->logger.logDebug(formatv("creating extern declaration for {0}", node->id.name));
     vector<Type*> argTypes;
     ASTVariableList::const_iterator it;
     for (it = node->arguments.begin(); it != node->arguments.end(); it++) {

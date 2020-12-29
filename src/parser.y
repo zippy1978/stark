@@ -94,7 +94,7 @@ block :
 var_decl : 
       ident COLON ident 
       { 
-            $$ = new ASTVariableDeclaration(*$3, *$1); 
+            $$ = new ASTVariableDeclaration(*$3, *$1, NULL); 
       }
 | 
       ident COLON ident EQUAL expr 
