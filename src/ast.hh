@@ -17,41 +17,45 @@ typedef std::vector<ASTVariableDeclaration*> ASTVariableList;
 class ASTNode {
   public:
     virtual ~ASTNode() {}
-    virtual void accept(class ASTVisitor &visitor) = 0;
+    virtual void accept(ASTVisitor *visitor) = 0;
 };
 
 class ASTExpression : public ASTNode {
+  public:
+    virtual ~ASTExpression() {}
 };
 
 class ASTStatement : public ASTNode {
+  public:
+    virtual ~ASTStatement() {}
 };
 
 class ASTInteger : public ASTExpression {
   public:
     long long value;
     ASTInteger(long long value) : value(value) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTDouble : public ASTExpression {
   public:
     double value;
     ASTDouble(double value) : value(value) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTIdentifier : public ASTExpression {
   public:
     std::string name;
     ASTIdentifier(const std::string& name) : name(name) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTBlock : public ASTExpression {
 public:
     ASTStatementList statements;
     ASTBlock() {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTAssignment : public ASTExpression {
@@ -59,14 +63,14 @@ class ASTAssignment : public ASTExpression {
     ASTIdentifier& lhs;
     ASTExpression& rhs;
     ASTAssignment(ASTIdentifier& lhs, ASTExpression& rhs) : lhs(lhs), rhs(rhs) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTExpressionStatement : public ASTStatement {
-public:
+  public:
     ASTExpression& expression;
     ASTExpressionStatement(ASTExpression& expression) : expression(expression) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTVariableDeclaration : public ASTStatement {
@@ -76,35 +80,32 @@ class ASTVariableDeclaration : public ASTStatement {
     ASTExpression *assignmentExpr;
     ASTVariableDeclaration(const ASTIdentifier& type, ASTIdentifier& id) : type(type), id(id) {}
     ASTVariableDeclaration(const ASTIdentifier& type, ASTIdentifier& id, ASTExpression *assignmentExpr) : type(type), id(id), assignmentExpr(assignmentExpr) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTFunctionDeclaration : public ASTStatement {
-public:
+  public:
     const ASTIdentifier& type;
     const ASTIdentifier& id;
     ASTVariableList arguments;
     ASTBlock& block;
     ASTFunctionDeclaration(const ASTIdentifier& type, const ASTIdentifier& id, const ASTVariableList& arguments, ASTBlock& block) : type(type), id(id), arguments(arguments), block(block) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTMethodCall : public ASTExpression {
-public:
+  public:
     const ASTIdentifier& id;
     ASTExpressionList arguments;
     ASTMethodCall(const ASTIdentifier& id, ASTExpressionList& arguments) : id(id), arguments(arguments) {}
     ASTMethodCall(const ASTIdentifier& id) : id(id) {}
-    void accept(class ASTVisitor &visitor);
+    void accept(ASTVisitor *visitor);
 };
 
 
-class ASTVisitor
-{
+class ASTVisitor {
   public:
-    virtual void visit(ASTNode *node) = 0;
     virtual void visit(ASTExpression *node) = 0;
-    virtual void visit(ASTStatement *node) = 0;
     virtual void visit(ASTInteger *node) = 0;
     virtual void visit(ASTDouble *node) = 0;
     virtual void visit(ASTIdentifier *node) = 0;

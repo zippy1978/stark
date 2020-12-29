@@ -7,6 +7,7 @@
 #include "codegen.hh"
 
 yyFlexLexer *lexer;
+extern ASTBlock* programBlock;
 
 int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc) {
     yylloc->begin.line = lexer->lineno();
@@ -38,9 +39,17 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // Parse sources
     lexer = new yyFlexLexer(&input);
     yy::parser parser;
     parser.parse();
     delete lexer;
+
+    // Generate and run code
+    CodeGenContext context;
+    context.generateCode(*programBlock);
+	//context.runCode();
+
+
     return 0;
 }
