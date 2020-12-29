@@ -16,6 +16,7 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/Support/FormatVariadic.h>
 // This is the interpreter implementation
 #include <llvm/ExecutionEngine/MCJIT.h>
 
@@ -23,11 +24,15 @@
 
 using namespace llvm;
 
+// Global LLVM context
 static LLVMContext MyContext;
 //static IRBuilder<> Builder(MyContext); // Not used at the moment
 
 class CodeGenVisitor;
 
+/**
+ * Code generation block
+ */
 class CodeGenBlock {
   public:
     BasicBlock *block;
@@ -35,12 +40,29 @@ class CodeGenBlock {
     std::map<std::string, Value*> locals;
 };
 
+/**
+ * Code generation logger
+ */
+class CodeGenLogger {
+  public:
+    bool debugEnabled;
+    CodeGenLogger() { debugEnabled = false; }
+    virtual ~CodeGenLogger() {}
+    void logError(std::string message);
+    void logWarn(std::string message);
+    void logDebug(std::string message);
+};
+
+/**
+ * Code generation context
+ */
 class CodeGenContext {
   std::stack<CodeGenBlock *> blocks;
   Function *mainFunction;
 
   public:
     Module *module;
+    CodeGenLogger logger;
     // TOTO : "main" should be the source file name
     CodeGenContext() { module = new Module("main", MyContext); }
     
@@ -54,6 +76,9 @@ class CodeGenContext {
     Value* getCurrentReturnValue() { return blocks.top()->returnValue; }
 };
 
+/**
+ * Code geenration AST visitor
+ */
 class CodeGenVisitor: public ASTVisitor {
   CodeGenContext *context;
 
