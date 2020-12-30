@@ -7,6 +7,9 @@ static Type *typeOf(const ASTIdentifier& type) {
 	if (type.name.compare("int") == 0) {
 		return Type::getInt64Ty(MyContext);
 	}
+    else if (type.name.compare("bool") == 0) {
+		return Type::getInt1Ty(MyContext);
+	}
 	else if (type.name.compare("double") == 0) {
 		return Type::getDoubleTy(MyContext);
 	}
@@ -22,6 +25,11 @@ void CodeGenVisitor::visit(ASTInteger *node) {
     
     context->logger.logDebug(formatv("creating integer {0}", node->value));
     this->result = ConstantInt::get(Type::getInt64Ty(MyContext), node->value, true);
+}
+
+void CodeGenVisitor::visit(ASTBoolean *node) {
+    context->logger.logDebug(formatv("creating boolean {0}", node->value));
+    this->result = ConstantInt::get(Type::Type::getInt1Ty(MyContext), node->value, true);
 }
 
 void CodeGenVisitor::visit(ASTDouble *node) {

@@ -34,6 +34,7 @@
 %token COLON
 %token FUNC EXTERN RETURN
 %token PLUS MINUS MUL DIV
+%token TRUE FALSE
 
 %type <ident> ident
 %type <expr> numeric expr str
@@ -159,6 +160,16 @@ str :
 ;
 
 numeric : 
+      TRUE 
+      { 
+            $$ = new ASTBoolean(true);
+      }
+| 
+      FALSE 
+      { 
+            $$ = new ASTBoolean(false);
+      }
+| 
       INTEGER 
       { 
             $$ = new ASTInteger(atol($1->c_str()));

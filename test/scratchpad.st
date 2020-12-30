@@ -34,3 +34,7 @@ printd(negDouble)
 
 divD: double = 4.0 / 2.0
 printd(divD)
+
+b: bool = false
+print("bool is...")
+printi(b)

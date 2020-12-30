@@ -14,6 +14,7 @@ class CodeGenVisitor: public ASTVisitor {
     CodeGenVisitor(CodeGenContext *context) : context(context) {}
     Value *result;
     void visit(ASTInteger *node);
+    void visit(ASTBoolean *node);
     void visit(ASTDouble *node);
     void visit(ASTIdentifier *node);
     void visit(ASTString *node);

@@ -25,6 +25,8 @@
 extern                  return parser::token::EXTERN;
 func                    return parser::token::FUNC;
 return                  return parser::token::RETURN;
+true                    return parser::token::TRUE;
+false                   return parser::token::FALSE;
 
 [a-zA-Z_][a-zA-Z0-9_]*  return parser::token::IDENTIFIER;
 

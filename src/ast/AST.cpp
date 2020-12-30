@@ -1,6 +1,7 @@
 #include "AST.h"
 
 void ASTInteger::accept(ASTVisitor *visitor) { visitor->visit(this); }
+void ASTBoolean::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTDouble::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTString::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTIdentifier::accept(ASTVisitor *visitor) { visitor->visit(this); }

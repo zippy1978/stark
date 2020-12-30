@@ -37,6 +37,13 @@ class ASTInteger : public ASTExpression {
     void accept(ASTVisitor *visitor);
 };
 
+class ASTBoolean : public ASTExpression {
+  public:
+    bool value;
+    ASTBoolean(bool value) : value(value) {}
+    void accept(ASTVisitor *visitor);
+};
+
 class ASTDouble : public ASTExpression {
   public:
     double value;
@@ -139,6 +146,7 @@ public:
 class ASTVisitor {
   public:
     virtual void visit(ASTInteger *node) = 0;
+    virtual void visit(ASTBoolean *node) = 0;
     virtual void visit(ASTDouble *node) = 0;
     virtual void visit(ASTString *node) = 0;
     virtual void visit(ASTIdentifier *node) = 0;
