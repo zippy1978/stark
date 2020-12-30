@@ -1,7 +1,10 @@
-#ifndef BUILTIN_HH
-#define BUILTIN_HH
+#ifndef CODEGEN_BUILTIN_H
+#define CODEGEN_BUILTIN_H
 
-#include "CodeGen.h"
+#include <llvm/IR/Function.h>
+
+
+#include "CodeGenContext.h"
 
 llvm::Function* createPrintfFunction(CodeGenContext& context);
 

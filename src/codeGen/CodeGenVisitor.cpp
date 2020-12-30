@@ -1,5 +1,4 @@
-#include "CodeGen.h"
-#include "BuiltIn.h"
+#include "CodeGenVisitor.h"
 
 using namespace std;
 
@@ -15,86 +14,6 @@ static Type *typeOf(const ASTIdentifier& type) {
 		return Type::getInt8PtrTy(MyContext);
 	}
 	return Type::getVoidTy(MyContext);
-}
-
-/* Logger */
-
-void CodeGenLogger::logError(std::string message) {
-    std::string outputMessage = formatv("ERROR: {0}", message);
-    std::cerr << outputMessage << endl;
-    // Error if fatal for compiler: exiting
-    exit(1);
-}
-
-void CodeGenLogger::logWarn(std::string message) {
-    std::string outputMessage = formatv("WARNING: {0}", message);
-    std::cerr << outputMessage << endl;
-}
-
-void CodeGenLogger::logDebug(std::string message) {
-    if (this->debugEnabled) {
-        std::string outputMessage = formatv("DEBUG: {0}", message);
-        std::cerr << outputMessage << endl;
-    }
-}
-
-/* Generate code from AST root */
-void CodeGenContext::generateCode(ASTBlock& root) {
-
-    // Enable debug on code geenration
-    logger.debugEnabled = true;
-
-    logger.logDebug("generating code...");
-
-    // Root visitor
-    CodeGenVisitor visitor(this);
-
-	// Create the top level interpreter function to call as entry
-	vector<Type*> argTypes;
-	FunctionType *ftype = FunctionType::get(Type::getVoidTy(MyContext), makeArrayRef(argTypes), false);
-	mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
-	BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", mainFunction, 0);
-	
-	// Push a new variable/block context
-	pushBlock(bblock);
-
-    // Add builtin functions 
-    createPrintfFunction(*this);
-
-    // Start visitor on root
-    logger.logDebug(formatv("root type = {0}", typeid(root).name()));
-    root.accept(&visitor);
-
-	ReturnInst::Create(MyContext, bblock);
-	popBlock();
-	
-	/* Print the bytecode in a human-readable format 
-	   to see if our program compiled properly
-	 */
-	std::cout << "Code is generated.\n";
-    std::cout << "----------- DUMP -------------\n";
-	module->print(llvm::errs(), nullptr);
-}
-
-/* Executes the AST by running the main function */
-GenericValue CodeGenContext::runCode() {
-
-	logger.logDebug("running code...");
-    std::string err;
-    
-    LLVMInitializeNativeTarget();
-	LLVMInitializeNativeAsmPrinter();
-	LLVMInitializeNativeAsmParser();
-
-	ExecutionEngine *ee = EngineBuilder( unique_ptr<Module>(module) ).setErrorStr(&err).create();
-    if (!ee) {
-       logger.logError(formatv("JIT error: {0}", err));
-    }
-	ee->finalizeObject();
-	vector<GenericValue> noargs;
-	GenericValue v = ee->runFunction(mainFunction, noargs);
-    logger.logDebug("code was run");
-	return v;
 }
 
 /* Code generation */
@@ -298,4 +217,3 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
 	this->result = BinaryOperator::Create(instr, vl.result, vr.result, "", context->currentBlock());
     
 }
-

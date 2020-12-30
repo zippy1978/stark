@@ -22,3 +22,6 @@ printi(time())
 print("Good bye !")
 
 //assertEqual(2, 2)
+
+// Crash (logical !!!)
+//print("ff" + "dd")
