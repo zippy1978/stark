@@ -5,8 +5,8 @@
     #include <iostream>
     #include <cstdlib>
     #include <list>
-    #include "ast.hh"
-    #include "parser.hh"
+    #include "../ast/AST.h"
+    #include "parser.hpp"
 
     using namespace yy;
 %}

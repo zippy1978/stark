@@ -20,7 +20,7 @@
 // This is the interpreter implementation
 #include <llvm/ExecutionEngine/MCJIT.h>
 
-#include "ast.hh"
+#include "../ast/AST.h"
 
 using namespace llvm;
 

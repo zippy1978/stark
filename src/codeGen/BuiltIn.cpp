@@ -1,4 +1,4 @@
-#include "builtin.hh"
+#include "BuiltIn.h"
 
 llvm::Function* createPrintfFunction(CodeGenContext& context)
 {

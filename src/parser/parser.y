@@ -2,7 +2,7 @@
 %locations
 
 %code top {
-      #include "ast.hh"
+      #include "../ast/AST.h"
       ASTBlock *programBlock;
 }
 

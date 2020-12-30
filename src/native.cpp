@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <time.h>
+#include <iostream>
 
 extern "C"
 void printi(long long val) {
@@ -18,4 +19,12 @@ void print(const char* val) {
 
 long long time() {
     return time(0);
+}
+
+extern "C"
+void assertEqual(long long actual, long long expected) {
+    if (actual != expected) {
+        printf("Assert failure : actual value %lld is different from expected %lld\n", actual, expected);
+        exit(1);
+    }
 }

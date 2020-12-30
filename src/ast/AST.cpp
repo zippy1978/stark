@@ -1,4 +1,4 @@
-#include "ast.hh"
+#include "AST.h"
 
 void ASTInteger::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTDouble::accept(ASTVisitor *visitor) { visitor->visit(this); }

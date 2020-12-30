@@ -2,9 +2,9 @@
 #include <fstream>
 #include <cstdlib>
 #include <FlexLexer.h>
-#include "ast.hh"
-#include "parser.hh"
-#include "codegen.hh"
+#include "ast/AST.h"
+#include "parser/parser.hpp"
+#include "codeGen/CodeGen.h"
 
 yyFlexLexer *lexer;
 extern ASTBlock* programBlock;

@@ -1,5 +1,5 @@
-#include "codegen.hh"
-#include "builtin.hh"
+#include "CodeGen.h"
+#include "BuiltIn.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ void CodeGenLogger::logError(std::string message) {
     std::string outputMessage = formatv("ERROR: {0}", message);
     std::cerr << outputMessage << endl;
     // Error if fatal for compiler: exiting
-    exit(-1);
+    exit(1);
 }
 
 void CodeGenLogger::logWarn(std::string message) {
@@ -114,13 +114,14 @@ void CodeGenVisitor::visit(ASTDouble *node) {
 void CodeGenVisitor::visit(ASTString *node) {
     
     context->logger.logDebug(formatv("creating string {0}", node->value));
-	//this->result = ConstantFP::get(Type::getInt8PtrTy(MyContext), node->value);
 
     std::string utf8string = node->value;
     // Create constant vector of the string size
-    std::vector<llvm::Constant *> chars(utf8string.size());
+    std::vector<llvm::Constant *> chars(utf8string.size() + 1);
     // Set each char of the string in the vector
     for(unsigned int i = 0; i < utf8string.size(); i++) chars[i] = ConstantInt::get(Type::getInt8Ty(MyContext), utf8string[i]);
+    // Add string terminator
+    chars[utf8string.size()] = ConstantInt::get(Type::getInt8Ty(MyContext), '\0');
 
     // Set value as global variable
     auto init = ConstantArray::get(ArrayType::get(Type::getInt8Ty(MyContext), chars.size()), chars);

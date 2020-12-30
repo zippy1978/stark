@@ -6,25 +6,19 @@ extern printi(val: int): void
 extern printd(val: double): void
 extern print(val: string): void
 extern time(): int
+extern assertEqual(actual: int, expected: int): void
 
-//i: int = 10
-//printi(i)
+// Square root function
+func sqrt(v: int): int {
+    return v * v
+}
 
+print("Square root for 4 is")
+printi(sqrt(4))
 
+print("Current time is")
+printi(time())
 
-// Because when direct : double is passed
-// When from binop : point to double is passed !!!
-// Pb in method call, or assign ???
+print("Good bye !")
 
-// This works : probably an assign pb
-//printd(10.0 + 2.0)
-
-/*a: double = 20.0 + 10.0
-printd(a)
-m: double = 20.0 * 10.0
-printd(m)*/
-
-d: double = 10.0 * 2.0
-printd(d)
-s: string = "test"
-print(s)
+//assertEqual(2, 2)
