@@ -88,6 +88,7 @@ class CodeGenVisitor: public ASTVisitor {
     void visit(ASTInteger *node);
     void visit(ASTDouble *node);
     void visit(ASTIdentifier *node);
+    void visit(ASTString *node);
     void visit(ASTBlock *node);
     void visit(ASTAssignment *node);
     void visit(ASTExpressionStatement *node);

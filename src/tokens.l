@@ -30,6 +30,7 @@ return                  return parser::token::RETURN;
 
 [0-9]+\.[0-9]*          return parser::token::DOUBLE;
 [0-9]+                  return parser::token::INTEGER;
+\"(\\.|[^"\\])*\"       return parser::token::STRING;
 
 "+"		        		return parser::token::PLUS;
 "-"		   				return parser::token::MINUS;

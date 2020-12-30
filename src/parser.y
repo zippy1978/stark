@@ -26,6 +26,7 @@
 %token <string> IDENTIFIER 
 %token <string> INTEGER 
 %token <string> DOUBLE
+%token <string> STRING
 %token EQUAL
 %token LPAREN RPAREN
 %token LBRACE RBRACE
@@ -35,7 +36,7 @@
 %token PLUS MINUS MUL DIV
 
 %type <ident> ident
-%type <expr> numeric expr 
+%type <expr> numeric expr str
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_decl extern_decl
 %type <varvec> func_decl_args
@@ -149,6 +150,14 @@ ident :
       }
 ;
 
+str :
+      STRING
+      {
+            $$ = new ASTString(*$1);
+            delete $1; 
+      }
+;
+
 numeric : 
       INTEGER 
       { 
@@ -181,6 +190,8 @@ expr :
       }
 | 
       numeric
+| 
+      str
 |     
       expr MUL expr 
       { 

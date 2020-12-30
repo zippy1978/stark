@@ -2,6 +2,9 @@
 var1: int
 var1 = 2
 
+var2: string
+var2 = "test"
+
 // Assignement from other var
-var2: int = 1
-var3: int = var2
+var3: int = 1
+var4: int = var3

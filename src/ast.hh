@@ -44,6 +44,13 @@ class ASTDouble : public ASTExpression {
     void accept(ASTVisitor *visitor);
 };
 
+class ASTString : public ASTExpression {
+  public:
+    std::string value;
+    ASTString(std::string value) : value(value) {}
+    void accept(ASTVisitor *visitor);
+};
+
 class ASTIdentifier : public ASTExpression {
   public:
     std::string name;
@@ -133,6 +140,7 @@ class ASTVisitor {
   public:
     virtual void visit(ASTInteger *node) = 0;
     virtual void visit(ASTDouble *node) = 0;
+    virtual void visit(ASTString *node) = 0;
     virtual void visit(ASTIdentifier *node) = 0;
     virtual void visit(ASTBlock *node) = 0;
     virtual void visit(ASTAssignment *node) = 0;

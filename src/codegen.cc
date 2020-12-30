@@ -6,11 +6,16 @@ using namespace std;
 /* Returns an LLVM type based on the identifier */
 static Type *typeOf(const ASTIdentifier& type) 
 {
+    std::cout << type.name << endl;
 	if (type.name.compare("int") == 0) {
 		return Type::getInt64Ty(MyContext);
 	}
 	else if (type.name.compare("double") == 0) {
 		return Type::getDoubleTy(MyContext);
+	}
+    // TODO : not sure !
+    else if (type.name.compare("string") == 0) {
+		return PointerType::getInt8Ty(MyContext);
 	}
 	return Type::getVoidTy(MyContext);
 }
@@ -107,6 +112,24 @@ void CodeGenVisitor::visit(ASTDouble *node) {
     
     context->logger.logDebug(formatv("creating double {0}", node->value));
 	this->result = ConstantFP::get(Type::getDoubleTy(MyContext), node->value);
+}
+
+void CodeGenVisitor::visit(ASTString *node) {
+    
+    context->logger.logDebug(formatv("creating string {0}", node->value));
+	//this->result = ConstantFP::get(Type::getInt8PtrTy(MyContext), node->value);
+
+    std::string utf8string = node->value;
+    // Create constant vector of the string size
+    std::vector<llvm::Constant *> chars(utf8string.size());
+    // Set each char of the string in the vector
+    for(unsigned int i = 0; i < utf8string.size(); i++) chars[i] = ConstantInt::get(Type::getInt8Ty(MyContext), utf8string[i]);
+
+    // Set value as global variable
+    auto init = ConstantArray::get(ArrayType::get(Type::getInt8Ty(MyContext), chars.size()), chars);
+    GlobalVariable * v = new GlobalVariable(*context->module, init->getType(), true, GlobalVariable::ExternalLinkage, init, utf8string);
+    // Return pointer? on the string
+    this->result = ConstantExpr::getBitCast(v, Type::getInt8Ty(MyContext)->getPointerTo());
 }
 
 void CodeGenVisitor::visit(ASTIdentifier *node) {

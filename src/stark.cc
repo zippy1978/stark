@@ -14,8 +14,15 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc) 
     int token = lexer->yylex();
     
     // This stores the value of tokens as string into yylval
-    if(token == yy::parser::token::IDENTIFIER || token == yy::parser::token::INTEGER || token == yy::parser::token::DOUBLE) {
+    if(token == yy::parser::token::IDENTIFIER 
+    || token == yy::parser::token::INTEGER 
+    || token == yy::parser::token::DOUBLE) {
         yylval->string = new std::string(lexer->YYText());
+    }
+
+    // On a string : quotes must be removed (first and last char)
+    if (token == yy::parser::token::STRING) {
+        yylval->string = new std::string(lexer->YYText() + 1, lexer->YYLeng() - 2);
     }
     
     return token;
