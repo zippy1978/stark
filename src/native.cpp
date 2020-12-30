@@ -28,3 +28,11 @@ void assertEqual(long long actual, long long expected) {
         exit(1);
     }
 }
+
+extern "C"
+void assertTrue(bool actual) {
+    if (!actual) {
+        printf("Assert failure : assert was %d\n", actual);
+        exit(1);
+    }
+}

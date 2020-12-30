@@ -14,6 +14,21 @@ typedef std::vector<ASTStatement*> ASTStatementList;
 typedef std::vector<ASTExpression*> ASTExpressionList;
 typedef std::vector<ASTVariableDeclaration*> ASTVariableList;
 
+enum ASTBinaryOperation {
+  /*EQ,
+  NEQ,
+  LT,
+  LTE,
+  GT,
+  GTE,*/
+  AND,
+  OR,
+  ADD,
+  SUB,
+  MUL,
+  DIV
+};
+
 class ASTNode {
   public:
     virtual ~ASTNode() {}
@@ -133,10 +148,10 @@ public:
 
 class ASTBinaryOperator : public ASTExpression {
 public:
-	std::string op;
+	ASTBinaryOperation op;
 	ASTExpression& lhs;
 	ASTExpression& rhs;
-	ASTBinaryOperator(ASTExpression& lhs, std::string op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
+	ASTBinaryOperator(ASTExpression& lhs, ASTBinaryOperation op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
 	void accept(ASTVisitor *visitor);
 };
 

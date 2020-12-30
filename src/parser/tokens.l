@@ -34,10 +34,20 @@ false                   return parser::token::FALSE;
 [0-9]+                  return parser::token::INTEGER;
 \"(\\.|[^"\\])*\"       return parser::token::STRING;
 
+"=="				    return parser::token::COMP_EQ;
+"!="			        return parser::token::COMP_NEQ;
+"<"				        return parser::token::COMP_LT;
+"<="	          		return parser::token::COMP_LTE;
+">"				        return parser::token::COMP_GT;
+">="					return parser::token::COMP_GTE;
+
 "+"		        		return parser::token::PLUS;
 "-"		   				return parser::token::MINUS;
 "*"		   				return parser::token::MUL;
 "/"			       		return parser::token::DIV;
+
+"&&"                    return parser::token::AND;
+"||"                    return parser::token::OR;
 
 "="                     return parser::token::EQUAL;
 "("                     return parser::token::LPAREN;
@@ -46,4 +56,5 @@ false                   return parser::token::FALSE;
 "}"                     return parser::token::RBRACE;
 ","                     return parser::token::COMMA;
 ":"                     return parser::token::COLON;
+
 .                       { std::cerr << "Line " << lineno() << ": Unexpected character: '" << YYText() << "'." << std::endl; exit(1); }

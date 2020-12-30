@@ -212,14 +212,25 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     node->rhs.accept(&vr);
 
 	Instruction::BinaryOps instr;
-    if (node->op == "+") {
-        instr = vl.result->getType()->isDoubleTy() ? Instruction::FAdd : Instruction::Add;
-    } else if (node->op == "-") {
-        instr = vl.result->getType()->isDoubleTy() ? Instruction::FSub : Instruction::Sub;
-    } else if (node->op == "*") {
-        instr = vl.result->getType()->isDoubleTy() ? Instruction::FMul : Instruction::Mul;
-    } else if (node->op == "/") {
-        instr = vl.result->getType()->isDoubleTy() ? Instruction::FDiv : Instruction::SDiv;
+    switch (node->op) {
+        case ADD:
+            instr = vl.result->getType()->isDoubleTy() ? Instruction::FAdd : Instruction::Add;
+            break;
+        case SUB:
+            instr = vl.result->getType()->isDoubleTy() ? Instruction::FSub : Instruction::Sub;
+            break;
+        case MUL:
+            instr = vl.result->getType()->isDoubleTy() ? Instruction::FMul : Instruction::Mul;
+            break;
+        case DIV:
+            instr = vl.result->getType()->isDoubleTy() ? Instruction::FDiv : Instruction::SDiv;
+            break;
+        case OR:
+            instr = Instruction::Or;
+            break;
+        case AND:
+            instr = Instruction::And;
+            break;
     }
 
 	this->result = BinaryOperator::Create(instr, vl.result, vr.result, "", context->currentBlock());

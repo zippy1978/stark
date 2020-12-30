@@ -7,34 +7,9 @@ extern printd(val: double): void
 extern print(val: string): void
 extern time(): int
 extern assertEqual(actual: int, expected: int): void
+extern assertTrue(actual: bool): void
 
-// Square root function
-func sqrt(v: int): int {
-    return v * v
-}
-
-print("Square root for 4 is")
-printi(sqrt(4))
-
-print("Current time is")
-printi(time())
-
-print("Good bye !")
-
-//assertEqual(2, 2)
-
-// Crash (logical !!!)
-//print("ff" + "dd")
-
-neg: int = 3 + -1
-printi(neg)
-
-negDouble: double = -3.0 * 4.0
-printd(negDouble)
-
-divD: double = 4.0 / 2.0
-printd(divD)
-
-b: bool = false
+b: bool = true || false
 print("bool is...")
 printi(b)
+assertTrue(b)
