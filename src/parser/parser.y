@@ -165,10 +165,22 @@ numeric :
             delete $1; 
       }
 | 
+      MINUS INTEGER 
+      { 
+            $$ = new ASTInteger(-atol($2->c_str()));
+            delete $2; 
+      }
+| 
       DOUBLE 
       { 
             $$ = new ASTDouble(atof($1->c_str())); 
             delete $1; 
+      }
+| 
+      MINUS DOUBLE 
+      { 
+            $$ = new ASTDouble(-atof($2->c_str())); 
+            delete $2; 
       }
 ;
     

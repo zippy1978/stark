@@ -25,3 +25,12 @@ print("Good bye !")
 
 // Crash (logical !!!)
 //print("ff" + "dd")
+
+neg: int = 3 + -1
+printi(neg)
+
+negDouble: double = -3.0 * 4.0
+printd(negDouble)
+
+divD: double = 4.0 / 2.0
+printd(divD)

@@ -211,7 +211,7 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     } else if (node->op == "*") {
         instr = vl.result->getType()->isDoubleTy() ? Instruction::FMul : Instruction::Mul;
     } else if (node->op == "/") {
-        instr = Instruction::SDiv;
+        instr = vl.result->getType()->isDoubleTy() ? Instruction::FDiv : Instruction::SDiv;
     }
 
 	this->result = BinaryOperator::Create(instr, vl.result, vr.result, "", context->currentBlock());
