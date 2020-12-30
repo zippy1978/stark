@@ -5,7 +5,6 @@
 extern printi(val: int): void
 extern printd(val: double): void
 extern print(val: string): void
-extern printHello(): void
 extern time(): int
 
 func test(i: string): string {
@@ -13,12 +12,6 @@ func test(i: string): string {
 }
 s1: string = test("from func")
 
-// External call does not work (or only with int param)
-// Ok
-//printi(15)
-//time()
-
-// Ko
-//print(s1)
-printHello()
-//printd(20.5)
+print(s1)
+printi(15)
+printd(20.0)

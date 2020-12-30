@@ -6,16 +6,14 @@ void printi(long long val) {
     printf("%lld\n", val);
 }
 
+extern "C"
 void printd(double val) {
     printf("%f\n", val);
 }
 
+extern "C"
 void print(const char* val) {
     printf("%s\n", val);
-}
-
-void printHello() {
-    printf("%s\n", "Hello");
 }
 
 long long time() {

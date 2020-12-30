@@ -247,7 +247,6 @@ void CodeGenVisitor::visit(ASTExternDeclaration *node) {
     vector<Type*> argTypes;
     ASTVariableList::const_iterator it;
     for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
-        std::cout << (**it).type.name << endl;
         argTypes.push_back(typeOf((**it).type));
     }
     FunctionType *ftype = FunctionType::get(typeOf(node->type), makeArrayRef(argTypes), false);
