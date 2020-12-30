@@ -13,9 +13,8 @@ static Type *typeOf(const ASTIdentifier& type)
 	else if (type.name.compare("double") == 0) {
 		return Type::getDoubleTy(MyContext);
 	}
-    // TODO : not sure !
     else if (type.name.compare("string") == 0) {
-		return PointerType::getInt8Ty(MyContext);
+		return Type::getInt8PtrTy(MyContext);
 	}
 	return Type::getVoidTy(MyContext);
 }
@@ -248,6 +247,7 @@ void CodeGenVisitor::visit(ASTExternDeclaration *node) {
     vector<Type*> argTypes;
     ASTVariableList::const_iterator it;
     for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
+        std::cout << (**it).type.name << endl;
         argTypes.push_back(typeOf((**it).type));
     }
     FunctionType *ftype = FunctionType::get(typeOf(node->type), makeArrayRef(argTypes), false);

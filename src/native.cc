@@ -6,8 +6,16 @@ void printi(long long val) {
     printf("%lld\n", val);
 }
 
-int print(const char* val) {
-    return printf("%s\n", val);
+void printd(double val) {
+    printf("%f\n", val);
+}
+
+void print(const char* val) {
+    printf("%s\n", val);
+}
+
+void printHello() {
+    printf("%s\n", "Hello");
 }
 
 long long time() {
