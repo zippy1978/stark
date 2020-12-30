@@ -9,7 +9,6 @@ extern time(): int
 extern assertEqual(actual: int, expected: int): void
 extern assertTrue(actual: bool): void
 
-b: bool = true || false
-print("bool is...")
-printi(b)
-assertTrue(b)
+func f(): int {
+    print("hello")
+}

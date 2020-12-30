@@ -35,11 +35,11 @@ false                   return parser::token::FALSE;
 \"(\\.|[^"\\])*\"       return parser::token::STRING;
 
 "=="				    return parser::token::COMP_EQ;
-"!="			        return parser::token::COMP_NEQ;
+"!="			        return parser::token::COMP_NE;
 "<"				        return parser::token::COMP_LT;
-"<="	          		return parser::token::COMP_LTE;
+"<="	          		return parser::token::COMP_LE;
 ">"				        return parser::token::COMP_GT;
-">="					return parser::token::COMP_GTE;
+">="					return parser::token::COMP_GE;
 
 "+"		        		return parser::token::PLUS;
 "-"		   				return parser::token::MINUS;

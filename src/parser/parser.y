@@ -35,7 +35,7 @@
 %token FUNC EXTERN RETURN
 %token PLUS MINUS MUL DIV OR AND
 %token TRUE FALSE
-%token COMP_EQ COMP_NEQ COMP_LT COMP_LTE COMP_GT COMP_GTE
+%token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
 
 %type <ident> ident
 %type <expr> numeric expr str
@@ -46,7 +46,7 @@
 
 /* Operator precedence for mathematical operators */
 %left PLUS MINUS MUL DIV OR AND
-%left COMP_EQ COMP_NEQ COMP_LT COMP_LTE COMP_GT COMP_GTE
+%left COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
 
 %start program
 
@@ -249,32 +249,32 @@ expr :
 |     
       expr COMP_EQ expr 
       { 
-            // TODO
+            $$ = new ASTBinaryOperator(*$1, EQ, *$3); 
       }
 |     
-      expr COMP_NEQ expr 
+      expr COMP_NE expr 
       { 
-            // TODO
+            $$ = new ASTBinaryOperator(*$1, NE, *$3); 
       }
 |
       expr COMP_LT expr 
       { 
-            // TODO
+            $$ = new ASTBinaryOperator(*$1, LT, *$3);
       }
 |
-      expr COMP_LTE expr 
+      expr COMP_LE expr 
       { 
-            // TODO
+            $$ = new ASTBinaryOperator(*$1, LE, *$3);
       }
 |
       expr COMP_GT expr 
       { 
-            // TODO
+            $$ = new ASTBinaryOperator(*$1, GT, *$3);
       }
 |
-      expr COMP_GTE expr 
+      expr COMP_GE expr 
       { 
-            // TODO
+            $$ = new ASTBinaryOperator(*$1, GE, *$3);
       }
 |
       LPAREN expr RPAREN 

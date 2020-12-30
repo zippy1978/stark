@@ -64,12 +64,6 @@ void CodeGenVisitor::visit(ASTIdentifier *node) {
         context->logger.logError(formatv("undeclared identifier {0}", node->name));
 	}
 
-    // Wrong type here !!!! it moved to ptr on double !!!
-    std::string type_str;
-    llvm::raw_string_ostream rso(type_str);
-    context->locals()[node->name]->getType()->getPointerElementType()->print(rso);
-    std::cout<< rso.str() << endl;
-
     // Note : variables are stored as pointers into the symbol table
     // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
     // From the variable type to get the real value (and not the pointer on that value)
@@ -115,6 +109,11 @@ void CodeGenVisitor::visit(ASTExpressionStatement *node) {
 void CodeGenVisitor::visit(ASTVariableDeclaration *node) {
 
     context->logger.logDebug(formatv("creating variable declaration {0} {1}", node->type.name, node->id.name));
+
+    if (context->locals().find(node->id.name) != context->locals().end()) {
+        context->logger.logError(formatv("variable {0} already declared", node->id.name));
+	}
+
     AllocaInst *alloc = new AllocaInst(typeOf(node->type), 0, node->id.name.c_str(), context->currentBlock());
 	context->locals()[node->id.name] = alloc;
     
@@ -129,6 +128,11 @@ void CodeGenVisitor::visit(ASTVariableDeclaration *node) {
 void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     
     context->logger.logDebug(formatv("creating function declaration for {0}", node->id.name));
+
+    if (context->module->getFunction(node->id.name.c_str()) != NULL) {
+        context->logger.logError(formatv("function {0} already declared", node->id.name));
+	}
+
     vector<Type*> argTypes;
 	ASTVariableList::const_iterator it;
 	for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
@@ -211,28 +215,53 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     CodeGenVisitor vr(context);
     node->rhs.accept(&vr);
 
+    Builder.SetInsertPoint(context->currentBlock());
+
+    bool isDouble = vl.result->getType()->isDoubleTy();
 	Instruction::BinaryOps instr;
     switch (node->op) {
         case ADD:
-            instr = vl.result->getType()->isDoubleTy() ? Instruction::FAdd : Instruction::Add;
+            instr = isDouble ? Instruction::FAdd : Instruction::Add;
+            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case SUB:
-            instr = vl.result->getType()->isDoubleTy() ? Instruction::FSub : Instruction::Sub;
+            instr = isDouble ? Instruction::FSub : Instruction::Sub;
+            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case MUL:
-            instr = vl.result->getType()->isDoubleTy() ? Instruction::FMul : Instruction::Mul;
+            instr = isDouble ? Instruction::FMul : Instruction::Mul;
+            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case DIV:
-            instr = vl.result->getType()->isDoubleTy() ? Instruction::FDiv : Instruction::SDiv;
+            instr = isDouble ? Instruction::FDiv : Instruction::SDiv;
+            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case OR:
             instr = Instruction::Or;
+            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case AND:
             instr = Instruction::And;
+            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
+            break;
+        case EQ:
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOEQ(vl.result, vr.result, "") : Builder.CreateICmpEQ(vl.result, vr.result, "");
+            break;
+        case NE:
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpONE(vl.result, vr.result, "") : Builder.CreateICmpNE(vl.result, vr.result, "");
+            break;
+        case LT:
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLT(vl.result, vr.result, "") : Builder.CreateICmpSLT(vl.result, vr.result, "");
+            break;
+        case LE:
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLE(vl.result, vr.result, "") : Builder.CreateICmpSLE(vl.result, vr.result, "");
+            break;
+        case GT:
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGT(vl.result, vr.result, "") : Builder.CreateICmpSGT(vl.result, vr.result, "");
+            break;
+        case GE:
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGE(vl.result, vr.result, "") : Builder.CreateICmpSGE(vl.result, vr.result, "");
             break;
     }
-
-	this->result = BinaryOperator::Create(instr, vl.result, vr.result, "", context->currentBlock());
     
 }

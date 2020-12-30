@@ -27,7 +27,7 @@ using namespace llvm;
 
 // Global LLVM context
 static LLVMContext MyContext;
-//static IRBuilder<> Builder(MyContext); // Not used at the moment
+static IRBuilder<> Builder(MyContext);
 
 
 /**

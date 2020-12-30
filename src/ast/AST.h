@@ -15,12 +15,12 @@ typedef std::vector<ASTExpression*> ASTExpressionList;
 typedef std::vector<ASTVariableDeclaration*> ASTVariableList;
 
 enum ASTBinaryOperation {
-  /*EQ,
-  NEQ,
+  EQ,
+  NE,
   LT,
-  LTE,
+  LE,
   GT,
-  GTE,*/
+  GE,
   AND,
   OR,
   ADD,
