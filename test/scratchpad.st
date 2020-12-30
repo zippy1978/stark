@@ -7,11 +7,24 @@ extern printd(val: double): void
 extern print(val: string): void
 extern time(): int
 
-func test(i: string): string {
-    return i
-}
-s1: string = test("from func")
+//i: int = 10
+//printi(i)
 
-print(s1)
-printi(15)
-printd(20.0)
+
+
+// Because when direct : double is passed
+// When from binop : point to double is passed !!!
+// Pb in method call, or assign ???
+
+// This works : probably an assign pb
+//printd(10.0 + 2.0)
+
+/*a: double = 20.0 + 10.0
+printd(a)
+m: double = 20.0 * 10.0
+printd(m)*/
+
+d: double = 10.0 * 2.0
+printd(d)
+s: string = "test"
+print(s)

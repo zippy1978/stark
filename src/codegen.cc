@@ -4,9 +4,7 @@
 using namespace std;
 
 /* Returns an LLVM type based on the identifier */
-static Type *typeOf(const ASTIdentifier& type) 
-{
-    std::cout << type.name << endl;
+static Type *typeOf(const ASTIdentifier& type) {
 	if (type.name.compare("int") == 0) {
 		return Type::getInt64Ty(MyContext);
 	}
@@ -137,7 +135,17 @@ void CodeGenVisitor::visit(ASTIdentifier *node) {
 	if (context->locals().find(node->name) == context->locals().end()) {
         context->logger.logError(formatv("undeclared identifier {0}", node->name));
 	}
-	this->result = new LoadInst(context->locals()[node->name]->getType(), context->locals()[node->name], "", false, context->currentBlock());
+
+    // Wrong type here !!!! it moved to ptr on double !!!
+    std::string type_str;
+    llvm::raw_string_ostream rso(type_str);
+    context->locals()[node->name]->getType()->getPointerElementType()->print(rso);
+    std::cout<< rso.str() << endl;
+
+    // Note : variables are stored as pointers into the symbol table
+    // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
+    // From the variable type to get the real value (and not the pointer on that value)
+	this->result = new LoadInst(context->locals()[node->name]->getType()->getPointerElementType(), context->locals()[node->name], "", false, context->currentBlock());
 }
 
 void CodeGenVisitor::visit(ASTBlock *node) {
@@ -163,6 +171,7 @@ void CodeGenVisitor::visit(ASTAssignment *node) {
 	}
     CodeGenVisitor v(context);
     node->rhs.accept(&v);
+
 	this->result = new StoreInst(v.result, context->locals()[node->lhs.name], false, context->currentBlock());
 }
 
@@ -180,6 +189,7 @@ void CodeGenVisitor::visit(ASTVariableDeclaration *node) {
     context->logger.logDebug(formatv("creating variable declaration {0} {1}", node->type.name, node->id.name));
     AllocaInst *alloc = new AllocaInst(typeOf(node->type), 0, node->id.name.c_str(), context->currentBlock());
 	context->locals()[node->id.name] = alloc;
+    
 	if (node->assignmentExpr != NULL) {
         ASTAssignment assn(node->id, *(node->assignmentExpr));
         CodeGenVisitor v(context);
@@ -267,21 +277,23 @@ void CodeGenVisitor::visit(ASTReturnStatement *node) {
 void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     
     context->logger.logDebug(formatv("creating binary operation {0}", node->op));
-	Instruction::BinaryOps instr;
-    if (node->op == "+") {
-        instr = Instruction::Add;
-    } else if (node->op == "-") {
-        instr = Instruction::Sub;
-    } else if (node->op == "*") {
-        instr = Instruction::Mul;
-    } else if (node->op == "/") {
-        instr = Instruction::SDiv;
-    }
-
+    
     CodeGenVisitor vl(context);
     node->lhs.accept(&vl);
     CodeGenVisitor vr(context);
     node->rhs.accept(&vr);
+
+	Instruction::BinaryOps instr;
+    if (node->op == "+") {
+        instr = vl.result->getType()->isDoubleTy() ? Instruction::FAdd : Instruction::Add;
+    } else if (node->op == "-") {
+        instr = vl.result->getType()->isDoubleTy() ? Instruction::FSub : Instruction::Sub;
+    } else if (node->op == "*") {
+        instr = vl.result->getType()->isDoubleTy() ? Instruction::FMul : Instruction::Mul;
+    } else if (node->op == "/") {
+        instr = Instruction::SDiv;
+    }
+
 	this->result = BinaryOperator::Create(instr, vl.result, vr.result, "", context->currentBlock());
     
 }
