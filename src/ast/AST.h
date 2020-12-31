@@ -134,7 +134,7 @@ class ASTMethodCall : public ASTExpression {
 };
 
 class ASTExternDeclaration : public ASTStatement {
-public:
+  public:
     const ASTIdentifier& type;
     const ASTIdentifier& id;
     ASTVariableList arguments;
@@ -143,28 +143,37 @@ public:
 };
 
 class ASTReturnStatement : public ASTStatement {
-public:
-	ASTExpression& expression;
-	ASTReturnStatement(ASTExpression& expression) : expression(expression) {}
-	void accept(ASTVisitor *visitor);
+  public:
+    ASTExpression& expression;
+    ASTReturnStatement(ASTExpression& expression) : expression(expression) {}
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTBinaryOperator : public ASTExpression {
-public:
-	ASTBinaryOperation op;
-	ASTExpression& lhs;
-	ASTExpression& rhs;
-	ASTBinaryOperator(ASTExpression& lhs, ASTBinaryOperation op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
-	void accept(ASTVisitor *visitor);
+  public:
+    ASTBinaryOperation op;
+    ASTExpression& lhs;
+    ASTExpression& rhs;
+    ASTBinaryOperator(ASTExpression& lhs, ASTBinaryOperation op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
+    void accept(ASTVisitor *visitor);
 };
 
 class ASTComparison : public ASTExpression {
-public:
-	ASTComparisonOperation op;
-	ASTExpression& lhs;
-	ASTExpression& rhs;
-	ASTComparison(ASTExpression& lhs, ASTComparisonOperation op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
-	void accept(ASTVisitor *visitor);
+  public:
+    ASTComparisonOperation op;
+    ASTExpression& lhs;
+    ASTExpression& rhs;
+    ASTComparison(ASTExpression& lhs, ASTComparisonOperation op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
+    void accept(ASTVisitor *visitor);
+};
+
+class ASTIfElseStatement: public ASTStatement {
+  public:
+    ASTExpression& condition;
+    ASTBlock& trueBlock;
+    ASTBlock *falseBlock; // Pointer, because nullable
+    ASTIfElseStatement(ASTExpression& condition, ASTBlock& trueBlock, ASTBlock *falseBlock) : condition(condition), trueBlock(trueBlock), falseBlock(falseBlock) {}
+    void accept(ASTVisitor *visitor);
 };
 
 /*
@@ -187,6 +196,7 @@ class ASTVisitor {
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperator *node) = 0;
     virtual void visit(ASTComparison *node) = 0;
+    virtual void visit(ASTIfElseStatement *node) = 0;
 };
 
 #endif

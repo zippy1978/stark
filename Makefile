@@ -35,5 +35,5 @@ test: compile
 	./$(OUT_DIR)/stark test/expressions/binary.st
 	./$(OUT_DIR)/stark test/expressions/comparison.st
 
-scratch: compile
+scratch:
 	./$(OUT_DIR)/stark test/scratchpad.st

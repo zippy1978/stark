@@ -41,7 +41,7 @@
 %type <ident> ident
 %type <expr> numeric expr str comparison
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl extern_decl
+%type <stmt> stmt var_decl func_decl extern_decl if_else_stmt
 %type <varvec> func_decl_args
 %type <exprvec> call_args
 
@@ -53,14 +53,14 @@
 
 %%
 
-program : 
+program: 
       stmts 
       {
             programBlock = $1; 
       }
 ;
         
-stmts : 
+stmts: 
       stmt 
       { 
             $$ = new ASTBlock(); 
@@ -73,7 +73,7 @@ stmts :
       }
 ;
 
-stmt : 
+stmt: 
       var_decl
 | 
       func_decl
@@ -84,9 +84,23 @@ stmt :
       { 
             $$ = new ASTExpressionStatement(*$1); 
       }
+|
+      if_else_stmt
 ;
 
-block : 
+if_else_stmt:
+      IF expr block
+      {
+            $$ = new ASTIfElseStatement(*$2, *$3, NULL); 
+      }
+|
+      IF expr block ELSE block
+      {
+            $$ = new ASTIfElseStatement(*$2, *$3, $5); 
+      }
+;
+
+block: 
       LBRACE stmts RBRACE 
       { 
             $$ = $2; 
@@ -95,7 +109,7 @@ block :
       LBRACE RBRACE { $$ = new ASTBlock(); }
 ;
 
-var_decl : 
+var_decl: 
       ident COLON ident 
       { 
             $$ = new ASTVariableDeclaration(*$3, *$1, NULL); 
@@ -112,14 +126,14 @@ var_decl :
       }
 ;
 
-extern_decl :
+extern_decl:
       EXTERN ident LPAREN func_decl_args RPAREN COLON ident
       { 
             $$ = new ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
       }
 ;
 
-func_decl : 
+func_decl: 
       FUNC ident LPAREN func_decl_args RPAREN COLON ident block
       { 
             $$ = new ASTFunctionDeclaration(*$7, *$2, *$4, *$8); 
@@ -127,7 +141,7 @@ func_decl :
       }
 ;
     
-func_decl_args : 
+func_decl_args: 
       /*blank*/  
       { 
             $$ = new ASTVariableList(); 
@@ -145,7 +159,7 @@ func_decl_args :
       }
 ;
 
-ident : 
+ident: 
       IDENTIFIER 
       { 
             $$ = new ASTIdentifier(*$1); 
@@ -153,7 +167,7 @@ ident :
       }
 ;
 
-str :
+str:
       STRING
       {
             $$ = new ASTString(*$1);
@@ -161,7 +175,7 @@ str :
       }
 ;
 
-numeric : 
+numeric: 
       TRUE 
       { 
             $$ = new ASTBoolean(true);
@@ -197,7 +211,7 @@ numeric :
       }
 ;
 
-comparison :
+comparison:
       expr COMP_EQ expr 
       { 
             $$ = new ASTComparison(*$1, EQ, *$3); 
@@ -229,7 +243,7 @@ comparison :
       }
 ;
     
-expr : 
+expr: 
       ident EQUAL expr 
       { 
             $$ = new ASTAssignment(*$<ident>1, *$3); 
@@ -288,7 +302,7 @@ expr :
       }
 ;
 
-call_args : 
+call_args: 
       /*blank*/  
       { 
             $$ = new ASTExpressionList(); 

@@ -20,3 +20,7 @@ i: int = atoi("2")
 printi(i)
 
 printi(1 > 2)
+
+if (1 > 0) {
+    print("1 est plus grand que 0 !")
+}

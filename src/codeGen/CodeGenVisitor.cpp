@@ -215,8 +215,6 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     CodeGenVisitor vr(context);
     node->rhs.accept(&vr);
 
-    Builder.SetInsertPoint(context->currentBlock());
-
     bool isDouble = vl.result->getType()->isDoubleTy();
 	Instruction::BinaryOps instr;
     switch (node->op) {
@@ -278,4 +276,34 @@ void CodeGenVisitor::visit(ASTComparison *node) {
             break;
     }
     
+}
+
+void CodeGenVisitor::visit(ASTIfElseStatement *node) {
+
+    context->logger.logDebug("creating if else statement");
+
+    CodeGenVisitor vc(context);
+    node->condition.accept(&vc);
+    
+    /*CodeGenVisitor vt(context);
+    node->trueBlock.accept(&vt);*/
+
+    // Only if defined
+    /*CodeGenVisitor vf(context);
+    node->falseBlock->accept(&vf);*/
+    BasicBlock *ifBlock = BasicBlock::Create(MyContext, "if");
+    context->pushBlock(ifBlock);
+    context->popBlock();
+
+
+    BasicBlock *elseBlock = BasicBlock::Create(MyContext, "else");
+    context->pushBlock(elseBlock);
+    // TODO 
+    context->popBlock();
+
+    //Builder.SetInsertPoint(context->currentBlock());
+    this->result = Builder.CreateCondBr(vc.result, ifBlock, elseBlock);
+
+    // TO CONTINUE
+
 }
