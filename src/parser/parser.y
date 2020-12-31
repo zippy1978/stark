@@ -36,9 +36,10 @@
 %token PLUS MINUS MUL DIV OR AND
 %token TRUE FALSE
 %token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
+%token IF ELSE
 
 %type <ident> ident
-%type <expr> numeric expr str
+%type <expr> numeric expr str comparison
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_decl extern_decl
 %type <varvec> func_decl_args
@@ -195,6 +196,38 @@ numeric :
             delete $2; 
       }
 ;
+
+comparison :
+      expr COMP_EQ expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, EQ, *$3); 
+      }
+|     
+      expr COMP_NE expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, NE, *$3); 
+      }
+|
+      expr COMP_LT expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, LT, *$3);
+      }
+|
+      expr COMP_LE expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, LE, *$3);
+      }
+|
+      expr COMP_GT expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, GT, *$3);
+      }
+|
+      expr COMP_GE expr 
+      { 
+            $$ = new ASTBinaryOperator(*$1, GE, *$3);
+      }
+;
     
 expr : 
       ident EQUAL expr 
@@ -216,6 +249,8 @@ expr :
       numeric
 | 
       str
+|
+      comparison
 |     
       expr MUL expr 
       { 
@@ -247,36 +282,6 @@ expr :
             $$ = new ASTBinaryOperator(*$1, OR, *$3); 
       }
 |     
-      expr COMP_EQ expr 
-      { 
-            $$ = new ASTBinaryOperator(*$1, EQ, *$3); 
-      }
-|     
-      expr COMP_NE expr 
-      { 
-            $$ = new ASTBinaryOperator(*$1, NE, *$3); 
-      }
-|
-      expr COMP_LT expr 
-      { 
-            $$ = new ASTBinaryOperator(*$1, LT, *$3);
-      }
-|
-      expr COMP_LE expr 
-      { 
-            $$ = new ASTBinaryOperator(*$1, LE, *$3);
-      }
-|
-      expr COMP_GT expr 
-      { 
-            $$ = new ASTBinaryOperator(*$1, GT, *$3);
-      }
-|
-      expr COMP_GE expr 
-      { 
-            $$ = new ASTBinaryOperator(*$1, GE, *$3);
-      }
-|
       LPAREN expr RPAREN 
       { 
             $$ = $2; 
