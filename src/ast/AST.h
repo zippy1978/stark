@@ -15,18 +15,21 @@ typedef std::vector<ASTExpression*> ASTExpressionList;
 typedef std::vector<ASTVariableDeclaration*> ASTVariableList;
 
 enum ASTBinaryOperation {
-  EQ,
-  NE,
-  LT,
-  LE,
-  GT,
-  GE,
   AND,
   OR,
   ADD,
   SUB,
   MUL,
   DIV
+};
+
+enum ASTComparisonOperation {
+  EQ,
+  NE,
+  LT,
+  LE,
+  GT,
+  GE
 };
 
 class ASTNode {
@@ -155,6 +158,15 @@ public:
 	void accept(ASTVisitor *visitor);
 };
 
+class ASTComparison : public ASTExpression {
+public:
+	ASTComparisonOperation op;
+	ASTExpression& lhs;
+	ASTExpression& rhs;
+	ASTComparison(ASTExpression& lhs, ASTComparisonOperation op, ASTExpression& rhs) : lhs(lhs), op(op), rhs(rhs) {}
+	void accept(ASTVisitor *visitor);
+};
+
 /*
  * Virtual class to visit the AST.
  */
@@ -174,6 +186,7 @@ class ASTVisitor {
     virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperator *node) = 0;
+    virtual void visit(ASTComparison *node) = 0;
 };
 
 #endif

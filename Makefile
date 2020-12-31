@@ -33,6 +33,7 @@ test: compile
 	./$(OUT_DIR)/stark test/functions/builtin.st
 	./$(OUT_DIR)/stark test/functions/extern.st
 	./$(OUT_DIR)/stark test/expressions/binary.st
+	./$(OUT_DIR)/stark test/expressions/comparison.st
 
 scratch: compile
 	./$(OUT_DIR)/stark test/scratchpad.st

@@ -200,32 +200,32 @@ numeric :
 comparison :
       expr COMP_EQ expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, EQ, *$3); 
+            $$ = new ASTComparison(*$1, EQ, *$3); 
       }
 |     
       expr COMP_NE expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, NE, *$3); 
+            $$ = new ASTComparison(*$1, NE, *$3); 
       }
 |
       expr COMP_LT expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, LT, *$3);
+            $$ = new ASTComparison(*$1, LT, *$3);
       }
 |
       expr COMP_LE expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, LE, *$3);
+            $$ = new ASTComparison(*$1, LE, *$3);
       }
 |
       expr COMP_GT expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, GT, *$3);
+            $$ = new ASTComparison(*$1, GT, *$3);
       }
 |
       expr COMP_GE expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, GE, *$3);
+            $$ = new ASTComparison(*$1, GE, *$3);
       }
 ;
     

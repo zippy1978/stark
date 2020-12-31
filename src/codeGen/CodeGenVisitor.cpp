@@ -222,28 +222,42 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     switch (node->op) {
         case ADD:
             instr = isDouble ? Instruction::FAdd : Instruction::Add;
-            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case SUB:
             instr = isDouble ? Instruction::FSub : Instruction::Sub;
-            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case MUL:
             instr = isDouble ? Instruction::FMul : Instruction::Mul;
-            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case DIV:
             instr = isDouble ? Instruction::FDiv : Instruction::SDiv;
-            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case OR:
             instr = Instruction::Or;
-            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
         case AND:
             instr = Instruction::And;
-            this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
             break;
+    }
+
+    this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
+    
+}
+
+void CodeGenVisitor::visit(ASTComparison *node) {
+    
+    context->logger.logDebug(formatv("creating comparison {0}", node->op));
+    
+    CodeGenVisitor vl(context);
+    node->lhs.accept(&vl);
+    CodeGenVisitor vr(context);
+    node->rhs.accept(&vr);
+
+    Builder.SetInsertPoint(context->currentBlock());
+
+    bool isDouble = vl.result->getType()->isDoubleTy();
+	Instruction::BinaryOps instr;
+    switch (node->op) {
         case EQ:
             this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOEQ(vl.result, vr.result, "") : Builder.CreateICmpEQ(vl.result, vr.result, "");
             break;

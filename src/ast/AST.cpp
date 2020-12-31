@@ -14,4 +14,5 @@ void ASTMethodCall::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTExternDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTReturnStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
 void ASTBinaryOperator::accept(ASTVisitor *visitor) { visitor->visit(this); }
+void ASTComparison::accept(ASTVisitor *visitor) { visitor->visit(this); }
 

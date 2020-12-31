@@ -27,6 +27,7 @@ class CodeGenVisitor: public ASTVisitor {
     void visit(ASTExternDeclaration *node);
     void visit(ASTReturnStatement *node);
     void visit(ASTBinaryOperator *node);
+    void visit(ASTComparison *node);
 };
 
 #endif
