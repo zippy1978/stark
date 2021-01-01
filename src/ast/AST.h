@@ -1,6 +1,5 @@
-
-#ifndef AST_HH
-#define AST_HH
+#ifndef AST_AST_H
+#define AST_AST_H
 
 #include <iostream>
 #include <vector>
