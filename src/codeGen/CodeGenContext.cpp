@@ -89,11 +89,14 @@ GenericValue CodeGenContext::runCode() {
     LLVMInitializeNativeTarget();
 	LLVMInitializeNativeAsmPrinter();
 	LLVMInitializeNativeAsmParser();
-
 	ExecutionEngine *ee = EngineBuilder( unique_ptr<Module>(module) ).setErrorStr(&err).create();
     if (!ee) {
        logger.logError(formatv("JIT error: {0}", err));
     }
+
+	// TODO: pass manager here !
+
+
 	ee->finalizeObject();
 	vector<GenericValue> noargs;
 	GenericValue v = ee->runFunction(mainFunction, noargs);

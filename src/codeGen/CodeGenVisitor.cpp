@@ -133,13 +133,17 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
         context->logger.logError(formatv("function {0} already declared", node->id.name));
 	}
 
+    // Build parameters
     vector<Type*> argTypes;
 	ASTVariableList::const_iterator it;
 	for (it = node->arguments.begin(); it != node->arguments.end(); it++) {
 		argTypes.push_back(typeOf((**it).type));
 	}
+
+    // Create function
 	FunctionType *ftype = FunctionType::get(typeOf(node->type), makeArrayRef(argTypes), false);
 	Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, node->id.name.c_str(), context->module);
+    
 	BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", function, 0);
 
 	context->pushBlock(bblock);
@@ -198,6 +202,10 @@ void CodeGenVisitor::visit(ASTExternDeclaration *node) {
 void CodeGenVisitor::visit(ASTReturnStatement *node) {
     
     context->logger.logDebug(formatv("generating return code {0}", typeid(node->expression).name()));
+
+    if (context->currentBlock()->getTerminator() != NULL) {
+        context->logger.logError("cannot add more than one terminator on a block");
+    }
     
     CodeGenVisitor v(context);
     node->expression.accept(&v);
