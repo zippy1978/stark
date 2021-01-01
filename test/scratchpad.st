@@ -12,33 +12,20 @@ extern assertTrue(actual: bool): void
 extern atoi(s: string): int*/
 
 
-func test(): int {
-    if (1 > 0) {
-        print("1 est plus grand que 0 !")
+// Crash
+/*func t(val: int): int {
+    r: int = 0
+    if (val > 10) {
+        r = val
     } else {
-        print("faux")
-
-        if (true) {
-            print("true")
-        } else {
-            print(">>>>")
-        }
-
+        r = val * -1
     }
-    print("after")
-    return 12
-}
-i: int = test()
-printi(i)
+    //return r
+}*/
+//printi(t(3))
 
-if (false) {
-    print("never")
-    if (1 == 1) {
-        print("banana")
-    } else {
-        print("coconut")
-    }
-} else {
-    printi(i)
-    print("always")
+x: int = 10
+func t(): int {
+    return x
 }
+printi(t())

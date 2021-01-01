@@ -159,14 +159,11 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     CodeGenVisitor v(context);
     node->block.accept(&v);
 
-    // No terminator detected, add a default return
-    if (context->currentBlock()->getTerminator() == NULL) {
-        ReturnInst::Create(MyContext, context->currentBlock());
-    }
-
     // If current block is a merge block : pop more
     while (context->isMergeBlock()) {
         context->popBlock();
+        // TODO : seems like a bug, should not be called twice !
+        // CONTINUE HERE !!!
         context->popBlock();
     }
 	context->popBlock();

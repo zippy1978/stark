@@ -8,6 +8,34 @@ using namespace std;
 
 class CodeGenVisitor;
 
+/* Push new block on the stack */
+void CodeGenContext::pushBlock(BasicBlock *block) { 
+	blocks.push(new CodeGenBlock()); 
+	blocks.top()->isMergeBlock = false;
+	blocks.top()->block = block; 
+}
+
+/* Push new block on the stack, 
+ * with ability to copy local variables of the curretn block to the new block */
+void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals) { 
+	std::map<std::string, Value*>& l = this->locals(); 
+	this->pushBlock(block); 
+	blocks.top()->locals = l; 
+}
+
+/* Pop block from the stack */
+void CodeGenContext::popBlock() { 
+	CodeGenBlock *top = blocks.top(); 
+
+	// No terminator detected, add a default return to the block
+    if (top->block->getTerminator() == NULL) {
+        ReturnInst::Create(MyContext, top->block);
+    }
+
+	blocks.pop(); 
+	delete top; 
+}
+
 /* Generate code from AST root */
 void CodeGenContext::generateCode(ASTBlock& root) {
 
@@ -35,11 +63,6 @@ void CodeGenContext::generateCode(ASTBlock& root) {
     logger.logDebug(formatv("root type = {0}", typeid(root).name()));
     root.accept(&visitor);
 
-	// If no return statment on the block : add one
-	if (currentBlock()->getTerminator() == NULL) {
-		ReturnInst::Create(MyContext, currentBlock());
-	}
-	
 	popBlock();
 	
 	/* Print the bytecode in a human-readable format 
