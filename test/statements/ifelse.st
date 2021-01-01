@@ -14,18 +14,16 @@ if (true) {
     failure()
 }
 
-// Crash
 // Simple if / else in a function
-/*func simple(): int {
+func simple(): int {
     if (true) {
         assertTrue(true)
-        // Crash ?
-        //return 1
+        return 1
     } else {
         failure()
     }
 }
-simple()*/
+assertIntEquals(simple(), 1)
 
 // Nested if / else on main
 if (true) {
@@ -39,9 +37,8 @@ if (true) {
     failure()
 }
 
-// Crash
 // Nested if / else in a function
-/*func test(): int {
+func nested(): int {
     if (false) {
         failure()
     } else {
@@ -55,4 +52,4 @@ if (true) {
     }
     return 12
 }
-i: int = test()*/
+assertIntEquals(nested(), 12)

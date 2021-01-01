@@ -159,13 +159,6 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     CodeGenVisitor v(context);
     node->block.accept(&v);
 
-    // If current block is a merge block : pop more
-    while (context->isMergeBlock()) {
-        context->popBlock();
-        // TODO : seems like a bug, should not be called twice !
-        // CONTINUE HERE !!!
-        context->popBlock();
-    }
 	context->popBlock();
 
 	this->result = function;

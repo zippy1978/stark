@@ -11,6 +11,8 @@ void CodeGenContext::pushBlock(BasicBlock *block) {
 	blocks.push(new CodeGenBlock()); 
 	blocks.top()->isMergeBlock = false;
 	blocks.top()->block = block; 
+
+	logger.logDebug(formatv(">> pushing block {0}.{1}", block->getParent()->getName(), block->getName()));
 }
 
 /* Push new block on the stack, 
@@ -25,13 +27,23 @@ void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals) {
 void CodeGenContext::popBlock() { 
 	CodeGenBlock *top = blocks.top(); 
 
+	bool isMerge = top->isMergeBlock;
+
+	logger.logDebug(formatv("<< popping block {0}.{1}", top->block->getParent()->getName(), top->block->getName()));
+
 	// No terminator detected, add a default return to the block
     if (top->block->getTerminator() == NULL) {
+		logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", top->block->getParent()->getName(), top->block->getName()));
         ReturnInst::Create(MyContext, top->block);
     }
 
 	blocks.pop(); 
 	delete top; 
+
+	// If current block is a merge block : pop once again
+	if (isMerge) {
+		popBlock();
+	}
 }
 
 /* Generate code from AST root */

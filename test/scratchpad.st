@@ -5,27 +5,18 @@
 extern print(val: string): void
 extern printi(val: int): void
 
-/*extern printd(val: double): void
-extern time(): int
-extern assertEqual(actual: int, expected: int): void
-extern assertTrue(actual: bool): void
-extern atoi(s: string): int*/
-
-
-// Crash
-/*func t(val: int): int {
-    r: int = 0
-    if (val > 10) {
-        r = val
+func test(): int {
+    if (false) {
+        print("false")
     } else {
-        r = val * -1
-    }
-    //return r
-}*/
-//printi(t(3))
+        if (true) {
+            // It is ok to land here !
+            print("true")
+        } else {
+            print("false")
+        }
 
-x: int = 10
-func t(): int {
-    return x
+    }
+    return 12
 }
-printi(t())
+i: int = test()
