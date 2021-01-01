@@ -81,7 +81,7 @@ void CodeGenVisitor::visit(ASTBlock *node) {
         (**it).accept(&v);
 		last = v.result;
 	}
-    context->logger.logDebug("creating block");
+    context->logger.logDebug("block created");
 	this->result = last;
 }
 
@@ -153,15 +153,24 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
 		
 		argumentValue = &*argsValues++;
 		argumentValue->setName((*it)->id.name.c_str());
-		StoreInst *inst = new StoreInst(argumentValue, context->locals()[(*it)->id.name], false, bblock);
+		StoreInst *inst = new StoreInst(argumentValue, context->locals()[(*it)->id.name], false, context->currentBlock());
 	}
 	
     CodeGenVisitor v(context);
     node->block.accept(&v);
-	ReturnInst::Create(MyContext, context->getCurrentReturnValue(), bblock);
 
+    // No terminator detected, add a default return
+    if (context->currentBlock()->getTerminator() == NULL) {
+        ReturnInst::Create(MyContext, context->currentBlock());
+    }
+
+    // If current block is a merge block : pop more
+    while (context->isMergeBlock()) {
+        context->popBlock();
+        context->popBlock();
+    }
 	context->popBlock();
-    context->logger.logDebug(formatv("creating function {0}", node->id.name));
+
 	this->result = function;
 }
 
@@ -199,11 +208,15 @@ void CodeGenVisitor::visit(ASTExternDeclaration *node) {
 void CodeGenVisitor::visit(ASTReturnStatement *node) {
     
     context->logger.logDebug(formatv("generating return code {0}", typeid(node->expression).name()));
+    
     CodeGenVisitor v(context);
     node->expression.accept(&v);
 	Value *returnValue = v.result;
-	context->setCurrentReturnValue(returnValue);
-	this->result = returnValue;
+	
+    // Generate return and pop block
+    ReturnInst::Create(MyContext, returnValue, context->currentBlock());
+
+    this->result = returnValue;
 }
 
 void CodeGenVisitor::visit(ASTBinaryOperator *node) {
@@ -214,6 +227,10 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
     node->lhs.accept(&vl);
     CodeGenVisitor vr(context);
     node->rhs.accept(&vr);
+
+    IRBuilder<> Builder(MyContext);
+
+    Builder.SetInsertPoint(context->currentBlock());
 
     bool isDouble = vl.result->getType()->isDoubleTy();
 	Instruction::BinaryOps instr;
@@ -245,6 +262,8 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
 void CodeGenVisitor::visit(ASTComparison *node) {
     
     context->logger.logDebug(formatv("creating comparison {0}", node->op));
+
+    IRBuilder<> Builder(MyContext);
     
     CodeGenVisitor vl(context);
     node->lhs.accept(&vl);
@@ -282,28 +301,70 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
 
     context->logger.logDebug("creating if else statement");
 
+    IRBuilder<> Builder(MyContext);
+
+    // Generate condition code
     CodeGenVisitor vc(context);
     node->condition.accept(&vc);
+
+    // Get the function of the current block fon instertion
+    Function *currentFunction = context->currentBlock()->getParent();
     
-    /*CodeGenVisitor vt(context);
-    node->trueBlock.accept(&vt);*/
-
-    // Only if defined
-    /*CodeGenVisitor vf(context);
-    node->falseBlock->accept(&vf);*/
-    BasicBlock *ifBlock = BasicBlock::Create(MyContext, "if");
-    context->pushBlock(ifBlock);
-    context->popBlock();
-
-
+    // Create blocks (and insert if block)
+    BasicBlock *ifBlock = BasicBlock::Create(MyContext, "if", currentFunction);
     BasicBlock *elseBlock = BasicBlock::Create(MyContext, "else");
-    context->pushBlock(elseBlock);
-    // TODO 
+    BasicBlock *mergeBlock = BasicBlock::Create(MyContext, "ifcont");
+
+    // Create condition
+    Builder.SetInsertPoint(context->currentBlock());
+    Value* condition = Builder.CreateCondBr(vc.result, ifBlock, elseBlock);
+
+    // Generate if block
+    context->pushBlock(ifBlock, true);
+
+    CodeGenVisitor vt(context);
+    node->trueBlock.accept(&vt);
+    // Add branch to merge block
+    Builder.SetInsertPoint(context->currentBlock());
+    Builder.CreateBr(mergeBlock);
+
     context->popBlock();
 
-    //Builder.SetInsertPoint(context->currentBlock());
-    this->result = Builder.CreateCondBr(vc.result, ifBlock, elseBlock);
+    // Update if block pointer after generation (to support recursivity)
+    ifBlock = Builder.GetInsertBlock();
 
-    // TO CONTINUE
+    // Generate else block
+    currentFunction->getBasicBlockList().push_back(elseBlock);
+    Builder.SetInsertPoint(elseBlock);
 
+    context->pushBlock(elseBlock, true);
+    CodeGenVisitor vf(context);
+    // If no else block: no generation
+    if (node->falseBlock != NULL) {
+        node->falseBlock->accept(&vf);
+    }
+    // Add branch to merge block
+    Builder.SetInsertPoint(context->currentBlock());
+    Builder.CreateBr(mergeBlock);
+    context->popBlock();
+
+    // Update else block pointer after generation (to support recursivity)
+    elseBlock = Builder.GetInsertBlock();
+
+    // Generate merge block
+    currentFunction->getBasicBlockList().push_back(mergeBlock);
+    Builder.SetInsertPoint(mergeBlock); 
+
+    context->pushBlock(mergeBlock, true);
+    // Add PHI node 
+    PHINode *PN = Builder.CreatePHI(Type::getVoidTy(MyContext), 2, "iftmp");
+    PN->addIncoming(vt.result, ifBlock);
+    PN->addIncoming(vf.result, elseBlock);
+   
+    // Mark current block as merge block
+    // In order to remember to double pop blocks at the end of a function
+    context->setMergeBlock(true);
+
+    this->result = PN;
+ 
 }

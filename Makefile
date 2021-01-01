@@ -17,12 +17,13 @@ generate:
 	/usr/local/opt/bison/bin/bison -d -o $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.y
 
 compile: generate
+	mkdir -p $(OUT_DIR)
 	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/*.cpp
 
 clean:
 	# Remove generated source files
 	rm $(SRC_DIR)/parser/*.hh $(SRC_DIR)/parser/*.hpp $(SRC_DIR)/parser/*.cpp
-	rm -rf $(OUT_DIR)/*
+	rm -rf $(OUT_DIR)
 
 test: compile
 	./$(OUT_DIR)/stark test/comments.st
@@ -34,6 +35,7 @@ test: compile
 	./$(OUT_DIR)/stark test/functions/extern.st
 	./$(OUT_DIR)/stark test/expressions/binary.st
 	./$(OUT_DIR)/stark test/expressions/comparison.st
+	./$(OUT_DIR)/stark test/statements/ifelse.st
 
 scratch:
 	./$(OUT_DIR)/stark test/scratchpad.st

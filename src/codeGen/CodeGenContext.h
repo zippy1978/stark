@@ -27,7 +27,6 @@ using namespace llvm;
 
 // Global LLVM context
 static LLVMContext MyContext;
-static IRBuilder<> Builder(MyContext);
 
 
 /**
@@ -36,8 +35,8 @@ static IRBuilder<> Builder(MyContext);
 class CodeGenBlock {
   public:
     BasicBlock *block;
-    Value *returnValue;
     std::map<std::string, Value*> locals;
+    bool isMergeBlock;
 };
 
 /**
@@ -56,11 +55,13 @@ class CodeGenContext {
     void generateCode(ASTBlock& root);
     GenericValue runCode();
     std::map<std::string, Value*>& locals() { return blocks.top()->locals; }
+    void setLocals(std::map<std::string, Value*>& l) { blocks.top()->locals = l; }
     BasicBlock *currentBlock() { return blocks.top()->block; }
-    void pushBlock(BasicBlock *block) { blocks.push(new CodeGenBlock()); blocks.top()->returnValue = NULL; blocks.top()->block = block; }
+    void pushBlock(BasicBlock *block) { blocks.push(new CodeGenBlock()); blocks.top()->isMergeBlock = false;blocks.top()->block = block; }
+    void pushBlock(BasicBlock *block, bool inheritLocals) { std::map<std::string, Value*>& l = this->locals(); this->pushBlock(block); blocks.top()->locals = l; }
     void popBlock() { CodeGenBlock *top = blocks.top(); blocks.pop(); delete top; }
-    void setCurrentReturnValue(Value *value) { blocks.top()->returnValue = value; }
-    Value* getCurrentReturnValue() { return blocks.top()->returnValue; }
+    bool isMergeBlock() { return blocks.top()->isMergeBlock; }
+    void setMergeBlock(bool isMerge) { blocks.top()->isMergeBlock = isMerge ; }
 };
 
 #endif

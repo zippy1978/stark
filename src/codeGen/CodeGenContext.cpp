@@ -35,7 +35,11 @@ void CodeGenContext::generateCode(ASTBlock& root) {
     logger.logDebug(formatv("root type = {0}", typeid(root).name()));
     root.accept(&visitor);
 
-	ReturnInst::Create(MyContext, bblock);
+	// If no return statment on the block : add one
+	if (currentBlock()->getTerminator() == NULL) {
+		ReturnInst::Create(MyContext, currentBlock());
+	}
+	
 	popBlock();
 	
 	/* Print the bytecode in a human-readable format 
