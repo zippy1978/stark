@@ -1,9 +1,12 @@
+/**
+ *  Function declartions tests.
+ */
+
 // No arg declaration
-func func1(): int {
-    // Code here
+func noArg(): void {
 }
 
-// With args
-func func2(a: int, b: int): int {
+// Declaration with args
+func withArgs(a: int, b: int): int {
     return a
 }

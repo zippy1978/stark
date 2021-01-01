@@ -1,15 +1,16 @@
-extern printi(val: int): void
+/**
+ *  Function calls tests.
+ */
 
-// Delcarations
-func func1(): int {
-    return 1
+extern assertIntEquals(actual: int, expected: int): void
+
+// No arg declaration
+func noArg(): void {
 }
-func1()
+noArg()
 
-func func2(a: int, b: double): int {
-    z: int = 12 * a
-    return func1() + z
+// Declaration with args
+func withArgs(a: int, b: int): int {
+    return a
 }
-func2(1, 2.0)
-
-printi(func2(1, 2.0))
+assertIntEquals(withArgs(2, 1), 2)

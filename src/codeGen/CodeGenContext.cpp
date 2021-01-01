@@ -1,7 +1,5 @@
 #include "CodeGenContext.h"
-
 #include "CodeGenVisitor.h"
-#include "BuiltIn.h"
 
 using namespace llvm;
 using namespace std;
@@ -55,9 +53,6 @@ void CodeGenContext::generateCode(ASTBlock& root) {
 	
 	// Push a new variable/block context
 	pushBlock(bblock);
-
-    // Add builtin functions 
-    createPrintfFunction(*this);
 
     // Start visitor on root
     logger.logDebug(formatv("root type = {0}", typeid(root).name()));

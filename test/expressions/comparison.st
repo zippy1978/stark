@@ -1,8 +1,30 @@
-// Bool operators
-var9: bool = true && false
-var10: bool = true || false
+/**
+ * Comparison expressions tests.
+ */
 
-// Comparisons
-var11: bool = (1 == 1)
-var12: bool = (1.0 != 1.0)
-var13: bool = (true != false)
+extern assertTrue(actual: bool): void
+extern assertFalse(actual: bool): void
+
+// Equal
+assertTrue(1 == 1)
+assertTrue(2.5 == 2.5)
+
+// Not equal
+assertTrue(1 != 2)
+assertTrue(2.5 != 4.5)
+
+// Greater than
+assertTrue(2 > 1)
+assertTrue(2.5 > 1.5)
+
+// Greater or equal
+assertTrue(2 >= 2)
+assertTrue(2.5 >= 2.5)
+
+// Lower than
+assertTrue(1 < 2)
+assertTrue(1.5 < 2.5)
+
+// Lower or equal
+assertTrue(2 <= 2)
+assertTrue(2.5 <= 2.5)

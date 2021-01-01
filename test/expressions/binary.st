@@ -1,29 +1,42 @@
-extern printi(val: int): void
+/**
+ * Binary expressions tests.
+ */
+
+extern assertIntEquals(actual: int, expected: int): void
+extern assertDoubleEquals(actual: double, expected: double): void
+extern assertTrue(actual: bool): void
+extern assertFalse(actual: bool): void
 
 // Add
-var1: int = 1 + 2
-printi(var1)
+assertIntEquals(1 + 2, 3)
+assertDoubleEquals(2.5 + 10.5, 13.0)
 
 // Sub
-var2: int = 2 - 1
-printi(var2)
+assertIntEquals(2 - 1, 1)
+assertDoubleEquals(10.0 - 2.5, 7.5)
 
 // Mul
-var3: int = 2 * 2
-printi(var3)
+assertIntEquals(2 * 2, 4)
+assertDoubleEquals(10.0 * 2.5, 25.0)
 
 // Div
-var4: int = 6 / 2
-printi(var4)
+assertIntEquals(6 / 2, 3)
+assertDoubleEquals(5.0 / 2.0, 2.5)
 
-// Complex operation
-var5: int = ((6 / 2 ) * 3) - 1
-printi(var5)
+// With parents
+assertIntEquals(((6 / 2 ) * 3) - 1, 8)
+assertDoubleEquals(5.0 / 2.0, 2.5)
 
-// Multiple variables usage
-var6: int = 3 + 2
-var7: int = 4 * 2
-printi(var7 + 1)
-printi(var6 + var7)
-var8: int = var6 + var7
-printi(var8)
+// Multiple variables
+three: int = 1 + 2
+six: int = 3 * 2
+assertIntEquals(three + six, 9)
+fiveTwo: double = 1.0 + 4.2
+fourHeight: double = 2.4 * 2.0
+assertDoubleEquals(fiveTwo + fourHeight, 10.0)
+
+// Bool operators
+assertTrue(true && true)
+assertFalse(true && false)
+assertTrue(true || false)
+assertFalse(false || false)

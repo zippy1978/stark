@@ -1,36 +1,58 @@
-extern print(val: string): void
-extern printi(val: int): void
+/**
+ *  If/else statments tests.
+ */
 
-// Nested if / else ina function
-func test(): int {
-    if (1 > 0) {
-        print("1 est plus grand que 0 !")
+extern assertIntEquals(actual: int, expected: int): void
+extern assertDoubleEquals(actual: double, expected: double): void
+extern assertTrue(actual: bool): void
+extern failure(): void
+
+// Simple if / else on main
+if (true) {
+    assertTrue(true)
+} else {
+    failure()
+}
+
+// Crash
+// Simple if / else in a function
+/*func simple(): int {
+    if (true) {
+        assertTrue(true)
+        // Crash ?
+        //return 1
     } else {
-        print("faux")
+        failure()
+    }
+}
+simple()*/
 
+// Nested if / else on main
+if (true) {
+    if (false) {
+        failure()
+    } else {
+        // It is ok to land here !
+        assertTrue(true)    
+    }
+} else {
+    failure()
+}
+
+// Crash
+// Nested if / else in a function
+/*func test(): int {
+    if (false) {
+        failure()
+    } else {
         if (true) {
-            print("true")
+            // It is ok to land here !
+            assertTrue(true)
         } else {
-            print(">>>>")
+            failure()
         }
 
     }
-    print("after")
     return 12
 }
-i: int = test()
-printi(i)
-
-// Nested if / else on main
-// Use of local variable (because used on sub-block)
-if (false) {
-    print("never")
-    if (1 == 1) {
-        print("banana")
-    } else {
-        print("coconut")
-    }
-} else {
-    printi(i)
-    print("always")
-}
+i: int = test()*/

@@ -31,8 +31,7 @@ test: compile
 	./$(OUT_DIR)/stark test/variables/assignement.st
 	./$(OUT_DIR)/stark test/functions/declaration.st
 	./$(OUT_DIR)/stark test/functions/call.st
-	./$(OUT_DIR)/stark test/functions/builtin.st
-	./$(OUT_DIR)/stark test/functions/extern.st
+	./$(OUT_DIR)/stark test/functions/external.st
 	./$(OUT_DIR)/stark test/expressions/binary.st
 	./$(OUT_DIR)/stark test/expressions/comparison.st
 	./$(OUT_DIR)/stark test/statements/ifelse.st
