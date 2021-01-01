@@ -291,6 +291,13 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
 
     context->logger.logDebug("creating if else statement");
 
+    // If no statement in trueBlock : nothing to do
+    if (node->trueBlock.statements.size() == 0) {
+        return;
+    }
+    // Used to know if else block should be generated
+    bool generateElseBlock = (node->falseBlock != NULL && node->falseBlock->statements.size() > 0);
+
     IRBuilder<> Builder(MyContext);
 
     // Generate condition code
@@ -307,7 +314,8 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
 
     // Create condition
     Builder.SetInsertPoint(context->currentBlock());
-    Value* condition = Builder.CreateCondBr(vc.result, ifBlock, elseBlock);
+    // If/else or simple if
+    Value* condition = Builder.CreateCondBr(vc.result, ifBlock, generateElseBlock ? elseBlock : mergeBlock);
 
     // Generate if block
     context->pushBlock(ifBlock, true);
@@ -323,23 +331,23 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
     // Update if block pointer after generation (to support recursivity)
     ifBlock = Builder.GetInsertBlock();
 
-    // Generate else block
-    currentFunction->getBasicBlockList().push_back(elseBlock);
-    Builder.SetInsertPoint(elseBlock);
-
-    context->pushBlock(elseBlock, true);
+    // Generate else block (only if provided)
     CodeGenVisitor vf(context);
-    // If no else block: no generation
-    if (node->falseBlock != NULL) {
-        node->falseBlock->accept(&vf);
-    }
-    // Add branch to merge block
-    Builder.SetInsertPoint(context->currentBlock());
-    Builder.CreateBr(mergeBlock);
-    context->popBlock();
+    if (generateElseBlock) {
+        currentFunction->getBasicBlockList().push_back(elseBlock);
+        Builder.SetInsertPoint(elseBlock);
 
-    // Update else block pointer after generation (to support recursivity)
-    elseBlock = Builder.GetInsertBlock();
+        context->pushBlock(elseBlock, true);
+        // If no else block: no generation
+        node->falseBlock->accept(&vf);
+        // Add branch to merge block
+        Builder.SetInsertPoint(context->currentBlock());
+        Builder.CreateBr(mergeBlock);
+        context->popBlock();
+
+        // Update else block pointer after generation (to support recursivity)
+        elseBlock = Builder.GetInsertBlock();
+    }
 
     // Generate merge block
     currentFunction->getBasicBlockList().push_back(mergeBlock);
@@ -349,7 +357,7 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
     // Add PHI node 
     PHINode *PN = Builder.CreatePHI(Type::getVoidTy(MyContext), 2, "iftmp");
     PN->addIncoming(vt.result, ifBlock);
-    PN->addIncoming(vf.result, elseBlock);
+    if (generateElseBlock) PN->addIncoming(vf.result, elseBlock);
    
     // Mark current block as merge block
     // In order to remember to double pop blocks at the end of a function

@@ -7,6 +7,19 @@ extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 extern failure(): void
 
+// Simple empty if on main
+if (true) {}
+
+// Simple if on main
+if (true) {
+    assertTrue(true)
+}
+
+// Simple if with empty else on main
+if (true) {
+    assertTrue(true)
+} else {}
+
 // Simple if / else on main
 if (true) {
     assertTrue(true)
