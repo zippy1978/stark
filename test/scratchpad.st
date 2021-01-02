@@ -2,34 +2,52 @@ extern print(s: string): void
 extern printi(i: int): void
 extern printd(i: double): void
 
+extern assertIntEquals(actual: int, expected: int): void
+extern assertDoubleEquals(actual: double, expected: double): void
+extern assertTrue(actual: bool): void
 
-// Works with 2 if !
-/*func fib(x: int): int {
-    //printi(x)
-    if (x < 3) {
-        return 1
-    } 
-    if (x >=3) {
-        //print("rec")
-        return fib(x - 1) + fib(x - 2)
+
+
+/*func toto(i: int): int {
+    if (i < 3) {
+        y: int = 0
+        y = y + 1
+        return y
+    } else {
+        return 0
     }
-    return 0
 }
-fib(6)*/
+printi(toto(2))*/
 
 
-// But not with if/else
+// Recursive call if ko
 func fib(x: int): int {
-    //printi(x)
     if (x < 3) {
         return 1
     } else {
-        //print("rec")
         return fib(x - 1) + fib(x - 2)
     }
-    return 0
 }
-fib(6)
+assertIntEquals(fib(9), 34)
+
+/*
+func countdown(start: int): int {
+    r: int = 0
+    //printi(start)
+    if (start == 0) {
+        print("stop")
+        return start
+    } else {
+        print("cont")
+        r = countdown(start - 1)
+        printi(r)
+        return r
+    }
+}
+s:int = 10
+print("result")
+s = countdown(s)
+printi(s)*/
 
 //-------------------------------------------------------------
 

@@ -25,7 +25,7 @@ void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals) {
 
 /* Pop block from the stack */
 void CodeGenContext::popBlock() { 
-	CodeGenBlock *top = blocks.top(); 
+	CodeGenBlock *top = blocks.top();
 
 	bool isMerge = top->isMergeBlock;
 
@@ -33,7 +33,7 @@ void CodeGenContext::popBlock() {
 
 	blocks.pop(); 
 	delete top; 
-
+	
 	// If current block is a merge block : pop once again
 	if (isMerge) {
 		popBlock();

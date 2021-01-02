@@ -37,6 +37,7 @@ class CodeGenBlock {
     BasicBlock *block;
     std::map<std::string, Value*> locals;
     bool isMergeBlock;
+    Value *returnValue;
 };
 
 /**
@@ -62,6 +63,8 @@ class CodeGenContext {
     void popBlock();
     bool isMergeBlock() { return blocks.top()->isMergeBlock; }
     void setMergeBlock(bool isMerge) { blocks.top()->isMergeBlock = isMerge ; }
+    Value *returnValue() { return blocks.top()->returnValue; }
+    void setReturnValue(Value *value) { blocks.top()->returnValue = value; }
 };
 
 #endif

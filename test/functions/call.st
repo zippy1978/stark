@@ -15,12 +15,12 @@ func withArgs(a: int, b: int): int {
 }
 assertIntEquals(withArgs(2, 1), 2)
 
-// Not working at the moment : recursive calls (the function does not know itself yet !)
-/*func recursive(i: int): int {
-    if (i == 0) {
-        return i
+// Recursive function call
+func fib(x: int): int {
+    if (x < 3) {
+        return 1
     } else {
-        return recursive(i - 1)
+        return fib(x - 1) + fib(x - 2)
     }
 }
-assertIntEquals(recursive(10), 0)*/
+assertIntEquals(fib(9), 34)

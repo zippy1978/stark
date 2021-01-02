@@ -163,10 +163,13 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     CodeGenVisitor v(context);
     node->block.accept(&v);
 
-    // No terminator detected, add a default return to the block
-    if (context->currentBlock()->getTerminator() == NULL) {
-		context->logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
-        ReturnInst::Create(MyContext, context->currentBlock());
+    // Add return at the end.
+    // If no return : add a default one
+    if (context->returnValue() != NULL) {
+        ReturnInst::Create(MyContext, context->returnValue(),context->currentBlock());
+    } else {
+        context->logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
+        ReturnInst::Create(MyContext, v.result,context->currentBlock());
     }
 
 	context->popBlock();
@@ -218,8 +221,8 @@ void CodeGenVisitor::visit(ASTReturnStatement *node) {
     node->expression.accept(&v);
 	Value *returnValue = v.result;
 	
-    // Generate return and pop block
-    ReturnInst::Create(MyContext, returnValue, context->currentBlock());
+    // Store return value
+    context->setReturnValue(returnValue);
 
     this->result = returnValue;
 }
