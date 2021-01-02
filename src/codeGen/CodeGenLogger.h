@@ -6,14 +6,15 @@
 /**
  * Code generation logger
  */
-class CodeGenLogger {
-  public:
-    bool debugEnabled;
-    CodeGenLogger() { debugEnabled = false; }
-    virtual ~CodeGenLogger() {}
-    void logError(std::string message);
-    void logWarn(std::string message);
-    void logDebug(std::string message);
+class CodeGenLogger
+{
+public:
+  bool debugEnabled;
+  CodeGenLogger() { debugEnabled = false; }
+  virtual ~CodeGenLogger() {}
+  void logError(std::string message);
+  void logWarn(std::string message);
+  void logDebug(std::string message);
 };
 
 #endif

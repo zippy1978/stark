@@ -5,5 +5,4 @@
 #include "CodeGenLogger.h"
 #include "CodeGenVisitor.h"
 
-
 #endif
