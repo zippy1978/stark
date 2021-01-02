@@ -31,12 +31,6 @@ void CodeGenContext::popBlock() {
 
 	logger.logDebug(formatv("<< popping block {0}.{1}", top->block->getParent()->getName(), top->block->getName()));
 
-	// No terminator detected, add a default return to the block
-    if (top->block->getTerminator() == NULL) {
-		logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", top->block->getParent()->getName(), top->block->getName()));
-        ReturnInst::Create(MyContext, top->block);
-    }
-
 	blocks.pop(); 
 	delete top; 
 
@@ -69,6 +63,12 @@ void CodeGenContext::generateCode(ASTBlock& root) {
     // Start visitor on root
     logger.logDebug(formatv("root type = {0}", typeid(root).name()));
     root.accept(&visitor);
+
+	// No terminator detected, add a default return to the block
+    if (currentBlock()->getTerminator() == NULL) {
+		logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", currentBlock()->getParent()->getName(), currentBlock()->getName()));
+        ReturnInst::Create(MyContext, currentBlock());
+    }
 
 	popBlock();
 	

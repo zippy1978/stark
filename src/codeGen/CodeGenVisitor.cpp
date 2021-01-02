@@ -163,6 +163,12 @@ void CodeGenVisitor::visit(ASTFunctionDeclaration *node) {
     CodeGenVisitor v(context);
     node->block.accept(&v);
 
+    // No terminator detected, add a default return to the block
+    if (context->currentBlock()->getTerminator() == NULL) {
+		context->logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
+        ReturnInst::Create(MyContext, context->currentBlock());
+    }
+
 	context->popBlock();
 
 	this->result = function;
@@ -334,10 +340,10 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
     Builder.SetInsertPoint(context->currentBlock());
     Builder.CreateBr(mergeBlock);
 
-    context->popBlock();
-
     // Update if block pointer after generation (to support recursivity)
     ifBlock = Builder.GetInsertBlock();
+
+    context->popBlock();
 
     // Generate else block (only if provided)
     CodeGenVisitor vf(context);
@@ -351,10 +357,11 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
         // Add branch to merge block
         Builder.SetInsertPoint(context->currentBlock());
         Builder.CreateBr(mergeBlock);
-        context->popBlock();
 
         // Update else block pointer after generation (to support recursivity)
         elseBlock = Builder.GetInsertBlock();
+
+        context->popBlock();
     }
 
     // Generate merge block

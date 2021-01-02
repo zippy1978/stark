@@ -11,11 +11,10 @@ extern printd(i: double): void
     } 
     if (x >=3) {
         print("rec")
-        return 0
-        //return fib(x - 1) + fib(x - 2)
+        return fib(x - 1) + fib(x - 2)
     }
 }
-printi(fib(2))*/
+printi(fib(6))*/
 
 
 // But not with if/else
@@ -25,20 +24,16 @@ printi(fib(2))*/
         return 1
     } else {
         print("rec")
-        return 0
-        //return fib(x - 1) + fib(x - 2)
+        return fib(x - 1) + fib(x - 2)
     }
 }
-printi(fib(2))*/
+printi(fib(6))*/
 
-
-/*y: double = 1.0
-printi(y == 2.0)*/
-
+//-------------------------------------------------------------
 
 // Crash when using var in if condition
-x: double = 12.0
-if(x != 2.0) {
+x: int = 12
+if(x != 2) {
     print("true")
 } 
 else {
