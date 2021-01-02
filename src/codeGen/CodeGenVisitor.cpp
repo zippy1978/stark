@@ -67,7 +67,7 @@ void CodeGenVisitor::visit(ASTIdentifier *node) {
     // Note : variables are stored as pointers into the symbol table
     // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
     // From the variable type to get the real value (and not the pointer on that value)
-	this->result = new LoadInst(context->locals()[node->name]->getType()->getPointerElementType(), context->locals()[node->name], "", false, context->currentBlock());
+	this->result = new LoadInst(context->locals()[node->name]->getType()->getPointerElementType(), context->locals()[node->name], "load", false, context->currentBlock());
 }
 
 void CodeGenVisitor::visit(ASTBlock *node) {
@@ -187,7 +187,8 @@ void CodeGenVisitor::visit(ASTMethodCall *node) {
         (**it).accept(&v);
         args.push_back(v.result);
 	}
-	CallInst *call = CallInst::Create(function, makeArrayRef(args), "", context->currentBlock());
+
+	CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->currentBlock());
     context->logger.logDebug(formatv("creating method call {0}", node->id.name));
 	this->result = call;
 }
@@ -259,7 +260,7 @@ void CodeGenVisitor::visit(ASTBinaryOperator *node) {
             break;
     }
 
-    this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "");
+    this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "binop");
     
 }
 
@@ -280,22 +281,22 @@ void CodeGenVisitor::visit(ASTComparison *node) {
 	Instruction::BinaryOps instr;
     switch (node->op) {
         case EQ:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOEQ(vl.result, vr.result, "") : Builder.CreateICmpEQ(vl.result, vr.result, "");
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOEQ(vl.result, vr.result, "cmp") : Builder.CreateICmpEQ(vl.result, vr.result, "cmp");
             break;
         case NE:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpONE(vl.result, vr.result, "") : Builder.CreateICmpNE(vl.result, vr.result, "");
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpONE(vl.result, vr.result, "cmp") : Builder.CreateICmpNE(vl.result, vr.result, "cmp");
             break;
         case LT:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLT(vl.result, vr.result, "") : Builder.CreateICmpSLT(vl.result, vr.result, "");
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLT(vl.result, vr.result, "cmp") : Builder.CreateICmpSLT(vl.result, vr.result, "cmp");
             break;
         case LE:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLE(vl.result, vr.result, "") : Builder.CreateICmpSLE(vl.result, vr.result, "");
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLE(vl.result, vr.result, "cmp") : Builder.CreateICmpSLE(vl.result, vr.result, "cmp");
             break;
         case GT:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGT(vl.result, vr.result, "") : Builder.CreateICmpSGT(vl.result, vr.result, "");
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGT(vl.result, vr.result, "cmp") : Builder.CreateICmpSGT(vl.result, vr.result, "cmp");
             break;
         case GE:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGE(vl.result, vr.result, "") : Builder.CreateICmpSGE(vl.result, vr.result, "");
+            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGE(vl.result, vr.result, "cmp") : Builder.CreateICmpSGE(vl.result, vr.result, "cmp");
             break;
     }
     
@@ -369,15 +370,18 @@ void CodeGenVisitor::visit(ASTIfElseStatement *node) {
     Builder.SetInsertPoint(mergeBlock); 
 
     context->pushBlock(mergeBlock, true);
-    // Add PHI node 
-    PHINode *PN = Builder.CreatePHI(Type::getVoidTy(MyContext), 2, "iftmp");
-    PN->addIncoming(vt.result, ifBlock);
-    if (generateElseBlock) PN->addIncoming(vf.result, elseBlock);
+    // Add PHI node (only if function should return somthing)
+    if (!currentFunction->getReturnType()->isVoidTy()) {
+        PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), 2, "iftmp");
+        PN->addIncoming(vt.result, ifBlock);
+        if (generateElseBlock) PN->addIncoming(vf.result, elseBlock);
+        this->result = PN;
+    }
    
     // Mark current block as merge block
     // In order to remember to double pop blocks at the end of a function
     context->setMergeBlock(true);
 
-    this->result = PN;
+    
  
 }

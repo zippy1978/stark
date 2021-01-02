@@ -5,40 +5,42 @@ extern printd(i: double): void
 
 // Works with 2 if !
 /*func fib(x: int): int {
-    printi(x)
+    //printi(x)
     if (x < 3) {
         return 1
     } 
     if (x >=3) {
-        print("rec")
+        //print("rec")
         return fib(x - 1) + fib(x - 2)
     }
+    return 0
 }
-printi(fib(6))*/
+fib(6)*/
 
 
 // But not with if/else
-/*func fib(x: int): int {
-    printi(x)
+func fib(x: int): int {
+    //printi(x)
     if (x < 3) {
         return 1
     } else {
-        print("rec")
+        //print("rec")
         return fib(x - 1) + fib(x - 2)
     }
+    return 0
 }
-printi(fib(6))*/
+fib(6)
 
 //-------------------------------------------------------------
 
 // Crash when using var in if condition
-x: int = 12
+/*x: int = 12
 if(x != 2) {
     print("true")
 } 
 else {
     print("false")
-}
+}*/
 
 // With variable IR = KO
 /*
