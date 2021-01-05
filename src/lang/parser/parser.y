@@ -3,7 +3,7 @@
 
 %code top {
       #include "../ast/AST.h"
-      ASTBlock *programBlock;
+      stark::ASTBlock *programBlock;
 }
 
 %code provides {
@@ -11,14 +11,14 @@
 }
 
 %union {
-    ASTNode *node;
-    ASTBlock *block;
-    ASTExpression *expr;
-    ASTStatement *stmt;
-    ASTIdentifier *ident;
-    ASTVariableDeclaration *var_decl;
-    std::vector<ASTVariableDeclaration*> *varvec;
-    std::vector<ASTExpression*> *exprvec;
+    stark::ASTNode *node;
+    stark::ASTBlock *block;
+    stark::ASTExpression *expr;
+    stark::ASTStatement *stmt;
+    stark::ASTIdentifier *ident;
+    stark::ASTVariableDeclaration *var_decl;
+    std::vector<stark::ASTVariableDeclaration*> *varvec;
+    std::vector<stark::ASTExpression*> *exprvec;
     std::string *string;
     int token;
 }
@@ -63,7 +63,7 @@ program:
 stmts: 
       stmt 
       { 
-            $$ = new ASTBlock(); 
+            $$ = new stark::ASTBlock(); 
             $$->statements.push_back($<stmt>1); 
       }
 | 
@@ -82,7 +82,7 @@ stmt:
 | 
       expr 
       { 
-            $$ = new ASTExpressionStatement(*$1); 
+            $$ = new stark::ASTExpressionStatement(*$1); 
       }
 |
       if_else_stmt
@@ -91,12 +91,12 @@ stmt:
 if_else_stmt:
       IF expr block
       {
-            $$ = new ASTIfElseStatement(*$2, *$3, NULL); 
+            $$ = new stark::ASTIfElseStatement(*$2, *$3, NULL); 
       }
 |
       IF expr block ELSE block
       {
-            $$ = new ASTIfElseStatement(*$2, *$3, $5); 
+            $$ = new stark::ASTIfElseStatement(*$2, *$3, $5); 
       }
 ;
 
@@ -106,37 +106,37 @@ block:
             $$ = $2; 
       }
 |     
-      LBRACE RBRACE { $$ = new ASTBlock(); }
+      LBRACE RBRACE { $$ = new stark::ASTBlock(); }
 ;
 
 var_decl: 
       ident COLON ident 
       { 
-            $$ = new ASTVariableDeclaration(*$3, *$1, NULL); 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, NULL); 
       }
 | 
       ident COLON ident EQUAL expr 
       { 
-            $$ = new ASTVariableDeclaration(*$3, *$1, $5); 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, $5); 
       }
 |
       RETURN expr 
       { 
-            $$ = new ASTReturnStatement(*$2); 
+            $$ = new stark::ASTReturnStatement(*$2); 
       }
 ;
 
 extern_decl:
       EXTERN ident LPAREN func_decl_args RPAREN COLON ident
       { 
-            $$ = new ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
+            $$ = new stark::ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
       }
 ;
 
 func_decl: 
       FUNC ident LPAREN func_decl_args RPAREN COLON ident block
       { 
-            $$ = new ASTFunctionDeclaration(*$7, *$2, *$4, *$8); 
+            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4, *$8); 
             delete $4; 
       }
 ;
@@ -144,12 +144,12 @@ func_decl:
 func_decl_args: 
       /*blank*/  
       { 
-            $$ = new ASTVariableList(); 
+            $$ = new stark::ASTVariableList(); 
       }
 | 
       var_decl 
       { 
-            $$ = new ASTVariableList(); 
+            $$ = new stark::ASTVariableList(); 
             $$->push_back($<var_decl>1); 
       }
 | 
@@ -162,7 +162,7 @@ func_decl_args:
 ident: 
       IDENTIFIER 
       { 
-            $$ = new ASTIdentifier(*$1); 
+            $$ = new stark::ASTIdentifier(*$1); 
             delete $1; 
       }
 ;
@@ -170,7 +170,7 @@ ident:
 str:
       STRING
       {
-            $$ = new ASTString(*$1);
+            $$ = new stark::ASTString(*$1);
             delete $1; 
       }
 ;
@@ -178,35 +178,35 @@ str:
 numeric: 
       TRUE 
       { 
-            $$ = new ASTBoolean(true);
+            $$ = new stark::ASTBoolean(true);
       }
 | 
       FALSE 
       { 
-            $$ = new ASTBoolean(false);
+            $$ = new stark::ASTBoolean(false);
       }
 | 
       INTEGER 
       { 
-            $$ = new ASTInteger(atol($1->c_str()));
+            $$ = new stark::ASTInteger(atol($1->c_str()));
             delete $1; 
       }
 | 
       MINUS INTEGER 
       { 
-            $$ = new ASTInteger(-atol($2->c_str()));
+            $$ = new stark::ASTInteger(-atol($2->c_str()));
             delete $2; 
       }
 | 
       DOUBLE 
       { 
-            $$ = new ASTDouble(atof($1->c_str())); 
+            $$ = new stark::ASTDouble(atof($1->c_str())); 
             delete $1; 
       }
 | 
       MINUS DOUBLE 
       { 
-            $$ = new ASTDouble(-atof($2->c_str())); 
+            $$ = new stark::ASTDouble(-atof($2->c_str())); 
             delete $2; 
       }
 ;
@@ -214,39 +214,39 @@ numeric:
 comparison:
       expr COMP_EQ expr 
       { 
-            $$ = new ASTComparison(*$1, EQ, *$3); 
+            $$ = new stark::ASTComparison(*$1, stark::EQ, *$3); 
       }
 |     
       expr COMP_NE expr 
       { 
-            $$ = new ASTComparison(*$1, NE, *$3); 
+            $$ = new stark::ASTComparison(*$1, stark::NE, *$3); 
       }
 |
       expr COMP_LT expr 
       { 
-            $$ = new ASTComparison(*$1, LT, *$3);
+            $$ = new stark::ASTComparison(*$1, stark::LT, *$3);
       }
 |
       expr COMP_LE expr 
       { 
-            $$ = new ASTComparison(*$1, LE, *$3);
+            $$ = new stark::ASTComparison(*$1, stark::LE, *$3);
       }
 |
       expr COMP_GT expr 
       { 
-            $$ = new ASTComparison(*$1, GT, *$3);
+            $$ = new stark::ASTComparison(*$1, stark::GT, *$3);
       }
 |
       expr COMP_GE expr 
       { 
-            $$ = new ASTComparison(*$1, GE, *$3);
+            $$ = new stark::ASTComparison(*$1, stark::GE, *$3);
       }
 ;
     
 expr: 
       ident EQUAL expr 
       { 
-            $$ = new ASTAssignment(*$<ident>1, *$3); 
+            $$ = new stark::ASTAssignment(*$<ident>1, *$3); 
       }
 | 
       ident 
@@ -256,7 +256,7 @@ expr:
 |
       ident LPAREN call_args RPAREN 
       { 
-            $$ = new ASTMethodCall(*$1, *$3); 
+            $$ = new stark::ASTMethodCall(*$1, *$3); 
             delete $3; 
       }
 | 
@@ -268,32 +268,32 @@ expr:
 |     
       expr MUL expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, MUL, *$3); 
+            $$ = new stark::ASTBinaryOperator(*$1, stark::MUL, *$3); 
       }
 | 
       expr DIV expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, DIV, *$3); 
+            $$ = new stark::ASTBinaryOperator(*$1, stark::DIV, *$3); 
       }
 |     
       expr PLUS expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, ADD, *$3); 
+            $$ = new stark::ASTBinaryOperator(*$1, stark::ADD, *$3); 
       }
 | 
       expr MINUS expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, SUB, *$3); 
+            $$ = new stark::ASTBinaryOperator(*$1, stark::SUB, *$3); 
       }
 |    
       expr AND expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, AND, *$3); 
+            $$ = new stark::ASTBinaryOperator(*$1, stark::AND, *$3); 
       }
 |    
       expr OR expr 
       { 
-            $$ = new ASTBinaryOperator(*$1, OR, *$3); 
+            $$ = new stark::ASTBinaryOperator(*$1, stark::OR, *$3); 
       }
 |     
       LPAREN expr RPAREN 
@@ -305,12 +305,12 @@ expr:
 call_args: 
       /*blank*/  
       { 
-            $$ = new ASTExpressionList(); 
+            $$ = new stark::ASTExpressionList(); 
       }
 | 
       expr 
       { 
-            $$ = new ASTExpressionList(); 
+            $$ = new stark::ASTExpressionList(); 
             $$->push_back($1); 
       }
 | 

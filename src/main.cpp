@@ -2,9 +2,11 @@
 #include <fstream>
 #include <cstdlib>
 #include <FlexLexer.h>
-#include "ast/AST.h"
-#include "parser/parser.hpp"
+
+#include "lang/Lang.h"
 #include "codeGen/CodeGen.h"
+
+using namespace stark;
 
 yyFlexLexer *lexer;
 extern ASTBlock *programBlock;

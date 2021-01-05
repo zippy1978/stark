@@ -3,6 +3,8 @@ all: test
 OUT_DIR = bin
 SRC_DIR = src
 CC = llvm-g++
+FLEX = /usr/local/opt/flex/bin/flex
+BISON = /usr/local/opt/bison/bin/bison
 
 LLVMCONFIG = /usr/local/opt/llvm/bin/llvm-config
 #CPPFLAGS = `${LLVMCONFIG} --cppflags` -std=c++11 -I/usr/local/opt/flex/include
@@ -13,16 +15,17 @@ LDFLAGS="-L/usr/local/opt/flex/lib"
 CPPFLAGS="-I/usr/local/opt/flex/include"
 
 generate:
-	/usr/local/opt/flex/bin/flex -o $(SRC_DIR)/parser/tokens.cpp $(SRC_DIR)/parser/tokens.l
-	/usr/local/opt/bison/bin/bison -d -o $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.y
+	$(FLEX) -o $(SRC_DIR)/lang/parser/tokens.cpp $(SRC_DIR)/lang/parser/tokens.l
+	$(BISON) -d -o $(SRC_DIR)/lang/parser/parser.cpp $(SRC_DIR)/lang/parser/parser.y
+
 
 compile: generate
 	mkdir -p $(OUT_DIR)
-	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/*.cpp
+	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/lang/ast/*.cpp $(SRC_DIR)/lang/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/*.cpp
 
 clean:
 	# Remove generated source files
-	rm $(SRC_DIR)/parser/*.hh $(SRC_DIR)/parser/*.hpp $(SRC_DIR)/parser/*.cpp
+	rm $(SRC_DIR)/lang/parser/*.hh $(SRC_DIR)/lang/parser/*.hpp $(SRC_DIR)/lang/parser/*.cpp
 	rm -rf $(OUT_DIR)
 
 test: compile

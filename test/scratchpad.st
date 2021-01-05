@@ -7,15 +7,10 @@ extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 
 
-
+x: int = 2
 func toto(i: int): int {
-    if (i < 3) {
-        y: int = 0
-        y = y + 1
-        return y
-    } else {
-        return 0
-    }
-    return 12
+    //x: int = 23
+    printi(x)
+    return i
 }
 printi(toto(2))

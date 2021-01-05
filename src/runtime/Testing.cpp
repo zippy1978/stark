@@ -1,28 +1,10 @@
 #include <cstdio>
-#include <time.h>
 #include <iostream>
 
 /**
  * Set of built-in functions that can be used from the JIT.
  * Note: cannot be used from a binary, unless linked.
  */
-
-/* Print functions */
-
-extern "C" void printi(long long val)
-{
-    printf("%lld\n", val);
-}
-
-extern "C" void printd(double val)
-{
-    printf("%f\n", val);
-}
-
-extern "C" void print(const char *val)
-{
-    printf("%s\n", val);
-}
 
 /* Test functions */
 
@@ -66,11 +48,4 @@ extern "C" void failure()
 {
     printf("Failure : should not be called\n");
     exit(1);
-}
-
-/* Time functions */
-
-extern "C" long long now()
-{
-    return time(0);
 }
