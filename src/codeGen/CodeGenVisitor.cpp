@@ -391,9 +391,17 @@ namespace stark
 
         CodeGenVisitor vt(context);
         node->trueBlock.accept(&vt);
+
         // Add branch to merge block
         Builder.SetInsertPoint(context->currentBlock());
-        Builder.CreateBr(mergeBlock);
+        if (context->returnValue() != NULL)
+        {
+            Builder.CreateRet(context->returnValue());
+        }
+        else
+        {
+            Builder.CreateBr(mergeBlock);
+        }
 
         // Update if block pointer after generation (to support recursivity)
         ifBlock = Builder.GetInsertBlock();
@@ -410,9 +418,17 @@ namespace stark
             context->pushBlock(elseBlock, true);
             // If no else block: no generation
             node->falseBlock->accept(&vf);
+
             // Add branch to merge block
             Builder.SetInsertPoint(context->currentBlock());
-            Builder.CreateBr(mergeBlock);
+            if (context->returnValue() != NULL)
+            {
+                Builder.CreateRet(context->returnValue());
+            }
+            else
+            {
+                Builder.CreateBr(mergeBlock);
+            }
 
             // Update else block pointer after generation (to support recursivity)
             elseBlock = Builder.GetInsertBlock();

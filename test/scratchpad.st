@@ -9,8 +9,13 @@ extern assertTrue(actual: bool): void
 
 x: int = 2
 func toto(i: int): int {
-    //x: int = 23
-    printi(x)
-    return i
+    
+    if (i == 3) {
+        return 1
+    } else {
+        return 5
+    }
+
+    //return 4
 }
 printi(toto(2))
