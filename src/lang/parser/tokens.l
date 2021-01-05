@@ -29,6 +29,7 @@ true                    return parser::token::TRUE;
 false                   return parser::token::FALSE;
 if                      return parser::token::IF;
 else                    return parser::token::ELSE;
+while                   return parser::token::WHILE;
 
 [a-zA-Z_][a-zA-Z0-9_]*  return parser::token::IDENTIFIER;
 

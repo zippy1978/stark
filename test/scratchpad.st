@@ -7,15 +7,12 @@ extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 
 
-x: int = 2
-func toto(i: int): int {
-    
-    if (i == 3) {
-        return 1
-    } else {
-        return 5
+cont: int = 10
+while (cont > 0) {
+    printi(cont)
+    if (cont == 7) {
+        print("my favourite num !!!")
     }
-
-    //return 4
+    cont = cont - 1
 }
-printi(toto(2))
+

@@ -18,5 +18,6 @@ namespace stark
     void ASTBinaryOperator::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTComparison::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTIfElseStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
+    void ASTWhileStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
 
 } // namespace stark

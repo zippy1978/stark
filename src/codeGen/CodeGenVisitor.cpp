@@ -456,4 +456,72 @@ namespace stark
         context->setMergeBlock(true);
     }
 
+    void CodeGenVisitor::visit(ASTWhileStatement *node)
+    {
+
+        context->logger.logDebug("creating while statement");
+
+        // If no statement in block : nothing to do
+        if (node->block.statements.size() == 0)
+        {
+            return;
+        }
+
+        IRBuilder<> Builder(context->llvmContext);
+
+        // Get the function of the current block fon instertion
+        Function *currentFunction = context->currentBlock()->getParent();
+
+        // Create blocks (and insert if block)
+        BasicBlock *whileTestBlock = BasicBlock::Create(context->llvmContext, "whiletest", currentFunction);
+        BasicBlock *whileBlock = BasicBlock::Create(context->llvmContext, "while");
+        BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "whilecont");
+
+        // Branch to test block
+        Builder.SetInsertPoint(context->currentBlock());
+        Builder.CreateBr(whileTestBlock);
+
+         // Generate test block ------------------------
+        context->pushBlock(whileTestBlock, true);
+
+         // Generate condition code
+        CodeGenVisitor vc(context);
+        node->condition.accept(&vc);
+
+        // Generate condition branch
+        Builder.SetInsertPoint(context->currentBlock());
+        Value *condition = Builder.CreateCondBr(vc.result, whileBlock, mergeBlock);
+
+        // Update if block pointer after generation (to support recursivity)
+        whileTestBlock = Builder.GetInsertBlock();
+
+        context->popBlock();
+
+        // Generate while block --------------------------
+        CodeGenVisitor vb(context);
+        currentFunction->getBasicBlockList().push_back(whileBlock);
+        context->pushBlock(whileBlock, true);
+        node->block.accept(&vb);
+
+        // Create branch to test blcok
+        Builder.SetInsertPoint(context->currentBlock());
+        Builder.CreateBr(whileTestBlock);
+        
+        // Update if block pointer after generation (to support recursivity)
+        whileBlock = Builder.GetInsertBlock();
+        
+        context->popBlock();
+
+        // Generate merge block
+        currentFunction->getBasicBlockList().push_back(mergeBlock);
+        Builder.SetInsertPoint(mergeBlock);
+
+        context->pushBlock(mergeBlock, true);
+        
+        // Mark current block as merge block
+        // In order to remember to double pop blocks at the end of a function
+        context->setMergeBlock(true);
+
+    }
+
 } // namespace stark

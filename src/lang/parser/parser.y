@@ -37,11 +37,12 @@
 %token TRUE FALSE
 %token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
 %token IF ELSE
+%token WHILE
 
 %type <ident> ident
 %type <expr> numeric expr str comparison
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl extern_decl if_else_stmt
+%type <stmt> stmt var_decl func_decl extern_decl if_else_stmt while_stmt
 %type <varvec> func_decl_args
 %type <exprvec> call_args
 
@@ -86,7 +87,15 @@ stmt:
       }
 |
       if_else_stmt
+|
+      while_stmt
 ;
+
+while_stmt:
+      WHILE expr block
+      {
+            $$ = new stark::ASTWhileStatement(*$2, *$3); 
+      }
 
 if_else_stmt:
       IF expr block

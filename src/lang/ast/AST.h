@@ -199,6 +199,15 @@ namespace stark
     void accept(ASTVisitor *visitor);
   };
 
+  class ASTWhileStatement : public ASTStatement
+  {
+  public:
+    ASTExpression &condition;
+    ASTBlock &block;
+    ASTWhileStatement(ASTExpression &condition, ASTBlock &block) : condition(condition), block(block) {}
+    void accept(ASTVisitor *visitor);
+  };
+
   /*
  * Virtual class to visit the AST.
  */
@@ -221,6 +230,7 @@ namespace stark
     virtual void visit(ASTBinaryOperator *node) = 0;
     virtual void visit(ASTComparison *node) = 0;
     virtual void visit(ASTIfElseStatement *node) = 0;
+    virtual void visit(ASTWhileStatement *node) = 0;
   };
 
 } // namespace stark

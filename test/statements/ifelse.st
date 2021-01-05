@@ -1,5 +1,5 @@
 /**
- *  If/else statments tests.
+ *  If/else statements tests.
  */
 
 extern assertIntEquals(actual: int, expected: int): void

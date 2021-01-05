@@ -38,6 +38,7 @@ test: compile
 	./$(OUT_DIR)/stark test/expressions/binary.st
 	./$(OUT_DIR)/stark test/expressions/comparison.st
 	./$(OUT_DIR)/stark test/statements/ifelse.st
+	./$(OUT_DIR)/stark test/statements/while.st
 
 scratch:
 	./$(OUT_DIR)/stark test/scratchpad.st

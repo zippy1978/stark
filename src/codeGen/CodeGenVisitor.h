@@ -32,6 +32,7 @@ namespace stark
     void visit(ASTBinaryOperator *node);
     void visit(ASTComparison *node);
     void visit(ASTIfElseStatement *node);
+    void visit(ASTWhileStatement *node);
   };
 
 } // namespace stark
