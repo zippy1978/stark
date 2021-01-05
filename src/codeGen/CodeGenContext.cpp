@@ -80,9 +80,9 @@ namespace stark
 
 		// Create the top level interpreter function to call as entry
 		vector<Type *> argTypes;
-		FunctionType *ftype = FunctionType::get(Type::getVoidTy(MyContext), makeArrayRef(argTypes), false);
+		FunctionType *ftype = FunctionType::get(Type::getVoidTy(llvmContext), makeArrayRef(argTypes), false);
 		mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
-		BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", mainFunction, 0);
+		BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
 
 		// Push a new variable/block context
 		pushBlock(bblock);
@@ -95,7 +95,7 @@ namespace stark
 		if (currentBlock()->getTerminator() == NULL)
 		{
 			logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", currentBlock()->getParent()->getName(), currentBlock()->getName()));
-			ReturnInst::Create(MyContext, currentBlock());
+			ReturnInst::Create(llvmContext, currentBlock());
 		}
 
 		popBlock();

@@ -18,25 +18,25 @@ namespace stark
 {
 
     /* Returns an LLVM type based on the identifier */
-    static Type *typeOf(const ASTIdentifier &type)
+    static Type *typeOf(const ASTIdentifier &type, LLVMContext &llvmContext)
     {
         if (type.name.compare("int") == 0)
         {
-            return Type::getInt64Ty(MyContext);
+            return Type::getInt64Ty(llvmContext);
         }
         else if (type.name.compare("bool") == 0)
         {
-            return Type::getInt1Ty(MyContext);
+            return Type::getInt1Ty(llvmContext);
         }
         else if (type.name.compare("double") == 0)
         {
-            return Type::getDoubleTy(MyContext);
+            return Type::getDoubleTy(llvmContext);
         }
         else if (type.name.compare("string") == 0)
         {
-            return Type::getInt8PtrTy(MyContext);
+            return Type::getInt8PtrTy(llvmContext);
         }
-        return Type::getVoidTy(MyContext);
+        return Type::getVoidTy(llvmContext);
     }
 
     /* Code generation */
@@ -45,20 +45,20 @@ namespace stark
     {
 
         context->logger.logDebug(formatv("creating integer {0}", node->value));
-        this->result = ConstantInt::get(Type::getInt64Ty(MyContext), node->value, true);
+        this->result = ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->value, true);
     }
 
     void CodeGenVisitor::visit(ASTBoolean *node)
     {
         context->logger.logDebug(formatv("creating boolean {0}", node->value));
-        this->result = ConstantInt::get(Type::Type::getInt1Ty(MyContext), node->value, true);
+        this->result = ConstantInt::get(Type::Type::getInt1Ty(context->llvmContext), node->value, true);
     }
 
     void CodeGenVisitor::visit(ASTDouble *node)
     {
 
         context->logger.logDebug(formatv("creating double {0}", node->value));
-        this->result = ConstantFP::get(Type::getDoubleTy(MyContext), node->value);
+        this->result = ConstantFP::get(Type::getDoubleTy(context->llvmContext), node->value);
     }
 
     void CodeGenVisitor::visit(ASTString *node)
@@ -71,15 +71,15 @@ namespace stark
         std::vector<llvm::Constant *> chars(utf8string.size() + 1);
         // Set each char of the string in the vector
         for (unsigned int i = 0; i < utf8string.size(); i++)
-            chars[i] = ConstantInt::get(Type::getInt8Ty(MyContext), utf8string[i]);
+            chars[i] = ConstantInt::get(Type::getInt8Ty(context->llvmContext), utf8string[i]);
         // Add string terminator
-        chars[utf8string.size()] = ConstantInt::get(Type::getInt8Ty(MyContext), '\0');
+        chars[utf8string.size()] = ConstantInt::get(Type::getInt8Ty(context->llvmContext), '\0');
 
         // Set value as global variable
-        auto init = ConstantArray::get(ArrayType::get(Type::getInt8Ty(MyContext), chars.size()), chars);
+        auto init = ConstantArray::get(ArrayType::get(Type::getInt8Ty(context->llvmContext), chars.size()), chars);
         GlobalVariable *v = new GlobalVariable(*context->module, init->getType(), true, GlobalVariable::ExternalLinkage, init, utf8string);
         // Return pointer? on the string
-        this->result = ConstantExpr::getBitCast(v, Type::getInt8Ty(MyContext)->getPointerTo());
+        this->result = ConstantExpr::getBitCast(v, Type::getInt8Ty(context->llvmContext)->getPointerTo());
     }
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
@@ -146,7 +146,7 @@ namespace stark
             context->logger.logError(formatv("variable {0} already declared", node->id.name));
         }
 
-        AllocaInst *alloc = new AllocaInst(typeOf(node->type), 0, node->id.name.c_str(), context->currentBlock());
+        AllocaInst *alloc = new AllocaInst(typeOf(node->type, context->llvmContext), 0, node->id.name.c_str(), context->currentBlock());
         context->locals()[node->id.name] = alloc;
 
         if (node->assignmentExpr != NULL)
@@ -173,14 +173,14 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
-            argTypes.push_back(typeOf((**it).type));
+            argTypes.push_back(typeOf((**it).type, context->llvmContext));
         }
 
         // Create function
-        FunctionType *ftype = FunctionType::get(typeOf(node->type), makeArrayRef(argTypes), false);
+        FunctionType *ftype = FunctionType::get(typeOf(node->type, context->llvmContext), makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, node->id.name.c_str(), context->module);
 
-        BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", function, 0);
+        BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
 
         context->pushBlock(bblock);
 
@@ -204,12 +204,12 @@ namespace stark
         // If no return : add a default one
         if (context->returnValue() != NULL)
         {
-            ReturnInst::Create(MyContext, context->returnValue(), context->currentBlock());
+            ReturnInst::Create(context->llvmContext, context->returnValue(), context->currentBlock());
         }
         else
         {
             context->logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
-            ReturnInst::Create(MyContext, v.result, context->currentBlock());
+            ReturnInst::Create(context->llvmContext, v.result, context->currentBlock());
         }
 
         context->popBlock();
@@ -247,9 +247,9 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
-            argTypes.push_back(typeOf((**it).type));
+            argTypes.push_back(typeOf((**it).type, context->llvmContext));
         }
-        FunctionType *ftype = FunctionType::get(typeOf(node->type), makeArrayRef(argTypes), false);
+        FunctionType *ftype = FunctionType::get(typeOf(node->type, context->llvmContext), makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
         this->result = function;
     }
@@ -284,7 +284,7 @@ namespace stark
         CodeGenVisitor vr(context);
         node->rhs.accept(&vr);
 
-        IRBuilder<> Builder(MyContext);
+        IRBuilder<> Builder(context->llvmContext);
 
         Builder.SetInsertPoint(context->currentBlock());
 
@@ -320,7 +320,7 @@ namespace stark
 
         context->logger.logDebug(formatv("creating comparison {0}", node->op));
 
-        IRBuilder<> Builder(MyContext);
+        IRBuilder<> Builder(context->llvmContext);
 
         CodeGenVisitor vl(context);
         node->lhs.accept(&vl);
@@ -367,7 +367,7 @@ namespace stark
         // Used to know if else block should be generated
         bool generateElseBlock = (node->falseBlock != NULL && node->falseBlock->statements.size() > 0);
 
-        IRBuilder<> Builder(MyContext);
+        IRBuilder<> Builder(context->llvmContext);
 
         // Generate condition code
         CodeGenVisitor vc(context);
@@ -377,9 +377,9 @@ namespace stark
         Function *currentFunction = context->currentBlock()->getParent();
 
         // Create blocks (and insert if block)
-        BasicBlock *ifBlock = BasicBlock::Create(MyContext, "if", currentFunction);
-        BasicBlock *elseBlock = BasicBlock::Create(MyContext, "else");
-        BasicBlock *mergeBlock = BasicBlock::Create(MyContext, "ifcont");
+        BasicBlock *ifBlock = BasicBlock::Create(context->llvmContext, "if", currentFunction);
+        BasicBlock *elseBlock = BasicBlock::Create(context->llvmContext, "else");
+        BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "ifcont");
 
         // Create condition
         Builder.SetInsertPoint(context->currentBlock());
@@ -440,4 +440,4 @@ namespace stark
         context->setMergeBlock(true);
     }
 
-} // namespace
+} // namespace stark

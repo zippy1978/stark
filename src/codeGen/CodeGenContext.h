@@ -14,9 +14,6 @@
 
 using namespace llvm;
 
-// Global LLVM context
-static LLVMContext MyContext;
-
 namespace stark
 {
 
@@ -42,9 +39,10 @@ namespace stark
 
   public:
     Module *module;
+    LLVMContext llvmContext;
     stark::Logger logger;
     // TOTO : "main" should be the source file name
-    CodeGenContext() { module = new Module("main", MyContext); }
+    CodeGenContext() { module = new Module("main", llvmContext); }
 
     void generateCode(ASTBlock &root);
     GenericValue runCode();
