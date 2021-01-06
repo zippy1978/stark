@@ -9,15 +9,17 @@ extern assertTrue(actual: bool): void
 
 
 
-func t(): void {
+func t(): int {
 
     start: int = now()
     now: int = now()
-    while (false) {
-        print("ok")
+    while (true) {
         now = now()
+        if (now > 0) {
+            return 0
+        }
     }
-    print("end")
+    return 1
 }
-t()
+printi(t())
 

@@ -366,11 +366,6 @@ namespace stark
 
         context->logger.logDebug("creating if else statement");
 
-        // If no statement in trueBlock : nothing to do
-        if (node->trueBlock.statements.size() == 0)
-        {
-            return;
-        }
         // Used to know if else block should be generated
         bool generateElseBlock = (node->falseBlock != NULL && node->falseBlock->statements.size() > 0);
 
@@ -448,12 +443,15 @@ namespace stark
         Builder.SetInsertPoint(mergeBlock);
 
         context->pushBlock(mergeBlock, true);
-        // Add PHI node (only if function should return somthing)
+        // Add PHI node (only if function should return something)
         if (!currentFunction->getReturnType()->isVoidTy())
         {
             PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), 2, "iftmp");
-            PN->addIncoming(vt.result, ifBlock);
-            if (generateElseBlock)
+            if (node->trueBlock.statements.size() > 0 && vt.result != NULL && !vt.result->getType()->isVoidTy()) {
+                PN->addIncoming(vt.result, ifBlock);
+            }
+            
+            if (generateElseBlock && vf.result != NULL && !vf.result->getType()->isVoidTy())
                 PN->addIncoming(vf.result, elseBlock);
             this->result = PN;
         }
@@ -497,7 +495,7 @@ namespace stark
 
         // Generate condition branch
         Builder.SetInsertPoint(context->currentBlock());
-        Value *condition = Builder.CreateCondBr(vc.result, whileBlock, mergeBlock);
+        Builder.CreateCondBr(vc.result, whileBlock, mergeBlock);
 
         // Update if block pointer after generation (to support recursivity)
         whileTestBlock = Builder.GetInsertBlock();
@@ -510,9 +508,13 @@ namespace stark
         context->pushBlock(whileBlock, true);
         node->block.accept(&vb);
 
-        // Create branch to test blcok
+        // Create branch to test block, or return 
         Builder.SetInsertPoint(context->currentBlock());
-        Builder.CreateBr(whileTestBlock);
+        if (context->returnValue() != NULL) {
+            Builder.CreateRet(context->returnValue());
+        } else {
+            Builder.CreateBr(whileTestBlock);
+        }
         
         // Update if block pointer after generation (to support recursivity)
         whileBlock = Builder.GetInsertBlock();
