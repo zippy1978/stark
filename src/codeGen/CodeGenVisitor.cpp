@@ -208,8 +208,15 @@ namespace stark
         }
         else
         {
-            context->logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
-            ReturnInst::Create(context->llvmContext, v.result, context->currentBlock());
+            if (function->getReturnType()->isVoidTy()) {
+                // Add return to void function
+                context->logger.logDebug(formatv("adding void return in {0}.{1}", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
+                ReturnInst::Create(context->llvmContext, context->currentBlock());
+            } else {
+                context->logger.logDebug(formatv("missing return in {0}.{1}, adding one with block value", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
+                ReturnInst::Create(context->llvmContext, v.result, context->currentBlock());
+            }
+            
         }
 
         context->popBlock();
