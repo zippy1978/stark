@@ -18,7 +18,6 @@ namespace stark
     class CodeGenComplexTypeMember
     {
     public:
-
         std::string name;
         /* Define member position in the structure */
         int position;
@@ -38,7 +37,7 @@ namespace stark
 
     public:
         std::string name;
-        CodeGenComplexType(std::string name, LLVMContext *llvmContext) : name(name), llvmContext(llvmContext) {type = NULL;}
+        CodeGenComplexType(std::string name, LLVMContext *llvmContext) : name(name), llvmContext(llvmContext) { type = NULL; }
         /* Generate declration code of the complex type inside the llvm::LLVMContext */
         void declare();
         /* Returns the complex type llvm::StructType, returns NULL is complex type is not declared yet */

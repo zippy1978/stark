@@ -64,8 +64,6 @@ namespace stark
     LLVMContext llvmContext;
     stark::Logger logger;
 
-    
-
     // TODO : "main" should be the source file name
     CodeGenContext() { module = new Module("main", llvmContext); }
 
@@ -79,18 +77,18 @@ namespace stark
     void declareComplexType(CodeGenComplexType *complexType);
     CodeGenComplexType *getComplexType(std::string name);
 
-    void addLocal(CodeGenVariable *var);
+    void declareLocal(CodeGenVariable *var);
     CodeGenVariable *getLocal(std::string name);
 
-    BasicBlock *currentBlock() { return blocks.top()->block; }
+    BasicBlock *getCurrentBlock() { return blocks.top()->block; }
     void pushBlock(BasicBlock *block);
     void pushBlock(BasicBlock *block, bool inheritLocals);
     void popBlock();
     bool isMergeBlock() { return blocks.top()->isMergeBlock; }
     void setMergeBlock(bool isMerge) { blocks.top()->isMergeBlock = isMerge; }
+
     Value *getReturnValue() { return blocks.top()->returnValue; }
     void setReturnValue(Value *value) { blocks.top()->returnValue = value; }
-
   };
 
 } // namespace stark

@@ -7,6 +7,7 @@
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/BasicBlock.h>
 
 using namespace llvm;
 
@@ -22,7 +23,9 @@ namespace stark
         std::string name;
         std::string typeName;
         Value* value;
-        CodeGenVariable(std::string name, std::string typeName, Value* value) : name(name), typeName(typeName), value(value) {}
+        Type* type;
+        CodeGenVariable(std::string name, std::string typeName, Type* type) : name(name), typeName(typeName), type(type) { type = NULL; value = NULL;}
+        void declare(BasicBlock *block);
     };
 
 } // namespace stark

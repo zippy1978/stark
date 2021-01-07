@@ -54,9 +54,10 @@ namespace stark
 		return NULL;
 	}
 
-	void CodeGenContext::addLocal(CodeGenVariable *var)
+	void CodeGenContext::declareLocal(CodeGenVariable *var)
 	{
 		CodeGenBlock *top = blocks.top();
+		var->declare(top->block);
 		top->locals[var->name] = var;
 	}
 
@@ -140,10 +141,10 @@ namespace stark
 		root.accept(&visitor);
 
 		// No terminator detected, add a default return to the block
-		if (currentBlock()->getTerminator() == NULL)
+		if (getCurrentBlock()->getTerminator() == NULL)
 		{
-			logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", currentBlock()->getParent()->getName(), currentBlock()->getName()));
-			ReturnInst::Create(llvmContext, currentBlock());
+			logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
+			ReturnInst::Create(llvmContext, getCurrentBlock());
 		}
 
 		popBlock();

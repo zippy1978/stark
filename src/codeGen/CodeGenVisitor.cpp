@@ -108,7 +108,7 @@ namespace stark
         // Note : variables are stored as pointers into the symbol table
         // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
         // From the variable type to get the real value (and not the pointer on that value)
-        this->result = new LoadInst(var->value->getType()->getPointerElementType(), var->value, "load", false, context->currentBlock());
+        this->result = new LoadInst(var->value->getType()->getPointerElementType(), var->value, "load", false, context->getCurrentBlock());
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -140,7 +140,7 @@ namespace stark
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
-        this->result = new StoreInst(v.result, var->value, false, context->currentBlock());
+        this->result = new StoreInst(v.result, var->value, false, context->getCurrentBlock());
     }
 
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
@@ -162,8 +162,8 @@ namespace stark
             context->logger.logError(formatv("variable {0} already declared", node->id.name));
         }
 
-        AllocaInst *alloc = new AllocaInst(typeOf(node->type, context), 0, node->id.name.c_str(), context->currentBlock());
-        context->addLocal(new CodeGenVariable(node->id.name, node->type.name, alloc));
+        CodeGenVariable *var = new CodeGenVariable(node->id.name, node->type.name, typeOf(node->type, context));
+        context->declareLocal(var);
 
         if (node->assignmentExpr != NULL)
         {
@@ -171,7 +171,7 @@ namespace stark
             CodeGenVisitor v(context);
             assn.accept(&v);
         }
-        this->result = alloc;
+        this->result = var->value;
     }
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
@@ -210,7 +210,7 @@ namespace stark
 
             argumentValue = &*argsValues++;
             argumentValue->setName((*it)->id.name.c_str());
-            StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->value, false, context->currentBlock());
+            StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->value, false, context->getCurrentBlock());
         }
 
         CodeGenVisitor v(context);
@@ -220,20 +220,20 @@ namespace stark
         // If no return : add a default one
         if (context->getReturnValue() != NULL)
         {
-            ReturnInst::Create(context->llvmContext, context->getReturnValue(), context->currentBlock());
+            ReturnInst::Create(context->llvmContext, context->getReturnValue(), context->getCurrentBlock());
         }
         else
         {
             if (function->getReturnType()->isVoidTy())
             {
                 // Add return to void function
-                context->logger.logDebug(formatv("adding void return in {0}.{1}", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
-                ReturnInst::Create(context->llvmContext, context->currentBlock());
+                context->logger.logDebug(formatv("adding void return in {0}.{1}", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
+                ReturnInst::Create(context->llvmContext, context->getCurrentBlock());
             }
             else
             {
-                context->logger.logDebug(formatv("missing return in {0}.{1}, adding one with block value", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
-                ReturnInst::Create(context->llvmContext, v.result, context->currentBlock());
+                context->logger.logDebug(formatv("missing return in {0}.{1}, adding one with block value", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
+                ReturnInst::Create(context->llvmContext, v.result, context->getCurrentBlock());
             }
         }
 
@@ -259,7 +259,7 @@ namespace stark
             args.push_back(v.result);
         }
 
-        CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->currentBlock());
+        CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());
         context->logger.logDebug(formatv("creating method call {0}", node->id.name));
         this->result = call;
     }
@@ -284,7 +284,7 @@ namespace stark
 
         context->logger.logDebug(formatv("generating return code {0}", typeid(node->expression).name()));
 
-        if (context->currentBlock()->getTerminator() != NULL)
+        if (context->getCurrentBlock()->getTerminator() != NULL)
         {
             context->logger.logError("cannot add more than one terminator on a block");
         }
@@ -311,7 +311,7 @@ namespace stark
 
         IRBuilder<> Builder(context->llvmContext);
 
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
         bool isDouble = vl.result->getType()->isDoubleTy();
         Instruction::BinaryOps instr;
@@ -352,7 +352,7 @@ namespace stark
         CodeGenVisitor vr(context);
         node->rhs.accept(&vr);
 
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
         bool isDouble = vl.result->getType()->isDoubleTy();
         Instruction::BinaryOps instr;
@@ -394,7 +394,7 @@ namespace stark
         node->condition.accept(&vc);
 
         // Get the function of the current block fon instertion
-        Function *currentFunction = context->currentBlock()->getParent();
+        Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
         BasicBlock *ifBlock = BasicBlock::Create(context->llvmContext, "if", currentFunction);
@@ -402,7 +402,7 @@ namespace stark
         BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "ifcont");
 
         // Create condition
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
         // If/else or simple if
         Value *condition = Builder.CreateCondBr(vc.result, ifBlock, generateElseBlock ? elseBlock : mergeBlock);
 
@@ -413,7 +413,7 @@ namespace stark
         node->trueBlock.accept(&vt);
 
         // Add branch to merge block
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
         if (context->getReturnValue() != NULL)
         {
             Builder.CreateRet(context->getReturnValue());
@@ -440,7 +440,7 @@ namespace stark
             node->falseBlock->accept(&vf);
 
             // Add branch to merge block
-            Builder.SetInsertPoint(context->currentBlock());
+            Builder.SetInsertPoint(context->getCurrentBlock());
             if (context->getReturnValue() != NULL)
             {
                 Builder.CreateRet(context->getReturnValue());
@@ -494,7 +494,7 @@ namespace stark
         IRBuilder<> Builder(context->llvmContext);
 
         // Get the function of the current block fon instertion
-        Function *currentFunction = context->currentBlock()->getParent();
+        Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
         BasicBlock *whileTestBlock = BasicBlock::Create(context->llvmContext, "whiletest", currentFunction);
@@ -502,7 +502,7 @@ namespace stark
         BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "whilecont");
 
         // Branch to test block
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
         Builder.CreateBr(whileTestBlock);
 
         // Generate test block ------------------------
@@ -513,7 +513,7 @@ namespace stark
         node->condition.accept(&vc);
 
         // Generate condition branch
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
         Builder.CreateCondBr(vc.result, whileBlock, mergeBlock);
 
         // Update if block pointer after generation (to support recursivity)
@@ -528,7 +528,7 @@ namespace stark
         node->block.accept(&vb);
 
         // Create branch to test block, or return
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
         if (context->getReturnValue() != NULL)
         {
             Builder.CreateRet(context->getReturnValue());
@@ -566,7 +566,7 @@ namespace stark
         }
 
         IRBuilder<> Builder(context->llvmContext);
-        Builder.SetInsertPoint(context->currentBlock());
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Retrieve complex type
         CodeGenComplexType *complexType = context->getComplexType(variable->typeName);
