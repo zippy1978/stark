@@ -108,7 +108,7 @@ namespace stark
         // Note : variables are stored as pointers into the symbol table
         // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
         // From the variable type to get the real value (and not the pointer on that value)
-        this->result = new LoadInst(var->value->getType()->getPointerElementType(), var->value, "load", false, context->getCurrentBlock());
+        this->result = new LoadInst(var->getValue()->getType()->getPointerElementType(), var->getValue(), "load", false, context->getCurrentBlock());
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -140,7 +140,7 @@ namespace stark
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
-        this->result = new StoreInst(v.result, var->value, false, context->getCurrentBlock());
+        this->result = new StoreInst(v.result, var->getValue(), false, context->getCurrentBlock());
     }
 
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
@@ -171,7 +171,7 @@ namespace stark
             CodeGenVisitor v(context);
             assn.accept(&v);
         }
-        this->result = var->value;
+        this->result = var->getValue();
     }
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
@@ -210,7 +210,7 @@ namespace stark
 
             argumentValue = &*argsValues++;
             argumentValue->setName((*it)->id.name.c_str());
-            StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->value, false, context->getCurrentBlock());
+            StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->getValue(), false, context->getCurrentBlock());
         }
 
         CodeGenVisitor v(context);
@@ -569,20 +569,20 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Retrieve complex type
-        CodeGenComplexType *complexType = context->getComplexType(variable->typeName);
+        CodeGenComplexType *complexType = context->getComplexType(variable->getTypeName());
 
         // Retrieve member
         CodeGenComplexTypeMember *member = complexType->getMember(node->member.name);
         if (member == NULL)
         {
-            context->logger.logError(formatv("no member named {0} for variable {1} ({2})", node->member.name, node->variable.name, complexType->name));
+            context->logger.logError(formatv("no member named {0} for variable {1} ({2})", node->member.name, node->variable.name, complexType->getName()));
         }
 
         // Load member
         std::vector<llvm::Value *> indices;
         indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
         indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));
-        Value *memberValue = Builder.CreateGEP(variable->value, indices, "memberptr");
+        Value *memberValue = Builder.CreateGEP(variable->getValue(), indices, "memberptr");
         this->result = Builder.CreateLoad(memberValue->getType()->getPointerElementType(), memberValue, "loadmember");
     }
 

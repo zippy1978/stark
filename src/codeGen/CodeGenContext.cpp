@@ -41,7 +41,7 @@ namespace stark
 	{
 
 		complexType->declare();
-		complexTypes[complexType->name] = complexType;
+		complexTypes[complexType->getName()] = complexType;
 	}
 
 	CodeGenComplexType *CodeGenContext::getComplexType(std::string name)
@@ -58,7 +58,7 @@ namespace stark
 	{
 		CodeGenBlock *top = blocks.top();
 		var->declare(top->block);
-		top->locals[var->name] = var;
+		top->locals[var->getName()] = var;
 	}
 
 	CodeGenVariable *CodeGenContext::getLocal(std::string name)

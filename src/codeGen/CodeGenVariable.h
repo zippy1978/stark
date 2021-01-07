@@ -18,14 +18,22 @@ namespace stark
      */
     class CodeGenVariable
     {
-
-    public:
         std::string name;
         std::string typeName;
-        Value* value;
-        Type* type;
-        CodeGenVariable(std::string name, std::string typeName, Type* type) : name(name), typeName(typeName), type(type) { type = NULL; value = NULL;}
+        Value *value;
+        Type *type;
+
+    public:
+        CodeGenVariable(std::string name, std::string typeName, Type *type) : name(name), typeName(typeName), type(type)
+        {
+            type = NULL;
+            value = NULL;
+        }
         void declare(BasicBlock *block);
+        std::string getName() { return name; }
+        std::string getTypeName() { return typeName; }
+        Type *getType() { return type; }
+        Value *getValue() { return value; }
     };
 
 } // namespace stark

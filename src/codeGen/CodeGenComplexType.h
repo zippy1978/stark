@@ -34,9 +34,9 @@ namespace stark
         std::vector<CodeGenComplexTypeMember *> members;
         LLVMContext *llvmContext;
         StructType *type;
+        std::string name;
 
     public:
-        std::string name;
         CodeGenComplexType(std::string name, LLVMContext *llvmContext) : name(name), llvmContext(llvmContext) { type = NULL; }
         /* Generate declration code of the complex type inside the llvm::LLVMContext */
         void declare();
@@ -44,6 +44,7 @@ namespace stark
         StructType *getType() { return type; }
         void addMember(std::string name, Type *type) { members.push_back(new CodeGenComplexTypeMember(name, members.size(), type)); }
         CodeGenComplexTypeMember *getMember(std::string name);
+        std::string getName() { return name; }
     };
 
 } // namespace stark
