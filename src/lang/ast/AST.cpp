@@ -12,7 +12,7 @@ namespace stark
     void ASTExpressionStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTVariableDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTFunctionDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
-    void ASTMethodCall::accept(ASTVisitor *visitor) { visitor->visit(this); }
+    void ASTFunctionCall::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTExternDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTReturnStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTBinaryOperator::accept(ASTVisitor *visitor) { visitor->visit(this); }

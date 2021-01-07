@@ -283,7 +283,7 @@ expr:
 |
       ident LPAREN call_args RPAREN 
       { 
-            $$ = new stark::ASTMethodCall(*$1, *$3); 
+            $$ = new stark::ASTFunctionCall(*$1, *$3); 
             delete $3; 
       }
 | 

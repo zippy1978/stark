@@ -294,7 +294,7 @@ namespace stark
         this->result = function;
     }
 
-    void CodeGenVisitor::visit(ASTMethodCall *node)
+    void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
 
         Function *function = context->module->getFunction(node->id.name.c_str());

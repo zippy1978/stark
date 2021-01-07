@@ -142,13 +142,13 @@ namespace stark
     void accept(ASTVisitor *visitor);
   };
 
-  class ASTMethodCall : public ASTExpression
+  class ASTFunctionCall : public ASTExpression
   {
   public:
     const ASTIdentifier &id;
     ASTExpressionList arguments;
-    ASTMethodCall(const ASTIdentifier &id, ASTExpressionList &arguments) : id(id), arguments(arguments) {}
-    ASTMethodCall(const ASTIdentifier &id) : id(id) {}
+    ASTFunctionCall(const ASTIdentifier &id, ASTExpressionList &arguments) : id(id), arguments(arguments) {}
+    ASTFunctionCall(const ASTIdentifier &id) : id(id) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -234,7 +234,7 @@ namespace stark
     virtual void visit(ASTExpressionStatement *node) = 0;
     virtual void visit(ASTVariableDeclaration *node) = 0;
     virtual void visit(ASTFunctionDeclaration *node) = 0;
-    virtual void visit(ASTMethodCall *node) = 0;
+    virtual void visit(ASTFunctionCall *node) = 0;
     virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperator *node) = 0;

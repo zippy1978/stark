@@ -13,22 +13,20 @@ struct person {
     name: string
 }
 
-p: person
-p.age = 12
-p.name = "toto"
 
-// Just a point
-p2: person = p
-// But this reassign
-p2.name = "tutu"
+func create(name: string, age: int): person {
+    p: person
+    p.age = age
+    p.name = name
 
-s: string = p.name
+    return p
+}
 
-//l: int = p.name.len.fff
-printi(p.age)
-println(p.name)
-println(s)
-println(p2.name)
+r: person = create("gg", 13)
+println(r.name)
+
+
+
 
 
 
