@@ -42,11 +42,11 @@
 %token WHILE
 
 %type <ident> ident
-%type <expr> numeric expr str comparison
+%type <expr> numeric expr str comparison array
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_decl struct_decl extern_decl if_else_stmt while_stmt
 %type <varvec> decl_args
-%type <exprvec> call_args
+%type <exprvec> expr_args
 
 /* Operator precedence */
 %left PLUS MINUS MUL DIV OR AND
@@ -208,6 +208,15 @@ str:
       }
 ;
 
+array:
+      LBRACKET expr_args RBRACKET
+      {
+
+            $$ = new stark::ASTArray(*$2); 
+            delete $2; 
+      }
+;
+
 numeric: 
       TRUE 
       { 
@@ -287,11 +296,13 @@ expr:
             $<ident>$ = $1; 
       }
 |
-      ident LPAREN call_args RPAREN 
+      ident LPAREN expr_args RPAREN 
       { 
             $$ = new stark::ASTFunctionCall(*$1, *$3); 
             delete $3; 
       }
+|
+      array
 | 
       numeric
 | 
@@ -335,7 +346,7 @@ expr:
       }
 ;
 
-call_args: 
+expr_args: 
       /*blank*/  
       { 
             $$ = new stark::ASTExpressionList(); 
@@ -347,7 +358,7 @@ call_args:
             $$->push_back($1); 
       }
 | 
-      call_args COMMA expr  
+      expr_args COMMA expr  
       {
             $1->push_back($3); 
       }

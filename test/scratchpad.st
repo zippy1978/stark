@@ -10,6 +10,8 @@ extern assertTrue(actual: bool): void
 
 
 a: int[]
+//printi(a.len)
+a = [1, 2, 3, 3+2]
 printi(a.len)
 
 

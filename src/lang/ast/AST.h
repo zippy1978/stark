@@ -87,6 +87,14 @@ namespace stark
     void accept(ASTVisitor *visitor);
   };
 
+  class ASTArray : public ASTExpression
+  {
+  public:
+    ASTExpressionList arguments;
+    ASTArray(ASTExpressionList &arguments) : arguments(arguments) {}
+    void accept(ASTVisitor *visitor);
+  };
+
   class ASTIdentifier : public ASTExpression
   {
   public:
@@ -243,6 +251,7 @@ namespace stark
     virtual void visit(ASTIfElseStatement *node) = 0;
     virtual void visit(ASTWhileStatement *node) = 0;
     virtual void visit(ASTStructDeclaration *node) = 0;
+    virtual void visit(ASTArray *node) = 0;
   };
 
 } // namespace stark

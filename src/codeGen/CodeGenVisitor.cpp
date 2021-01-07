@@ -16,6 +16,18 @@ using namespace stark;
 
 namespace stark
 {
+    static Value *getArrayElementValue(Value *varValue, Value *index, CodeGenContext *context)
+    {
+
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        // Load member value
+        std::vector<llvm::Value *> indices;
+        indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
+        indices.push_back(index);
+        return Builder.CreateInBoundsGEP(varValue, indices, "elementptr");
+    }
 
     /**
      * get variable as llvm:Value for a complex type from an identifier.
@@ -42,10 +54,7 @@ namespace stark
             }
 
             // Load member value
-            std::vector<llvm::Value *> indices;
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));
-            Value *memberValue = Builder.CreateGEP(varValue, indices, "memberptr");
+            Value *memberValue = Builder.CreateStructGEP(varValue, member->position, "memberptr");
 
             // Is member a complex type ?
             // Handle special type lookup for array
@@ -57,7 +66,8 @@ namespace stark
             }
             else
             {
-                if(identifier->member->member != NULL) {
+                if (identifier->member->member != NULL)
+                {
                     context->logger.logError(formatv("no member named {0}", identifier->member->member->name));
                 }
 
@@ -145,6 +155,57 @@ namespace stark
         this->result = ConstantStruct::get(context->getComplexType("string")->getType(), values);
     }
 
+    void CodeGenVisitor::visit(ASTArray *node)
+    {
+        context->logger.logDebug(formatv("creating array of {0} elements", node->arguments.size()));
+
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Type *elementType = Type::getVoidTy(context->llvmContext);
+
+        // Generate elements and determine type
+        std::vector<Value *> elementValues;
+        for (auto it = node->arguments.begin(); it != node->arguments.end(); it++)
+        {
+            CodeGenVisitor v(context);
+            (**it).accept(&v);
+            elementValues.push_back(v.result);
+            if (elementType->isVoidTy())
+            {
+                elementType = v.result->getType();
+            }
+            // TODO : find a way to check that all elements are of same type
+        }
+
+        // Alloc inner array
+        AllocaInst *innerArrayAlloc = new AllocaInst(ArrayType::get(elementType, node->arguments.size()), 0,  "arrayinneralloc", context->getCurrentBlock());
+
+        // Initialize inner array with elements
+        // TODO : there is probably a way to write the whole content in a single instruction !!!
+        long index = 0;
+        for (auto it = elementValues.begin(); it != elementValues.end(); it++)
+        {
+            Value *elementVarValue = getArrayElementValue(innerArrayAlloc, ConstantInt::get(context->llvmContext, APInt(32, index, true)), context);
+            Builder.CreateStore(*it, elementVarValue);
+            index++;
+        }
+
+        // Create array instance
+        Value *arrayAlloc = new AllocaInst(context->getArrayComplexType()->getType(), 0, "arrayinit", context->getCurrentBlock());
+
+        // Set len member
+        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
+        Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->arguments.size(), true), lenMember);
+
+        // Set elements member with inner array
+        Value *elementsMember = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
+        Builder.CreateStore(innerArrayAlloc, elementsMember);
+
+        // Return new instance
+        this->result = Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
+    }
+
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
         context->logger.logDebug(formatv("creating identifier reference {0}", node->name));
@@ -225,8 +286,9 @@ namespace stark
 
         // Type selection : based on the value of the delcaration
         // Except if it is an array
-        Type * type = typeOf(node->type, context);
-        if (node->isArray) {
+        Type *type = typeOf(node->type, context);
+        if (node->isArray)
+        {
             type = context->getArrayComplexType()->getType();
         }
 

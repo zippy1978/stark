@@ -20,5 +20,6 @@ namespace stark
     void ASTIfElseStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTWhileStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTStructDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
+    void ASTArray::accept(ASTVisitor *visitor) { visitor->visit(this); }
 
 } // namespace stark
