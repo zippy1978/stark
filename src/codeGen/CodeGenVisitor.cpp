@@ -18,25 +18,30 @@ namespace stark
 {
 
     /* Returns an LLVM type based on the identifier */
-    static Type *typeOf(const ASTIdentifier &type, LLVMContext &llvmContext)
+    static Type *typeOf(const ASTIdentifier &type, CodeGenContext *context)
     {
+        // Primary types
         if (type.name.compare("int") == 0)
         {
-            return Type::getInt64Ty(llvmContext);
+            return Type::getInt64Ty(context->llvmContext);
         }
         else if (type.name.compare("bool") == 0)
         {
-            return Type::getInt1Ty(llvmContext);
+            return Type::getInt1Ty(context->llvmContext);
         }
         else if (type.name.compare("double") == 0)
         {
-            return Type::getDoubleTy(llvmContext);
+            return Type::getDoubleTy(context->llvmContext);
         }
-        else if (type.name.compare("string") == 0)
+
+        // Complex types
+        if (context->complexTypes.find(type.name) != context->complexTypes.end())
         {
-            return Type::getInt8PtrTy(llvmContext);
+            return context->complexTypes[type.name]->getType();
         }
-        return Type::getVoidTy(llvmContext);
+
+        // Fallback to void
+        return Type::getVoidTy(context->llvmContext);
     }
 
     /* Code generation */
@@ -78,8 +83,11 @@ namespace stark
         // Set value as global variable
         auto init = ConstantArray::get(ArrayType::get(Type::getInt8Ty(context->llvmContext), chars.size()), chars);
         GlobalVariable *v = new GlobalVariable(*context->module, init->getType(), true, GlobalVariable::ExternalLinkage, init, utf8string);
-        // Return pointer? on the string
-        this->result = ConstantExpr::getBitCast(v, Type::getInt8Ty(context->llvmContext)->getPointerTo());
+
+        // Build and return string instance
+        // TODO : use a builder on the complex type to generate the value with named parameters map
+        Constant *values[] = {v, ConstantInt::get(Type::getInt64Ty(context->llvmContext), utf8string.size(), true)};
+        this->result = ConstantStruct::get(context->complexTypes["string"]->getType(), values);
     }
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
@@ -93,7 +101,7 @@ namespace stark
         // Note : variables are stored as pointers into the symbol table
         // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
         // From the variable type to get the real value (and not the pointer on that value)
-        this->result = new LoadInst(context->locals()[node->name]->getType()->getPointerElementType(), context->locals()[node->name], "load", false, context->currentBlock());
+        this->result = new LoadInst(context->locals()[node->name]->value->getType()->getPointerElementType(), context->locals()[node->name]->value, "load", false, context->currentBlock());
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -124,7 +132,7 @@ namespace stark
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
-        this->result = new StoreInst(v.result, context->locals()[node->lhs.name], false, context->currentBlock());
+        this->result = new StoreInst(v.result, context->locals()[node->lhs.name]->value, false, context->currentBlock());
     }
 
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
@@ -146,8 +154,8 @@ namespace stark
             context->logger.logError(formatv("variable {0} already declared", node->id.name));
         }
 
-        AllocaInst *alloc = new AllocaInst(typeOf(node->type, context->llvmContext), 0, node->id.name.c_str(), context->currentBlock());
-        context->locals()[node->id.name] = alloc;
+        AllocaInst *alloc = new AllocaInst(typeOf(node->type, context), 0, node->id.name.c_str(), context->currentBlock());
+        context->locals()[node->id.name] = new CodeGenVariable(node->id.name, node->type.name, alloc);
 
         if (node->assignmentExpr != NULL)
         {
@@ -173,11 +181,11 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
-            argTypes.push_back(typeOf((**it).type, context->llvmContext));
+            argTypes.push_back(typeOf((**it).type, context));
         }
 
         // Create function
-        FunctionType *ftype = FunctionType::get(typeOf(node->type, context->llvmContext), makeArrayRef(argTypes), false);
+        FunctionType *ftype = FunctionType::get(typeOf(node->type, context), makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, node->id.name.c_str(), context->module);
 
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
@@ -194,7 +202,7 @@ namespace stark
 
             argumentValue = &*argsValues++;
             argumentValue->setName((*it)->id.name.c_str());
-            StoreInst *inst = new StoreInst(argumentValue, context->locals()[(*it)->id.name], false, context->currentBlock());
+            StoreInst *inst = new StoreInst(argumentValue, context->locals()[(*it)->id.name]->value, false, context->currentBlock());
         }
 
         CodeGenVisitor v(context);
@@ -208,15 +216,17 @@ namespace stark
         }
         else
         {
-            if (function->getReturnType()->isVoidTy()) {
+            if (function->getReturnType()->isVoidTy())
+            {
                 // Add return to void function
                 context->logger.logDebug(formatv("adding void return in {0}.{1}", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
                 ReturnInst::Create(context->llvmContext, context->currentBlock());
-            } else {
+            }
+            else
+            {
                 context->logger.logDebug(formatv("missing return in {0}.{1}, adding one with block value", context->currentBlock()->getParent()->getName(), context->currentBlock()->getName()));
                 ReturnInst::Create(context->llvmContext, v.result, context->currentBlock());
             }
-            
         }
 
         context->popBlock();
@@ -254,9 +264,9 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
-            argTypes.push_back(typeOf((**it).type, context->llvmContext));
+            argTypes.push_back(typeOf((**it).type, context));
         }
-        FunctionType *ftype = FunctionType::get(typeOf(node->type, context->llvmContext), makeArrayRef(argTypes), false);
+        FunctionType *ftype = FunctionType::get(typeOf(node->type, context), makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
         this->result = function;
     }
@@ -447,10 +457,11 @@ namespace stark
         if (!currentFunction->getReturnType()->isVoidTy())
         {
             PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), 2, "iftmp");
-            if (node->trueBlock.statements.size() > 0 && vt.result != NULL && !vt.result->getType()->isVoidTy()) {
+            if (node->trueBlock.statements.size() > 0 && vt.result != NULL && !vt.result->getType()->isVoidTy())
+            {
                 PN->addIncoming(vt.result, ifBlock);
             }
-            
+
             if (generateElseBlock && vf.result != NULL && !vf.result->getType()->isVoidTy())
                 PN->addIncoming(vf.result, elseBlock);
             this->result = PN;
@@ -486,10 +497,10 @@ namespace stark
         Builder.SetInsertPoint(context->currentBlock());
         Builder.CreateBr(whileTestBlock);
 
-         // Generate test block ------------------------
+        // Generate test block ------------------------
         context->pushBlock(whileTestBlock, true);
 
-         // Generate condition code
+        // Generate condition code
         CodeGenVisitor vc(context);
         node->condition.accept(&vc);
 
@@ -508,17 +519,20 @@ namespace stark
         context->pushBlock(whileBlock, true);
         node->block.accept(&vb);
 
-        // Create branch to test block, or return 
+        // Create branch to test block, or return
         Builder.SetInsertPoint(context->currentBlock());
-        if (context->returnValue() != NULL) {
+        if (context->returnValue() != NULL)
+        {
             Builder.CreateRet(context->returnValue());
-        } else {
+        }
+        else
+        {
             Builder.CreateBr(whileTestBlock);
         }
-        
+
         // Update if block pointer after generation (to support recursivity)
         whileBlock = Builder.GetInsertBlock();
-        
+
         context->popBlock();
 
         // Generate merge block
@@ -526,11 +540,43 @@ namespace stark
         Builder.SetInsertPoint(mergeBlock);
 
         context->pushBlock(mergeBlock, true);
-        
+
         // Mark current block as merge block
         // In order to remember to double pop blocks at the end of a function
         context->setMergeBlock(true);
+    }
 
+    void CodeGenVisitor::visit(ASTMemberAccess *node)
+    {
+        context->logger.logDebug(formatv("creating member access for {0}.{1}", node->variable.name, node->member.name));
+
+        if (context->locals().find(node->variable.name) == context->locals().end())
+        {
+            context->logger.logError(formatv("undeclared identifier {0}", node->variable.name));
+        }
+
+
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->currentBlock());
+
+        // Retrieve variable
+        CodeGenVariable *variable = context->locals()[node->variable.name];
+
+        // Retrieve complex type
+        CodeGenComplexType *complexType = context->complexTypes[variable->typeName];
+
+        // Retrieve member
+        CodeGenComplexTypeMember *member = complexType->getMember(node->member.name);
+        if (member == NULL) {
+            context->logger.logError(formatv("no member named {0} for variable {1} ({2})", node->member.name, node->variable.name, complexType->name));
+        }
+
+        // Access 2 arg
+        std::vector<llvm::Value *> indices;
+        indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
+        indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));
+        Value *memberValue = Builder.CreateGEP(context->locals()[node->variable.name]->value, indices, "memberptr");
+        this->result = Builder.CreateLoad(memberValue->getType()->getPointerElementType(), memberValue, "loadmember");
     }
 
 } // namespace stark

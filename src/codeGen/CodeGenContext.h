@@ -12,6 +12,9 @@
 #include "../lang/ast/AST.h"
 #include "../util/Util.h"
 
+#include "CodeGenComplexType.h"
+#include "CodeGenVariable.h"
+
 using namespace llvm;
 
 namespace stark
@@ -24,7 +27,7 @@ namespace stark
   {
   public:
     BasicBlock *block;
-    std::map<std::string, Value *> locals;
+    std::map<std::string, CodeGenVariable *> locals;
     bool isMergeBlock;
     Value *returnValue;
   };
@@ -35,19 +38,27 @@ namespace stark
   class CodeGenContext
   {
     std::stack<CodeGenBlock *> blocks;
+
     Function *mainFunction;
+
+  private:
+    void declareComplexTypes();
 
   public:
     Module *module;
     LLVMContext llvmContext;
     stark::Logger logger;
+
+    /* Holds language complex types */
+    std::map<std::string, CodeGenComplexType *> complexTypes;
+
     // TOTO : "main" should be the source file name
     CodeGenContext() { module = new Module("main", llvmContext); }
 
     void generateCode(ASTBlock &root);
     GenericValue runCode();
-    std::map<std::string, Value *> &locals() { return blocks.top()->locals; }
-    void setLocals(std::map<std::string, Value *> &l) { blocks.top()->locals = l; }
+    std::map<std::string, CodeGenVariable *> &locals() { return blocks.top()->locals; }
+    void setLocals(std::map<std::string, CodeGenVariable *> &l) { blocks.top()->locals = l; }
     BasicBlock *currentBlock() { return blocks.top()->block; }
     void pushBlock(BasicBlock *block);
     void pushBlock(BasicBlock *block, bool inheritLocals);

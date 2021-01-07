@@ -28,6 +28,18 @@ namespace stark
 
 	class CodeGenVisitor;
 
+	/* Declare complex types */
+	void CodeGenContext::declareComplexTypes()
+	{
+		// string
+		CodeGenComplexType *stringType = new CodeGenComplexType("string", &llvmContext);
+		stringType->addMember("data", Type::getInt8PtrTy(llvmContext));
+		stringType->addMember("len", IntegerType::getInt64Ty(llvmContext));
+		stringType->declare();
+		complexTypes[stringType->name] = stringType;
+
+	}
+
 	/* Push new block on the stack */
 	void CodeGenContext::pushBlock(BasicBlock *block)
 	{
@@ -42,7 +54,7 @@ namespace stark
  * with ability to copy local variables of the curretn block to the new block */
 	void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals)
 	{
-		std::map<std::string, Value *> &l = this->locals();
+		std::map<std::string, CodeGenVariable *> &l = this->locals();
 		this->pushBlock(block);
 		blocks.top()->locals = l;
 	}
@@ -77,6 +89,9 @@ namespace stark
 
 		// Root visitor
 		CodeGenVisitor visitor(this);
+
+		// Declare complex types
+		declareComplexTypes();
 
 		// Create the top level interpreter function to call as entry
 		vector<Type *> argTypes;

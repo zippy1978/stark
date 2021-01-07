@@ -59,5 +59,6 @@ while                   return parser::token::WHILE;
 "}"                     return parser::token::RBRACE;
 ","                     return parser::token::COMMA;
 ":"                     return parser::token::COLON;
+"."                     return parser::token::DOT;
 
 .                       { std::cerr << "Line " << lineno() << ": Unexpected character: '" << YYText() << "'." << std::endl; exit(1); }

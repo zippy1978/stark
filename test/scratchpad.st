@@ -1,4 +1,4 @@
-extern print(s: string): void
+extern println(s: string): void
 extern printi(i: int): void
 extern printd(i: double): void
 extern now(): int
@@ -9,17 +9,10 @@ extern assertTrue(actual: bool): void
 
 
 
-func t(): int {
+s: string = "coucou"
 
-    start: int = now()
-    now: int = now()
-    while (true) {
-        now = now()
-        if (now > 0) {
-            return 0
-        }
-    }
-    return 1
-}
-printi(t())
+l: int = s.len
+printi(l)
+
+println(s)
 

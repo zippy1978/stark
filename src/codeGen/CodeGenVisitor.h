@@ -33,6 +33,7 @@ namespace stark
     void visit(ASTComparison *node);
     void visit(ASTIfElseStatement *node);
     void visit(ASTWhileStatement *node);
+    void visit(ASTMemberAccess *node);
   };
 
 } // namespace stark

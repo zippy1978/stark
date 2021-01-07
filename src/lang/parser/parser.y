@@ -32,6 +32,7 @@
 %token LBRACE RBRACE
 %token COMMA
 %token COLON
+%token DOT
 %token FUNC EXTERN RETURN
 %token PLUS MINUS MUL DIV OR AND
 %token TRUE FALSE
@@ -40,7 +41,7 @@
 %token WHILE
 
 %type <ident> ident
-%type <expr> numeric expr str comparison
+%type <expr> numeric expr str comparison member_access
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_decl extern_decl if_else_stmt while_stmt
 %type <varvec> func_decl_args
@@ -251,6 +252,13 @@ comparison:
             $$ = new stark::ASTComparison(*$1, stark::GE, *$3);
       }
 ;
+
+member_access:
+      ident DOT ident 
+      {
+            $$ = new stark::ASTMemberAccess(*$1, *$3); 
+      }
+;
     
 expr: 
       ident EQUAL expr 
@@ -268,6 +276,8 @@ expr:
             $$ = new stark::ASTMethodCall(*$1, *$3); 
             delete $3; 
       }
+|
+      member_access
 | 
       numeric
 | 

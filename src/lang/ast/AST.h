@@ -208,6 +208,15 @@ namespace stark
     void accept(ASTVisitor *visitor);
   };
 
+  class ASTMemberAccess : public ASTExpression
+  {
+  public:
+    const ASTIdentifier &variable;
+    const ASTIdentifier &member;
+    ASTMemberAccess(const ASTIdentifier &variable, const ASTIdentifier &member) : variable(variable), member(member) {}
+    void accept(ASTVisitor *visitor);
+  };
+
   /*
  * Virtual class to visit the AST.
  */
@@ -231,6 +240,7 @@ namespace stark
     virtual void visit(ASTComparison *node) = 0;
     virtual void visit(ASTIfElseStatement *node) = 0;
     virtual void visit(ASTWhileStatement *node) = 0;
+    virtual void visit(ASTMemberAccess *node) = 0;
   };
 
 } // namespace stark
