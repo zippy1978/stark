@@ -79,8 +79,8 @@ namespace stark
     void declareComplexType(CodeGenComplexType *complexType);
     CodeGenComplexType *getComplexType(std::string name);
 
-    std::map<std::string, CodeGenVariable *> &locals() { return blocks.top()->locals; }
-    void setLocals(std::map<std::string, CodeGenVariable *> &l) { blocks.top()->locals = l; }
+    void addLocal(CodeGenVariable *var);
+    CodeGenVariable *getLocal(std::string name);
 
     BasicBlock *currentBlock() { return blocks.top()->block; }
     void pushBlock(BasicBlock *block);
@@ -88,7 +88,7 @@ namespace stark
     void popBlock();
     bool isMergeBlock() { return blocks.top()->isMergeBlock; }
     void setMergeBlock(bool isMerge) { blocks.top()->isMergeBlock = isMerge; }
-    Value *returnValue() { return blocks.top()->returnValue; }
+    Value *getReturnValue() { return blocks.top()->returnValue; }
     void setReturnValue(Value *value) { blocks.top()->returnValue = value; }
 
   };

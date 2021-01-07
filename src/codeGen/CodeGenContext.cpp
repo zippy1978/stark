@@ -47,11 +47,28 @@ namespace stark
 	CodeGenComplexType *CodeGenContext::getComplexType(std::string name)
 	{
 		if (complexTypes.find(name) != complexTypes.end())
-        {
-            return complexTypes[name];
-        }
+		{
+			return complexTypes[name];
+		}
 
-        return NULL;
+		return NULL;
+	}
+
+	void CodeGenContext::addLocal(CodeGenVariable *var)
+	{
+		CodeGenBlock *top = blocks.top();
+		top->locals[var->name] = var;
+	}
+
+	CodeGenVariable *CodeGenContext::getLocal(std::string name)
+	{
+		CodeGenBlock *top = blocks.top();
+		if (top->locals.find(name) != top->locals.end())
+		{
+			return top->locals[name];
+		}
+
+		return NULL;
 	}
 
 	/* Push new block on the stack */
@@ -68,7 +85,9 @@ namespace stark
  * with ability to copy local variables of the curretn block to the new block */
 	void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals)
 	{
-		std::map<std::string, CodeGenVariable *> &l = this->locals();
+		CodeGenBlock *top = blocks.top();
+
+		std::map<std::string, CodeGenVariable *> &l = top->locals;
 		this->pushBlock(block);
 		blocks.top()->locals = l;
 	}

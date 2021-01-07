@@ -99,7 +99,8 @@ namespace stark
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
         context->logger.logDebug(formatv("creating identifier reference {0}", node->name));
-        if (context->locals().find(node->name) == context->locals().end())
+        CodeGenVariable *var = context->getLocal(node->name);
+        if (var == NULL)
         {
             context->logger.logError(formatv("undeclared identifier {0}", node->name));
         }
@@ -107,7 +108,7 @@ namespace stark
         // Note : variables are stored as pointers into the symbol table
         // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
         // From the variable type to get the real value (and not the pointer on that value)
-        this->result = new LoadInst(context->locals()[node->name]->value->getType()->getPointerElementType(), context->locals()[node->name]->value, "load", false, context->currentBlock());
+        this->result = new LoadInst(var->value->getType()->getPointerElementType(), var->value, "load", false, context->currentBlock());
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -131,14 +132,15 @@ namespace stark
     {
 
         context->logger.logDebug(formatv("creating assignment for {0}", node->lhs.name));
-        if (context->locals().find(node->lhs.name) == context->locals().end())
+        CodeGenVariable *var = context->getLocal(node->lhs.name);
+        if (var == NULL)
         {
             context->logger.logError(formatv("undeclared variable {0}", node->lhs.name));
         }
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
-        this->result = new StoreInst(v.result, context->locals()[node->lhs.name]->value, false, context->currentBlock());
+        this->result = new StoreInst(v.result, var->value, false, context->currentBlock());
     }
 
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
@@ -155,13 +157,13 @@ namespace stark
 
         context->logger.logDebug(formatv("creating variable declaration {0} {1}", node->type.name, node->id.name));
 
-        if (context->locals().find(node->id.name) != context->locals().end())
+        if (context->getLocal(node->id.name) != NULL)
         {
             context->logger.logError(formatv("variable {0} already declared", node->id.name));
         }
 
         AllocaInst *alloc = new AllocaInst(typeOf(node->type, context), 0, node->id.name.c_str(), context->currentBlock());
-        context->locals()[node->id.name] = new CodeGenVariable(node->id.name, node->type.name, alloc);
+        context->addLocal(new CodeGenVariable(node->id.name, node->type.name, alloc));
 
         if (node->assignmentExpr != NULL)
         {
@@ -208,7 +210,7 @@ namespace stark
 
             argumentValue = &*argsValues++;
             argumentValue->setName((*it)->id.name.c_str());
-            StoreInst *inst = new StoreInst(argumentValue, context->locals()[(*it)->id.name]->value, false, context->currentBlock());
+            StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->value, false, context->currentBlock());
         }
 
         CodeGenVisitor v(context);
@@ -216,9 +218,9 @@ namespace stark
 
         // Add return at the end.
         // If no return : add a default one
-        if (context->returnValue() != NULL)
+        if (context->getReturnValue() != NULL)
         {
-            ReturnInst::Create(context->llvmContext, context->returnValue(), context->currentBlock());
+            ReturnInst::Create(context->llvmContext, context->getReturnValue(), context->currentBlock());
         }
         else
         {
@@ -412,9 +414,9 @@ namespace stark
 
         // Add branch to merge block
         Builder.SetInsertPoint(context->currentBlock());
-        if (context->returnValue() != NULL)
+        if (context->getReturnValue() != NULL)
         {
-            Builder.CreateRet(context->returnValue());
+            Builder.CreateRet(context->getReturnValue());
         }
         else
         {
@@ -439,9 +441,9 @@ namespace stark
 
             // Add branch to merge block
             Builder.SetInsertPoint(context->currentBlock());
-            if (context->returnValue() != NULL)
+            if (context->getReturnValue() != NULL)
             {
-                Builder.CreateRet(context->returnValue());
+                Builder.CreateRet(context->getReturnValue());
             }
             else
             {
@@ -527,9 +529,9 @@ namespace stark
 
         // Create branch to test block, or return
         Builder.SetInsertPoint(context->currentBlock());
-        if (context->returnValue() != NULL)
+        if (context->getReturnValue() != NULL)
         {
-            Builder.CreateRet(context->returnValue());
+            Builder.CreateRet(context->getReturnValue());
         }
         else
         {
@@ -556,16 +558,15 @@ namespace stark
     {
         context->logger.logDebug(formatv("creating member access for {0}.{1}", node->variable.name, node->member.name));
 
-        if (context->locals().find(node->variable.name) == context->locals().end())
+        // Retrieve variable
+        CodeGenVariable *variable = context->getLocal(node->variable.name);
+        if (variable == NULL)
         {
             context->logger.logError(formatv("undeclared identifier {0}", node->variable.name));
         }
 
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->currentBlock());
-
-        // Retrieve variable
-        CodeGenVariable *variable = context->locals()[node->variable.name];
 
         // Retrieve complex type
         CodeGenComplexType *complexType = context->getComplexType(variable->typeName);
@@ -581,7 +582,7 @@ namespace stark
         std::vector<llvm::Value *> indices;
         indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
         indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));
-        Value *memberValue = Builder.CreateGEP(context->locals()[node->variable.name]->value, indices, "memberptr");
+        Value *memberValue = Builder.CreateGEP(variable->value, indices, "memberptr");
         this->result = Builder.CreateLoad(memberValue->getType()->getPointerElementType(), memberValue, "loadmember");
     }
 
