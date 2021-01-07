@@ -17,7 +17,12 @@ using namespace stark;
 namespace stark
 {
 
-    /* Returns an LLVM type based on the identifier */
+    /**
+     * Returns an LLVM type based on a identifier.
+     * First look for primatry types.
+     * Then look for complex types.
+     * If no type found, returns void type.
+     */
     static Type *typeOf(const ASTIdentifier &type, CodeGenContext *context)
     {
         // Primary types
@@ -44,7 +49,7 @@ namespace stark
         return Type::getVoidTy(context->llvmContext);
     }
 
-    /* Code generation */
+    // Code generation
 
     void CodeGenVisitor::visit(ASTInteger *node)
     {
@@ -555,7 +560,6 @@ namespace stark
             context->logger.logError(formatv("undeclared identifier {0}", node->variable.name));
         }
 
-
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->currentBlock());
 
@@ -567,7 +571,8 @@ namespace stark
 
         // Retrieve member
         CodeGenComplexTypeMember *member = complexType->getMember(node->member.name);
-        if (member == NULL) {
+        if (member == NULL)
+        {
             context->logger.logError(formatv("no member named {0} for variable {1} ({2})", node->member.name, node->variable.name, complexType->name));
         }
 

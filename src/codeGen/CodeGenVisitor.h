@@ -7,8 +7,9 @@ namespace stark
 {
 
   /**
- * Code generation AST visitor
- */
+   * Code generation AST visitor.
+   * Generates llvm code for every AST node.
+   */
   class CodeGenVisitor : public ASTVisitor
   {
     CodeGenContext *context;

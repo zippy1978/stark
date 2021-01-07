@@ -12,6 +12,9 @@ using namespace llvm;
 
 namespace stark
 {
+    /**
+     * Represents a variable.
+     */
     class CodeGenVariable
     {
 

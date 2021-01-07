@@ -47,9 +47,10 @@
 %type <varvec> func_decl_args
 %type <exprvec> call_args
 
-/* Operator precedence for mathematical operators */
+/* Operator precedence */
 %left PLUS MINUS MUL DIV OR AND
 %left COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
+%left DOT
 
 %start program
 

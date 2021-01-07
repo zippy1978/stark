@@ -1,4 +1,5 @@
 extern println(s: string): void
+extern print(s: string): void
 extern printi(i: int): void
 extern printd(i: double): void
 extern now(): int
@@ -11,8 +12,7 @@ extern assertTrue(actual: bool): void
 
 s: string = "coucou"
 
-l: int = s.len
-printi(l)
-
-println(s)
+print(s)
+print(" length is ")
+printi(s.len)
 
