@@ -40,9 +40,10 @@ namespace stark
         }
 
         // Complex types
-        if (context->complexTypes.find(type.name) != context->complexTypes.end())
+        CodeGenComplexType *complexType = context->getComplexType(type.name);
+        if (complexType != NULL)
         {
-            return context->complexTypes[type.name]->getType();
+            return complexType->getType();
         }
 
         // Fallback to void
@@ -92,7 +93,7 @@ namespace stark
         // Build and return string instance
         // TODO : use a builder on the complex type to generate the value with named parameters map
         Constant *values[] = {v, ConstantInt::get(Type::getInt64Ty(context->llvmContext), utf8string.size(), true)};
-        this->result = ConstantStruct::get(context->complexTypes["string"]->getType(), values);
+        this->result = ConstantStruct::get(context->getComplexType("string")->getType(), values);
     }
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
@@ -567,7 +568,7 @@ namespace stark
         CodeGenVariable *variable = context->locals()[node->variable.name];
 
         // Retrieve complex type
-        CodeGenComplexType *complexType = context->complexTypes[variable->typeName];
+        CodeGenComplexType *complexType = context->getComplexType(variable->typeName);
 
         // Retrieve member
         CodeGenComplexTypeMember *member = complexType->getMember(node->member.name);
@@ -576,7 +577,7 @@ namespace stark
             context->logger.logError(formatv("no member named {0} for variable {1} ({2})", node->member.name, node->variable.name, complexType->name));
         }
 
-        // Access 2 arg
+        // Load member
         std::vector<llvm::Value *> indices;
         indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
         indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));

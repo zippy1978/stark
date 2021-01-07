@@ -52,6 +52,9 @@ namespace stark
     /* Program main function */
     Function *mainFunction;
 
+    /* Holds language complex types (built-in and custom) */
+    std::map<std::string, CodeGenComplexType *> complexTypes;
+
   private:
     /* Declare built-in complex types into the LLVMContext */
     void declareComplexTypes();
@@ -61,8 +64,7 @@ namespace stark
     LLVMContext llvmContext;
     stark::Logger logger;
 
-    /* Holds language complex types (built-in and custom) */
-    std::map<std::string, CodeGenComplexType *> complexTypes;
+    
 
     // TODO : "main" should be the source file name
     CodeGenContext() { module = new Module("main", llvmContext); }
@@ -72,6 +74,10 @@ namespace stark
 
     /* Execute geenrated program code */
     GenericValue runCode();
+
+    /* Generate a complex type declaration */
+    void declareComplexType(CodeGenComplexType *complexType);
+    CodeGenComplexType *getComplexType(std::string name);
 
     std::map<std::string, CodeGenVariable *> &locals() { return blocks.top()->locals; }
     void setLocals(std::map<std::string, CodeGenVariable *> &l) { blocks.top()->locals = l; }
@@ -84,7 +90,7 @@ namespace stark
     void setMergeBlock(bool isMerge) { blocks.top()->isMergeBlock = isMerge; }
     Value *returnValue() { return blocks.top()->returnValue; }
     void setReturnValue(Value *value) { blocks.top()->returnValue = value; }
-    
+
   };
 
 } // namespace stark

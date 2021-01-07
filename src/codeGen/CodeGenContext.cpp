@@ -28,16 +28,30 @@ namespace stark
 
 	class CodeGenVisitor;
 
-	/* Declare complex types */
 	void CodeGenContext::declareComplexTypes()
 	{
 		// string
 		CodeGenComplexType *stringType = new CodeGenComplexType("string", &llvmContext);
 		stringType->addMember("data", Type::getInt8PtrTy(llvmContext));
 		stringType->addMember("len", IntegerType::getInt64Ty(llvmContext));
-		stringType->declare();
-		complexTypes[stringType->name] = stringType;
+		declareComplexType(stringType);
+	}
 
+	void CodeGenContext::declareComplexType(CodeGenComplexType *complexType)
+	{
+
+		complexType->declare();
+		complexTypes[complexType->name] = complexType;
+	}
+
+	CodeGenComplexType *CodeGenContext::getComplexType(std::string name)
+	{
+		if (complexTypes.find(name) != complexTypes.end())
+        {
+            return complexTypes[name];
+        }
+
+        return NULL;
 	}
 
 	/* Push new block on the stack */
