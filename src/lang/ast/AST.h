@@ -91,7 +91,8 @@ namespace stark
   {
   public:
     std::string name;
-    ASTIdentifier(const std::string &name) : name(name) {}
+    ASTIdentifier *member; // Nullable because not mandatory
+    ASTIdentifier(const std::string &name, ASTIdentifier *member) : name(name), member(member) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -208,12 +209,12 @@ namespace stark
     void accept(ASTVisitor *visitor);
   };
 
-  class ASTMemberAccess : public ASTExpression
+  class ASTStructDeclaration : public ASTStatement
   {
   public:
-    const ASTIdentifier &variable;
-    const ASTIdentifier &member;
-    ASTMemberAccess(const ASTIdentifier &variable, const ASTIdentifier &member) : variable(variable), member(member) {}
+    ASTIdentifier &id;
+    ASTVariableList arguments;
+    ASTStructDeclaration(ASTIdentifier &id, const ASTVariableList &arguments) : id(id), arguments(arguments) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -240,7 +241,7 @@ namespace stark
     virtual void visit(ASTComparison *node) = 0;
     virtual void visit(ASTIfElseStatement *node) = 0;
     virtual void visit(ASTWhileStatement *node) = 0;
-    virtual void visit(ASTMemberAccess *node) = 0;
+    virtual void visit(ASTStructDeclaration *node) = 0;
   };
 
 } // namespace stark

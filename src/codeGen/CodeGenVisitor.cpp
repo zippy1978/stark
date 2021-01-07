@@ -18,6 +18,50 @@ namespace stark
 {
 
     /**
+     * get variable as llvm:Value for a complex type from an identifier.
+     * Recurse to get the end value in case of a nested identifier.
+     */
+    static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
+    {
+
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        if (identifier->member == NULL)
+        {
+            return varValue;
+        }
+        else
+        {
+            context->logger.logDebug(formatv("resolving value for {0} in complex type {1}", identifier->member->name, complexType->getName()));
+
+            CodeGenComplexTypeMember *member = complexType->getMember(identifier->member->name);
+            if (member == NULL)
+            {
+                context->logger.logError(formatv("no member named {0} for type {1}", identifier->member->name, complexType->getName()));
+            }
+
+            // Load member value
+            std::vector<llvm::Value *> indices;
+            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
+            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));
+            Value *memberValue = Builder.CreateGEP(varValue, indices, "memberptr");
+
+            // Is member a complex type ?
+            CodeGenComplexType *memberComplexType = context->getComplexType(member->typeName);
+            if (memberComplexType != NULL)
+            {
+                // Recruse
+                return getComplexTypeMemberValue(memberComplexType, memberValue, identifier->member, context);
+            }
+            else
+            {
+                return memberValue;
+            }
+        }
+    }
+
+    /**
      * Returns an LLVM type based on a identifier.
      * First look for primatry types.
      * Then look for complex types.
@@ -99,16 +143,22 @@ namespace stark
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
         context->logger.logDebug(formatv("creating identifier reference {0}", node->name));
+        if (node->member != NULL)
+        {
+            context->logger.logDebug(formatv("identifier reference {0} if a nested identifier", node->name));
+        }
+
         CodeGenVariable *var = context->getLocal(node->name);
         if (var == NULL)
         {
             context->logger.logError(formatv("undeclared identifier {0}", node->name));
         }
 
-        // Note : variables are stored as pointers into the symbol table
-        // So, when we load the value of a variable, whe must use ->getType()->getPointerElementType()
-        // From the variable type to get the real value (and not the pointer on that value)
-        this->result = new LoadInst(var->getValue()->getType()->getPointerElementType(), var->getValue(), "load", false, context->getCurrentBlock());
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Value *varValue = getComplexTypeMemberValue(context->getComplexType(var->getTypeName()), var->getValue(), node, context);
+        this->result = Builder.CreateLoad(varValue->getType()->getPointerElementType(), varValue, "load");
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -140,7 +190,9 @@ namespace stark
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
-        this->result = new StoreInst(v.result, var->getValue(), false, context->getCurrentBlock());
+        Value *varValue = getComplexTypeMemberValue(context->getComplexType(var->getTypeName()), var->getValue(), &node->lhs, context);
+
+        this->result = new StoreInst(v.result, varValue, false, context->getCurrentBlock());
     }
 
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
@@ -554,36 +606,17 @@ namespace stark
         context->setMergeBlock(true);
     }
 
-    void CodeGenVisitor::visit(ASTMemberAccess *node)
+    void CodeGenVisitor::visit(ASTStructDeclaration *node)
     {
-        context->logger.logDebug(formatv("creating member access for {0}.{1}", node->variable.name, node->member.name));
+        context->logger.logDebug(formatv("creating struct declaration {0}", node->id.name));
 
-        // Retrieve variable
-        CodeGenVariable *variable = context->getLocal(node->variable.name);
-        if (variable == NULL)
+        CodeGenComplexType *structType = new CodeGenComplexType(node->id.name, &context->llvmContext);
+        ASTVariableList::const_iterator it;
+        for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
-            context->logger.logError(formatv("undeclared identifier {0}", node->variable.name));
+            structType->addMember((**it).id.name, (**it).type.name, typeOf((**it).type, context));
         }
-
-        IRBuilder<> Builder(context->llvmContext);
-        Builder.SetInsertPoint(context->getCurrentBlock());
-
-        // Retrieve complex type
-        CodeGenComplexType *complexType = context->getComplexType(variable->getTypeName());
-
-        // Retrieve member
-        CodeGenComplexTypeMember *member = complexType->getMember(node->member.name);
-        if (member == NULL)
-        {
-            context->logger.logError(formatv("no member named {0} for variable {1} ({2})", node->member.name, node->variable.name, complexType->getName()));
-        }
-
-        // Load member
-        std::vector<llvm::Value *> indices;
-        indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-        indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, member->position, true)));
-        Value *memberValue = Builder.CreateGEP(variable->getValue(), indices, "memberptr");
-        this->result = Builder.CreateLoad(memberValue->getType()->getPointerElementType(), memberValue, "loadmember");
+        context->declareComplexType(structType);
     }
 
 } // namespace stark

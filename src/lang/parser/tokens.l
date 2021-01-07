@@ -24,6 +24,7 @@
 
 extern                  return parser::token::EXTERN;
 func                    return parser::token::FUNC;
+struct                  return parser::token::STRUCT;
 return                  return parser::token::RETURN;
 true                    return parser::token::TRUE;
 false                   return parser::token::FALSE;

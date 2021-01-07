@@ -33,7 +33,7 @@
 %token COMMA
 %token COLON
 %token DOT
-%token FUNC EXTERN RETURN
+%token FUNC EXTERN RETURN STRUCT
 %token PLUS MINUS MUL DIV OR AND
 %token TRUE FALSE
 %token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
@@ -41,10 +41,10 @@
 %token WHILE
 
 %type <ident> ident
-%type <expr> numeric expr str comparison member_access
+%type <expr> numeric expr str comparison
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl extern_decl if_else_stmt while_stmt
-%type <varvec> func_decl_args
+%type <stmt> stmt var_decl func_decl struct_decl extern_decl if_else_stmt while_stmt
+%type <varvec> decl_args
 %type <exprvec> call_args
 
 /* Operator precedence */
@@ -80,6 +80,8 @@ stmt:
       var_decl
 | 
       func_decl
+|
+      struct_decl
 | 
       extern_decl
 | 
@@ -138,21 +140,21 @@ var_decl:
 ;
 
 extern_decl:
-      EXTERN ident LPAREN func_decl_args RPAREN COLON ident
+      EXTERN ident LPAREN decl_args RPAREN COLON ident
       { 
             $$ = new stark::ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
       }
 ;
 
 func_decl: 
-      FUNC ident LPAREN func_decl_args RPAREN COLON ident block
+      FUNC ident LPAREN decl_args RPAREN COLON ident block
       { 
             $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4, *$8); 
             delete $4; 
       }
 ;
     
-func_decl_args: 
+decl_args: 
       /*blank*/  
       { 
             $$ = new stark::ASTVariableList(); 
@@ -164,16 +166,30 @@ func_decl_args:
             $$->push_back($<var_decl>1); 
       }
 | 
-      func_decl_args COMMA var_decl 
+      decl_args COMMA var_decl 
       { 
             $1->push_back($<var_decl>3); 
+      }
+;
+
+struct_decl:
+      STRUCT ident LBRACE decl_args RBRACE
+      { 
+            $$ = new stark::ASTStructDeclaration(*$2, *$4); 
+            delete $4; 
       }
 ;
 
 ident: 
       IDENTIFIER 
       { 
-            $$ = new stark::ASTIdentifier(*$1); 
+            $$ = new stark::ASTIdentifier(*$1, NULL); 
+            delete $1; 
+      }
+|
+      IDENTIFIER DOT ident
+      {
+            $$ = new stark::ASTIdentifier(*$1, $3); 
             delete $1; 
       }
 ;
@@ -253,13 +269,6 @@ comparison:
             $$ = new stark::ASTComparison(*$1, stark::GE, *$3);
       }
 ;
-
-member_access:
-      ident DOT ident 
-      {
-            $$ = new stark::ASTMemberAccess(*$1, *$3); 
-      }
-;
     
 expr: 
       ident EQUAL expr 
@@ -277,8 +286,6 @@ expr:
             $$ = new stark::ASTMethodCall(*$1, *$3); 
             delete $3; 
       }
-|
-      member_access
 | 
       numeric
 | 

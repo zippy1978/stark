@@ -32,8 +32,8 @@ namespace stark
 	{
 		// string
 		CodeGenComplexType *stringType = new CodeGenComplexType("string", &llvmContext);
-		stringType->addMember("data", Type::getInt8PtrTy(llvmContext));
-		stringType->addMember("len", IntegerType::getInt64Ty(llvmContext));
+		stringType->addMember("data", "void", Type::getInt8PtrTy(llvmContext));
+		stringType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
 		declareComplexType(stringType);
 	}
 

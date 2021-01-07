@@ -31,7 +31,7 @@ clean:
 test: compile
 	./$(OUT_DIR)/stark test/comments.st
 	./$(OUT_DIR)/stark test/variables/declaration.st
-	./$(OUT_DIR)/stark test/variables/assignement.st
+	./$(OUT_DIR)/stark test/variables/assignment.st
 	./$(OUT_DIR)/stark test/functions/declaration.st
 	./$(OUT_DIR)/stark test/functions/call.st
 	./$(OUT_DIR)/stark test/functions/external.st
@@ -40,6 +40,8 @@ test: compile
 	./$(OUT_DIR)/stark test/statements/ifelse.st
 	./$(OUT_DIR)/stark test/statements/while.st
 	./$(OUT_DIR)/stark test/types/string.st
+	./$(OUT_DIR)/stark test/structs/declaration.st
+	./$(OUT_DIR)/stark test/structs/assignment.st
 
 scratch:
 	./$(OUT_DIR)/stark test/scratchpad.st

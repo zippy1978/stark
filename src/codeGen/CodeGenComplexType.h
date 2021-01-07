@@ -22,7 +22,8 @@ namespace stark
         /* Define member position in the structure */
         int position;
         Type *type;
-        CodeGenComplexTypeMember(std::string name, int position, Type *type) : name(name), position(position), type(type) {}
+        std::string typeName;
+        CodeGenComplexTypeMember(std::string name, std::string typeName, int position, Type *type) : name(name), typeName(typeName), position(position), type(type) {}
     };
 
     /**
@@ -42,7 +43,7 @@ namespace stark
         void declare();
         /* Returns the complex type llvm::StructType, returns NULL is complex type is not declared yet */
         StructType *getType() { return type; }
-        void addMember(std::string name, Type *type) { members.push_back(new CodeGenComplexTypeMember(name, members.size(), type)); }
+        void addMember(std::string name, std::string typeName, Type *type) { members.push_back(new CodeGenComplexTypeMember(name, typeName, members.size(), type)); }
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
     };
