@@ -30,6 +30,7 @@
 %token EQUAL
 %token LPAREN RPAREN
 %token LBRACE RBRACE
+%token LBRACKET RBRACKET
 %token COMMA
 %token COLON
 %token DOT
@@ -125,12 +126,17 @@ block:
 var_decl: 
       ident COLON ident 
       { 
-            $$ = new stark::ASTVariableDeclaration(*$3, *$1, NULL); 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, NULL); 
+      }
+| 
+      ident COLON ident LBRACKET RBRACKET
+      { 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, NULL); 
       }
 | 
       ident COLON ident EQUAL expr 
       { 
-            $$ = new stark::ASTVariableDeclaration(*$3, *$1, $5); 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, $5); 
       }
 |
       RETURN expr 

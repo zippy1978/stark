@@ -30,9 +30,19 @@ namespace stark
 
 	void CodeGenContext::declareComplexTypes()
 	{
+		// array
+		// This is a special type : it cannot be instantiated as other types.
+		// So : it is not stored in the complexType maps
+		CodeGenComplexType *arrayType = new CodeGenComplexType("array", &llvmContext);
+		arrayType->addMember("elements", "-", Type::getInt8PtrTy(llvmContext));
+		arrayType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
+		arrayType->declare();
+		arrayComplexType = arrayType;
+
+
 		// string
 		CodeGenComplexType *stringType = new CodeGenComplexType("string", &llvmContext);
-		stringType->addMember("data", "void", Type::getInt8PtrTy(llvmContext));
+		stringType->addMember("data", "-", Type::getInt8PtrTy(llvmContext));
 		stringType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
 		declareComplexType(stringType);
 	}

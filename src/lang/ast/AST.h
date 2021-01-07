@@ -127,7 +127,8 @@ namespace stark
     const ASTIdentifier &type;
     ASTIdentifier &id;
     ASTExpression *assignmentExpr; // Pointer, because nullable
-    ASTVariableDeclaration(const ASTIdentifier &type, ASTIdentifier &id, ASTExpression *assignmentExpr) : type(type), id(id), assignmentExpr(assignmentExpr) {}
+    bool isArray;
+    ASTVariableDeclaration(const ASTIdentifier &type, ASTIdentifier &id, bool isArray, ASTExpression *assignmentExpr) : type(type), id(id), isArray(isArray), assignmentExpr(assignmentExpr) {}
     void accept(ASTVisitor *visitor);
   };
 

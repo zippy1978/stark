@@ -58,6 +58,8 @@ while                   return parser::token::WHILE;
 ")"                     return parser::token::RPAREN;
 "{"                     return parser::token::LBRACE;
 "}"                     return parser::token::RBRACE;
+"["                     return parser::token::LBRACKET;
+"]"                     return parser::token::RBRACKET;
 ","                     return parser::token::COMMA;
 ":"                     return parser::token::COLON;
 "."                     return parser::token::DOT;

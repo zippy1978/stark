@@ -22,9 +22,10 @@ namespace stark
         std::string typeName;
         Value *value;
         Type *type;
+        bool array;
 
     public:
-        CodeGenVariable(std::string name, std::string typeName, Type *type) : name(name), typeName(typeName), type(type)
+        CodeGenVariable(std::string name, std::string typeName, bool array, Type *type) : name(name), typeName(typeName), array(array), type(type)
         {
             type = NULL;
             value = NULL;
@@ -34,6 +35,7 @@ namespace stark
         std::string getTypeName() { return typeName; }
         Type *getType() { return type; }
         Value *getValue() { return value; }
+        bool isArray() {return array; }
     };
 
 } // namespace stark

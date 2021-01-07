@@ -48,7 +48,8 @@ namespace stark
             Value *memberValue = Builder.CreateGEP(varValue, indices, "memberptr");
 
             // Is member a complex type ?
-            CodeGenComplexType *memberComplexType = context->getComplexType(member->typeName);
+            // Handle special type lookup for array
+            CodeGenComplexType *memberComplexType = member->array ? context->getArrayComplexType() : context->getComplexType(member->typeName);
             if (memberComplexType != NULL)
             {
                 // Recruse
@@ -56,6 +57,10 @@ namespace stark
             }
             else
             {
+                if(identifier->member->member != NULL) {
+                    context->logger.logError(formatv("no member named {0}", identifier->member->member->name));
+                }
+
                 return memberValue;
             }
         }
@@ -145,7 +150,7 @@ namespace stark
         context->logger.logDebug(formatv("creating identifier reference {0}", node->name));
         if (node->member != NULL)
         {
-            context->logger.logDebug(formatv("identifier reference {0} if a nested identifier", node->name));
+            context->logger.logDebug(formatv("identifier reference {0} is a nested identifier", node->name));
         }
 
         CodeGenVariable *var = context->getLocal(node->name);
@@ -157,7 +162,11 @@ namespace stark
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-        Value *varValue = getComplexTypeMemberValue(context->getComplexType(var->getTypeName()), var->getValue(), node, context);
+        // Retrieve variable complex type
+        // Special case for array : if it is an array, retruns the array type
+        CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType() : context->getComplexType(var->getTypeName());
+
+        Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
         this->result = Builder.CreateLoad(varValue->getType()->getPointerElementType(), varValue, "load");
     }
 
@@ -214,7 +223,14 @@ namespace stark
             context->logger.logError(formatv("variable {0} already declared", node->id.name));
         }
 
-        CodeGenVariable *var = new CodeGenVariable(node->id.name, node->type.name, typeOf(node->type, context));
+        // Type selection : based on the value of the delcaration
+        // Except if it is an array
+        Type * type = typeOf(node->type, context);
+        if (node->isArray) {
+            type = context->getArrayComplexType()->getType();
+        }
+
+        CodeGenVariable *var = new CodeGenVariable(node->id.name, node->type.name, node->isArray, type);
         context->declareLocal(var);
 
         if (node->assignmentExpr != NULL)
