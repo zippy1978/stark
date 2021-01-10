@@ -44,6 +44,10 @@ namespace stark
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptr");
             elementsPointer = Builder.CreateLoad(elementsPointer->getType()->getPointerTo(), elementsPointer);
             varValue = Builder.CreateInBoundsGEP(elementsMember->type, elementsPointer, vi.result, "elementptr");
+            
+
+            // Set current complex type as array element type
+            complexType = context->getComplexType(elementsMember->typeName);
         }
 
         if (identifier->member == NULL)
@@ -52,6 +56,7 @@ namespace stark
         }
         else
         {
+
             context->logger.logDebug(formatv("resolving value for {0} in complex type {1}", identifier->member->name, complexType->getName()));
 
             CodeGenComplexTypeMember *member = complexType->getMember(identifier->member->name);
@@ -61,6 +66,7 @@ namespace stark
             }
 
             // Load member value
+            
             Value *memberValue = Builder.CreateStructGEP(varValue, member->position, "memberptr");
 
             // Is member a complex type ?

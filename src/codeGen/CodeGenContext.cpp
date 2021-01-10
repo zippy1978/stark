@@ -116,7 +116,7 @@ namespace stark
 		if (arrayComplexType == NULL)
 		{
 			CodeGenComplexType *arrayType = new CodeGenComplexType(formatv("array.{0}", typeName), &llvmContext);
-			arrayType->addMember("elements", "-", getType(typeName));
+			arrayType->addMember("elements", typeName, getType(typeName)->getPointerTo());
 			arrayType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
 			arrayType->declare();
 			arrayComplexType = arrayType;
