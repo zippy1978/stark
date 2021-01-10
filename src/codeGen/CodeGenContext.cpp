@@ -30,21 +30,60 @@ namespace stark
 
 	void CodeGenContext::declareComplexTypes()
 	{
-		// array
-		// This is a special type : it cannot be instantiated as other types.
-		// So : it is not stored in the complexType maps
-		CodeGenComplexType *arrayType = new CodeGenComplexType("array", &llvmContext);
-		arrayType->addMember("elements", "-", Type::getInt8PtrTy(llvmContext));
-		arrayType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
-		arrayType->declare();
-		arrayComplexType = arrayType;
-
-
 		// string
 		CodeGenComplexType *stringType = new CodeGenComplexType("string", &llvmContext);
 		stringType->addMember("data", "-", Type::getInt8PtrTy(llvmContext));
 		stringType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
 		declareComplexType(stringType);
+	}
+
+	Type *CodeGenContext::getType(std::string typeName)
+	{
+		// Primary types
+		if (typeName.compare("int") == 0)
+		{
+			return Type::getInt64Ty(llvmContext);
+		}
+		else if (typeName.compare("bool") == 0)
+		{
+			return Type::getInt1Ty(llvmContext);
+		}
+		else if (typeName.compare("double") == 0)
+		{
+			return Type::getDoubleTy(llvmContext);
+		}
+
+		// Complex types
+		CodeGenComplexType *complexType = getComplexType(typeName);
+		if (complexType != NULL)
+		{
+			return complexType->getType();
+		}
+
+		// Fallback to void
+		return Type::getVoidTy(llvmContext);
+	}
+
+	std::string CodeGenContext::getTypeName(Type *type)
+	{
+
+		std::string typeStr;
+		llvm::raw_string_ostream rso(typeStr);
+		type->print(rso);
+		std::string llvmTypeName = rso.str();
+
+		if (llvmTypeName.compare("i64") == 0)
+		{
+			return "int";
+		}
+		else if (llvmTypeName.compare("i1") == 0)
+		{
+			return "bool";
+		}
+		else 
+		{
+			return llvmTypeName;
+		}
 	}
 
 	void CodeGenContext::declareComplexType(CodeGenComplexType *complexType)
@@ -62,6 +101,29 @@ namespace stark
 		}
 
 		return NULL;
+	}
+
+	CodeGenComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
+	{
+		// First : try to find the array type (if alredy declared)
+		CodeGenComplexType *arrayComplexType = NULL;
+		if (arrayComplexTypes.find(typeName) != arrayComplexTypes.end())
+		{
+			arrayComplexType = arrayComplexTypes[typeName];
+		}
+
+		// If not found : declare it
+		if (arrayComplexType == NULL)
+		{
+			CodeGenComplexType *arrayType = new CodeGenComplexType(formatv("array.{0}", typeName), &llvmContext);
+			arrayType->addMember("elements", "-", getType(typeName));
+			arrayType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
+			arrayType->declare();
+			arrayComplexType = arrayType;
+			arrayComplexTypes[typeName] = arrayType;
+		}
+
+		return arrayComplexType;
 	}
 
 	void CodeGenContext::declareLocal(CodeGenVariable *var)

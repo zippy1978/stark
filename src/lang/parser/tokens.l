@@ -60,6 +60,7 @@ while                   return parser::token::WHILE;
 "}"                     return parser::token::RBRACE;
 "["                     return parser::token::LBRACKET;
 "]"                     return parser::token::RBRACKET;
+"[]"                    return parser::token::EMPTYBRACKETS;
 ","                     return parser::token::COMMA;
 ":"                     return parser::token::COLON;
 "."                     return parser::token::DOT;

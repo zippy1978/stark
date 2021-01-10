@@ -6,6 +6,28 @@
  * Note: cannot be used from a binary, unless linked.
  */
 
+typedef struct intArray {
+    long long* elements;
+    long long len;
+} intArray;
+
+extern "C" intArray createIntArray()
+{
+    intArray arr;
+    long long* innerArray = (long long *)malloc(3 * sizeof(long long));
+    innerArray[0] = 1;
+    innerArray[1] = 2;
+    innerArray[2] = 3;
+    arr.elements = innerArray;
+    arr.len = 3;
+    return arr;
+}
+
+extern "C" void printIntArray(intArray arr)
+{
+    printf("content = %lld, %lld, %lld . size = %lld\n", arr.elements[0], arr.elements[1], arr.elements[2], arr.len);
+}
+
 /* Test functions */
 
 extern "C" void assertIntEquals(long long actual, long long expected)

@@ -30,7 +30,7 @@
 %token EQUAL
 %token LPAREN RPAREN
 %token LBRACE RBRACE
-%token LBRACKET RBRACKET
+%token LBRACKET RBRACKET EMPTYBRACKETS
 %token COMMA
 %token COLON
 %token DOT
@@ -124,14 +124,19 @@ block:
 ;
 
 var_decl: 
+     ident COLON ident EMPTYBRACKETS
+      { 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, NULL); 
+      }
+| 
+      ident COLON ident EMPTYBRACKETS EQUAL expr 
+      { 
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, $6); 
+      }
+| 
       ident COLON ident 
       { 
             $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, NULL); 
-      }
-| 
-      ident COLON ident LBRACKET RBRACKET
-      { 
-            $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, NULL); 
       }
 | 
       ident COLON ident EQUAL expr 
@@ -150,12 +155,25 @@ extern_decl:
       { 
             $$ = new stark::ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
       }
+|
+      EXTERN ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS
+      { 
+            $7->array = true;
+            $$ = new stark::ASTExternDeclaration(*$7, *$2, *$4); delete $4; 
+      }
 ;
 
 func_decl: 
       FUNC ident LPAREN decl_args RPAREN COLON ident block
       { 
             $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4, *$8); 
+            delete $4; 
+      }
+|
+      FUNC ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS block
+      { 
+            $7->array = true;
+            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4, *$9); 
             delete $4; 
       }
 ;
@@ -197,6 +215,20 @@ ident:
       {
             $$ = new stark::ASTIdentifier(*$1, $3); 
             delete $1; 
+      }
+|
+      IDENTIFIER LBRACKET INTEGER RBRACKET
+      {
+            $$ = new stark::ASTIdentifier(*$1, atol($3->c_str()), NULL); 
+            delete $1; 
+            delete $3; 
+      }
+|
+      IDENTIFIER LBRACKET INTEGER RBRACKET DOT ident
+      {
+            $$ = new stark::ASTIdentifier(*$1, atol($3->c_str()), $6); 
+            delete $1; 
+            delete $3; 
       }
 ;
 

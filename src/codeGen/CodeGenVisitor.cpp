@@ -16,21 +16,9 @@ using namespace stark;
 
 namespace stark
 {
-    static Value *getArrayElementValue(Value *varValue, Value *index, CodeGenContext *context)
-    {
-
-        IRBuilder<> Builder(context->llvmContext);
-        Builder.SetInsertPoint(context->getCurrentBlock());
-
-        // Load member value
-        std::vector<llvm::Value *> indices;
-        indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-        indices.push_back(index);
-        return Builder.CreateInBoundsGEP(varValue, indices, "elementptr");
-    }
 
     /**
-     * get variable as llvm:Value for a complex type from an identifier.
+     * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
      */
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
@@ -38,6 +26,22 @@ namespace stark
 
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
+
+        // TODO : array element access crash !!!
+        // Array case must point to index element
+        if (identifier->index >= 0)
+        {
+
+            context->logger.logDebug(formatv("resolving array index {0}", identifier->index));
+
+            // Get elements member
+            CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
+            // Load elements value
+            // Important must use the point of the elements member value in order for GEP to work (**type)
+            Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptr");
+            elementsPointer = Builder.CreateLoad(elementsPointer->getType()->getPointerTo(), elementsPointer);
+            varValue = Builder.CreateInBoundsGEP(elementsMember->type, elementsPointer, ConstantInt::get(context->llvmContext, APInt(32, identifier->index, true)), "elementptr");
+        }
 
         if (identifier->member == NULL)
         {
@@ -58,7 +62,7 @@ namespace stark
 
             // Is member a complex type ?
             // Handle special type lookup for array
-            CodeGenComplexType *memberComplexType = member->array ? context->getArrayComplexType() : context->getComplexType(member->typeName);
+            CodeGenComplexType *memberComplexType = member->array ? context->getArrayComplexType(member->typeName) : context->getComplexType(member->typeName);
             if (memberComplexType != NULL)
             {
                 // Recruse
@@ -77,36 +81,14 @@ namespace stark
     }
 
     /**
-     * Returns an LLVM type based on a identifier.
+     * Returns an LLVM type based on an identifier.
      * First look for primatry types.
      * Then look for complex types.
      * If no type found, returns void type.
      */
     static Type *typeOf(const ASTIdentifier &type, CodeGenContext *context)
     {
-        // Primary types
-        if (type.name.compare("int") == 0)
-        {
-            return Type::getInt64Ty(context->llvmContext);
-        }
-        else if (type.name.compare("bool") == 0)
-        {
-            return Type::getInt1Ty(context->llvmContext);
-        }
-        else if (type.name.compare("double") == 0)
-        {
-            return Type::getDoubleTy(context->llvmContext);
-        }
-
-        // Complex types
-        CodeGenComplexType *complexType = context->getComplexType(type.name);
-        if (complexType != NULL)
-        {
-            return complexType->getType();
-        }
-
-        // Fallback to void
-        return Type::getVoidTy(context->llvmContext);
+        return context->getType(type.name);
     }
 
     // Code generation
@@ -179,28 +161,32 @@ namespace stark
         }
 
         // Alloc inner array
-        AllocaInst *innerArrayAlloc = new AllocaInst(ArrayType::get(elementType, node->arguments.size()), 0,  "arrayinneralloc", context->getCurrentBlock());
+        AllocaInst *innerArrayAlloc = new AllocaInst(ArrayType::get(elementType, node->arguments.size()), 0, "arrayinneralloc", context->getCurrentBlock());
 
         // Initialize inner array with elements
         // TODO : there is probably a way to write the whole content in a single instruction !!!
         long index = 0;
         for (auto it = elementValues.begin(); it != elementValues.end(); it++)
         {
-            Value *elementVarValue = getArrayElementValue(innerArrayAlloc, ConstantInt::get(context->llvmContext, APInt(32, index, true)), context);
+            std::vector<llvm::Value *> indices;
+            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
+            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, index, true)));
+            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;
         }
 
         // Create array instance
-        Value *arrayAlloc = new AllocaInst(context->getArrayComplexType()->getType(), 0, "arrayinit", context->getCurrentBlock());
+
+        Value *arrayAlloc = new AllocaInst(context->getArrayComplexType(context->getTypeName(elementType))->getType(), 0, "arrayinit", context->getCurrentBlock());
 
         // Set len member
         Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
         Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->arguments.size(), true), lenMember);
 
         // Set elements member with inner array
-        Value *elementsMember = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
-        Builder.CreateStore(innerArrayAlloc, elementsMember);
+        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
+        Builder.CreateStore(innerArrayAlloc, elementsMemberPointer);
 
         // Return new instance
         this->result = Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
@@ -224,8 +210,8 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Retrieve variable complex type
-        // Special case for array : if it is an array, retruns the array type
-        CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType() : context->getComplexType(var->getTypeName());
+        // Special case for array : if it is an array, use the array type
+        CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
 
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
         this->result = Builder.CreateLoad(varValue->getType()->getPointerElementType(), varValue, "load");
@@ -284,12 +270,12 @@ namespace stark
             context->logger.logError(formatv("variable {0} already declared", node->id.name));
         }
 
-        // Type selection : based on the value of the delcaration
+        // Type selection : based on the value of the declaration
         // Except if it is an array
         Type *type = typeOf(node->type, context);
         if (node->isArray)
         {
-            type = context->getArrayComplexType()->getType();
+            type = context->getArrayComplexType(node->type.name)->getType();
         }
 
         CodeGenVariable *var = new CodeGenVariable(node->id.name, node->type.name, node->isArray, type);
@@ -323,7 +309,9 @@ namespace stark
         }
 
         // Create function
-        FunctionType *ftype = FunctionType::get(typeOf(node->type, context), makeArrayRef(argTypes), false);
+
+        Type *returnType = node->type.array ? context->getArrayComplexType(node->type.name)->getType() : typeOf(node->type, context);
+        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, node->id.name.c_str(), context->module);
 
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
@@ -404,7 +392,8 @@ namespace stark
         {
             argTypes.push_back(typeOf((**it).type, context));
         }
-        FunctionType *ftype = FunctionType::get(typeOf(node->type, context), makeArrayRef(argTypes), false);
+        Type *returnType = node->type.array ? context->getArrayComplexType(node->type.name)->getType() : typeOf(node->type, context);
+        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
         this->result = function;
     }

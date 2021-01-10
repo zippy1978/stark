@@ -55,8 +55,8 @@ namespace stark
     /* Holds language complex types (built-in and custom) */
     std::map<std::string, CodeGenComplexType *> complexTypes;
 
-    /* Holds specificque complex type for array support */
-    CodeGenComplexType *arrayComplexType;
+    /* Holds array types (by type) */
+    std::map<std::string, CodeGenComplexType *> arrayComplexTypes;
 
   private:
     /* Declare built-in complex types into the LLVMContext */
@@ -78,8 +78,18 @@ namespace stark
 
     /* Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
+
+    /* Return matching complex type information from a type name */
     CodeGenComplexType *getComplexType(std::string name);
-    CodeGenComplexType *getArrayComplexType() { return arrayComplexType; }
+
+    /* Return matching array type (complex type) for a given enclosing type name */
+    CodeGenComplexType *getArrayComplexType(std::string typeName);
+
+    /* Return LLVM type from a type name */
+    Type *getType(std::string typeName);
+
+    /* Try to find type name from LLVM type */
+    std::string getTypeName(Type *type);
 
     void declareLocal(CodeGenVariable *var);
     CodeGenVariable *getLocal(std::string name);
