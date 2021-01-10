@@ -99,11 +99,11 @@ namespace stark
   {
   public:
     std::string name;
-    ASTIdentifier *member; // Nullable because not mandatory
-    long long index = -1; // Index to handle varArray[index]
+    ASTIdentifier *member = NULL; // Nullable because not mandatory
+    ASTExpression *index = NULL; // Index to handle varArray[index]
     bool array = false; // Indicates it is an array in case of usage in a delcaration
     ASTIdentifier(const std::string &name, ASTIdentifier *member) : name(name), member(member) {}
-    ASTIdentifier(const std::string &name, long long index, ASTIdentifier *member) : name(name), index(index), member(member) {}
+    ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifier *member) : name(name), index(index), member(member) {}
     void accept(ASTVisitor *visitor);
   };
 

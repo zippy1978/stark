@@ -217,18 +217,16 @@ ident:
             delete $1; 
       }
 |
-      IDENTIFIER LBRACKET INTEGER RBRACKET
+      IDENTIFIER LBRACKET expr RBRACKET
       {
-            $$ = new stark::ASTIdentifier(*$1, atol($3->c_str()), NULL); 
+            $$ = new stark::ASTIdentifier(*$1, $3, NULL); 
             delete $1; 
-            delete $3; 
       }
 |
-      IDENTIFIER LBRACKET INTEGER RBRACKET DOT ident
+      IDENTIFIER LBRACKET expr RBRACKET DOT ident
       {
-            $$ = new stark::ASTIdentifier(*$1, atol($3->c_str()), $6); 
+            $$ = new stark::ASTIdentifier(*$1, $3, $6); 
             delete $1; 
-            delete $3; 
       }
 ;
 

@@ -29,10 +29,13 @@ namespace stark
 
         // TODO : array element access crash !!!
         // Array case must point to index element
-        if (identifier->index >= 0)
+        if (identifier->index != NULL)
         {
+            context->logger.logDebug("resolving array index");
 
-            context->logger.logDebug(formatv("resolving array index {0}", identifier->index));
+            // Evaluate index expression
+            CodeGenVisitor vi(context);
+            identifier->index->accept(&vi);
 
             // Get elements member
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
@@ -40,7 +43,7 @@ namespace stark
             // Important must use the point of the elements member value in order for GEP to work (**type)
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptr");
             elementsPointer = Builder.CreateLoad(elementsPointer->getType()->getPointerTo(), elementsPointer);
-            varValue = Builder.CreateInBoundsGEP(elementsMember->type, elementsPointer, ConstantInt::get(context->llvmContext, APInt(32, identifier->index, true)), "elementptr");
+            varValue = Builder.CreateInBoundsGEP(elementsMember->type, elementsPointer, vi.result, "elementptr");
         }
 
         if (identifier->member == NULL)

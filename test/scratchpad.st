@@ -22,7 +22,7 @@ a: int[] = [1, 2, 3]
 
 printIntArray(a)
 printi(a[0])
-printi(a[1])
+printi(a[10 - 9])
 printi(a[2])
 print("len is ")
 printi(a.len)
