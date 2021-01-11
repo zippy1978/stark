@@ -17,6 +17,15 @@ using namespace stark;
 namespace stark
 {
 
+    static void printDebugType(Value *value)
+    {
+        std::string typeStr;
+        llvm::raw_string_ostream rso(typeStr);
+        value->getType()->print(rso);
+        std::string llvmTypeName = rso.str();
+        cout << ">>>>>> " << llvmTypeName << endl;
+    }
+
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
@@ -36,14 +45,16 @@ namespace stark
             // Evaluate index expression
             CodeGenVisitor vi(context);
             identifier->index->accept(&vi);
+            Value *indexExprAsInt32 = Builder.CreateIntCast(vi.result, Type::getInt32Ty(context->llvmContext), false);
 
             // Get elements member
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
-            // Load elements value
-            // Important must use the point of the elements member value in order for GEP to work (**type)
-            Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptr");
-            elementsPointer = Builder.CreateLoad(elementsPointer->getType()->getPointerTo(), elementsPointer);
-            varValue = Builder.CreateInBoundsGEP(elementsMember->type, elementsPointer, vi.result, "elementptr");
+
+            // Get elements pointer (and load in between 2 GEPs !)
+            Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptrs");
+            varValue = Builder.CreateLoad(elementsPointer);
+            // Get position in elements pointer
+            varValue = Builder.CreateInBoundsGEP(varValue, indexExprAsInt32);
             
 
             // Set current complex type as array element type
@@ -66,7 +77,7 @@ namespace stark
             }
 
             // Load member value
-            
+
             Value *memberValue = Builder.CreateStructGEP(varValue, member->position, "memberptr");
 
             // Is member a complex type ?
