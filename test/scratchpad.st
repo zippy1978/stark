@@ -14,58 +14,64 @@ struct ship {
 
 struct trooper {
     name: string,
-    serial: int/*,
-    ship: ship*/
+    serial: int,
+    ship: ship
 }
 
 extern createTrooperArray(): trooper[]
 extern printTrooperArray(arr: trooper[]): void
 
-/*sh: ship
-sh.name = "tie"*/
+sh: ship
+sh.name = "tie"
 
-//t1: trooper
-//t1.name = "t1"
-//t1.serial = 1
-//t1.ship = sh
+t1: trooper
+t1.name = "t1"
+t1.serial = 1
+t1.ship = sh
 
 //s: trooper = t1
 
 //println(t1.ship.name)
 
-/*
+
 t2: trooper
 t2.name = "t2"
 t2.serial = 22
-*/
+t2.ship = sh
+
+t3: trooper
+t3.name = "t3"
+t3.serial = 304
+t3.ship = sh
 
 // Bug on litteral probably 
-//army: trooper[] = [t1, t2]
-army: trooper[] = createTrooperArray()
+army: trooper[] = [t1, t2, t3]
+//army: trooper[] = createTrooperArray()
 
 
 printTrooperArray(army)
 
+thes: ship = army[0].ship
+thes.name = "fff"
+println(thes.name)
+
+//army[0].ship = thes
+
 
 println("------------")
-
-/*print("army[0] = ")
-printi(army[0])
-
-print("army[1] = ")
-printi(army[1])*/
-
-print("serial = ")
-printi(army[0].serial)
-printi(army[1].serial)
-
-print("name = ")
-println(army[0].name)
-println(army[1].name)
-
-a: int[] = [1, 2, 3, 4]
-printi(a[2])
-
+i: int = 0
+while ( i < army.len) {
+    print("index = ")
+    printi(i)
+    print("name = ")
+    println(army[i].name)
+    print("serial = ")
+    printi(army[i].serial)
+    print("ship.name = ")
+    println(army[i].ship.name)
+    i = i + 1
+    println("------------")
+}
 
 /*
 

@@ -105,6 +105,17 @@ namespace stark
 
 	CodeGenComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
 	{
+		// If type name starts with "%" (happens when serialized from llvm type) drop it
+		if (typeName.rfind("%", 0) == 0) {
+  			typeName = typeName.erase(0, 1);
+		}
+
+		// Remove everything aftr first space
+		// Case adresses here :
+		// %trooper = type { %string, i64, %ship }
+		std::vector<std::string> nameParts = split(typeName, ' ');
+		typeName = *nameParts.begin();
+
 		// First : try to find the array type (if alredy declared)
 		CodeGenComplexType *arrayComplexType = NULL;
 		if (arrayComplexTypes.find(typeName) != arrayComplexTypes.end())

@@ -168,6 +168,7 @@ namespace stark
 
         // Generate elements and determine type
         std::vector<Value *> elementValues;
+        std::string currentTypeName = "";
         for (auto it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
             CodeGenVisitor v(context);
@@ -177,7 +178,13 @@ namespace stark
             {
                 elementType = v.result->getType();
             }
-            // TODO : find a way to check that all elements are of same type
+
+            // Check that all elements in the array are of the same type
+            std::string newTypeName = context->getTypeName(v.result->getType());
+            if (currentTypeName.compare("") != 0 && newTypeName.compare(currentTypeName) != 0) {
+                context->logger.logError("array elements cannot be of different type");
+            }
+            currentTypeName = context->getTypeName(v.result->getType());
         }
 
         // Alloc inner array
