@@ -70,6 +70,9 @@ namespace stark
 
             context->logger.logDebug(formatv("resolving value for {0} in complex type {1}", identifier->member->name, complexType->getName()));
 
+            
+            
+
             CodeGenComplexTypeMember *member = complexType->getMember(identifier->member->name);
             if (member == NULL)
             {
@@ -708,11 +711,11 @@ namespace stark
     {
         context->logger.logDebug(formatv("creating struct declaration {0}", node->id.name));
 
-        CodeGenComplexType *structType = new CodeGenComplexType(node->id.name, &context->llvmContext);
+        CodeGenComplexType *structType = new CodeGenComplexType(node->id.name, context);
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
-            structType->addMember((**it).id.name, (**it).type.name, typeOf((**it).type, context));
+            structType->addMember((**it).id.name, (**it).type.name, typeOf((**it).type, context), (**it).isArray);
         }
         context->declareComplexType(structType);
     }

@@ -12,6 +12,8 @@ using namespace llvm;
 
 namespace stark
 {
+    class CodeGenContext;
+
     /**
      * Represents a complex type member.
      */
@@ -34,12 +36,12 @@ namespace stark
     class CodeGenComplexType
     {
         std::vector<CodeGenComplexTypeMember *> members;
-        LLVMContext *llvmContext;
+        CodeGenContext *context;
         StructType *type;
         std::string name;
 
     public:
-        CodeGenComplexType(std::string name, LLVMContext *llvmContext) : name(name), llvmContext(llvmContext) { type = NULL; }
+        CodeGenComplexType(std::string name, CodeGenContext *context) : name(name), context(context) { type = NULL; }
         /* Generate declration code of the complex type inside the llvm::LLVMContext */
         void declare();
         /* Returns the complex type llvm::StructType, returns NULL is complex type is not declared yet */
@@ -48,6 +50,7 @@ namespace stark
         void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false); }
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
+        
     };
 
 } // namespace stark

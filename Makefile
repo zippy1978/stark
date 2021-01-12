@@ -42,6 +42,8 @@ test: compile
 	./$(OUT_DIR)/stark test/types/string.st
 	./$(OUT_DIR)/stark test/structs/declaration.st
 	./$(OUT_DIR)/stark test/structs/assignment.st
+	./$(OUT_DIR)/stark test/arrays/declaration.st
+	./$(OUT_DIR)/stark test/arrays/assignment.st
 
 scratch:
 	./$(OUT_DIR)/stark test/scratchpad.st

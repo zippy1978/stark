@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "CodeGenComplexType.h"
+#include "CodeGenContext.h"
 
 using namespace llvm;
 using namespace std;
@@ -22,11 +23,19 @@ namespace stark
         for (auto it = std::begin(members); it != std::end(members); ++it)
         {
             CodeGenComplexTypeMember *m = *it;
-            memberTypes.push_back(m->type);
+            if (m->array)
+            {
+                // Array case : must use the matching array complex type
+                memberTypes.push_back(context->getArrayComplexType(m->name)->getType());
+            }
+            else
+            {
+                memberTypes.push_back(m->type);
+            }
         }
 
         // Build and store struct type
-        type = StructType::create(*llvmContext, memberTypes, name, false);
+        type = StructType::create(context->llvmContext, memberTypes, name, false);
     }
 
     CodeGenComplexTypeMember *CodeGenComplexType::getMember(std::string name)
@@ -34,7 +43,8 @@ namespace stark
         for (auto it = std::begin(members); it != std::end(members); ++it)
         {
             CodeGenComplexTypeMember *m = *it;
-            if (m->name.compare(name) == 0) {
+            if (m->name.compare(name) == 0)
+            {
                 return m;
             }
         }

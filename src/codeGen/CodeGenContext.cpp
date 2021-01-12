@@ -31,7 +31,7 @@ namespace stark
 	void CodeGenContext::declareComplexTypes()
 	{
 		// string
-		CodeGenComplexType *stringType = new CodeGenComplexType("string", &llvmContext);
+		CodeGenComplexType *stringType = new CodeGenComplexType("string", this);
 		stringType->addMember("data", "-", Type::getInt8PtrTy(llvmContext));
 		stringType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
 		declareComplexType(stringType);
@@ -126,7 +126,7 @@ namespace stark
 		// If not found : declare it
 		if (arrayComplexType == NULL)
 		{
-			CodeGenComplexType *arrayType = new CodeGenComplexType(formatv("array.{0}", typeName), &llvmContext);
+			CodeGenComplexType *arrayType = new CodeGenComplexType(formatv("array.{0}", typeName), this);
 			arrayType->addMember("elements", typeName, getType(typeName)->getPointerTo());
 			arrayType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
 			arrayType->declare();
