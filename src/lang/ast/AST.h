@@ -11,10 +11,12 @@ namespace stark
   class ASTStatement;
   class ASTExpression;
   class ASTVariableDeclaration;
+  class ASTIdentifier;
 
   typedef std::vector<ASTStatement *> ASTStatementList;
   typedef std::vector<ASTExpression *> ASTExpressionList;
   typedef std::vector<ASTVariableDeclaration *> ASTVariableList;
+  typedef std::vector<ASTIdentifier *> ASTIdentifierList;
 
   enum ASTBinaryOperation
   {
@@ -100,10 +102,10 @@ namespace stark
   public:
     std::string name;
     ASTIdentifier *member = NULL; // Nullable because not mandatory
-    ASTExpression *index = NULL; // Index to handle varArray[index]
-    bool array = false; // Indicates it is an array in case of usage in a delcaration
-    ASTIdentifier(const std::string &name, ASTIdentifier *member) : name(name), member(member) {}
-    ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifier *member) : name(name), index(index), member(member) {}
+    ASTExpression *index = NULL;  // Index to handle varArray[index]
+    bool array = false;           // Indicates it is an array in case of usage in a delcaration
+    ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifierList *members);
+    //ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifier *member) : name(name), index(index), member(member) {}
     void accept(ASTVisitor *visitor);
   };
 

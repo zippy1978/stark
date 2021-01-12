@@ -19,6 +19,7 @@
     stark::ASTVariableDeclaration *var_decl;
     std::vector<stark::ASTVariableDeclaration*> *varvec;
     std::vector<stark::ASTExpression*> *exprvec;
+    std::vector<stark::ASTIdentifier*> *identvec;
     std::string *string;
     int token;
 }
@@ -42,6 +43,7 @@
 %token WHILE
 
 %type <ident> ident
+%type <identvec> chained_ident
 %type <expr> numeric expr str comparison array
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_decl struct_decl extern_decl if_else_stmt while_stmt
@@ -206,27 +208,53 @@ struct_decl:
 ident: 
       IDENTIFIER 
       { 
-            $$ = new stark::ASTIdentifier(*$1, NULL); 
+            //std::cout << "IDENTIFIER " << *$1 << std::endl;
+            $$ = new stark::ASTIdentifier(*$1, NULL, NULL); 
             delete $1; 
       }
 |
-      ident DOT ident
+      IDENTIFIER DOT chained_ident
       {
-            std::cout << " ------- ident DOT ident " << $1->name << "." << $3->name << std::endl;
-            //$$ = new stark::ASTIdentifier(*$1, $3); 
-            $1->member = $3;
-            $$ = $1;
-            //delete $1; 
+            $$ = new stark::ASTIdentifier(*$1, NULL, $3);      
+            delete $1;
       }
 |
       IDENTIFIER LBRACKET expr RBRACKET
       {
-            std::cout << " ------- ident LBRACKET expr RBRACKET " << *$1  << "[expr]" << std::endl;
-            //$1->index = $3;
-            //$$ = $1;
+            std::cout << "IDENTIFIER LBRACKET expr RBRACKET" << std::endl;
             $$ = new stark::ASTIdentifier(*$1, $3, NULL); 
             delete $1; 
       }
+|
+      IDENTIFIER LBRACKET expr RBRACKET DOT chained_ident
+      {
+            std::cout << "IDENTIFIER LBRACKET expr RBRACKET DOT chained_ident" << std::endl;
+            $$ = new stark::ASTIdentifier(*$1, $3, $6); 
+            delete $1; 
+      }
+
+;
+
+chained_ident:
+      /*blank*/  
+      { 
+            $$ = new stark::ASTIdentifierList(); 
+      }
+| 
+      ident 
+      { 
+            std::cout << ">>> chained_ident / ident " << $1->name << std::endl;
+            $$ = new stark::ASTIdentifierList(); 
+            $$->push_back($1); 
+      }
+| 
+      chained_ident DOT ident  
+      {
+            std::cout << ">>> chained_ident DOT ident " << $1->size()  << "." << $3->name << std::endl;
+            $1->push_back($3); 
+      }
+
+
 ;
 
 str:

@@ -22,4 +22,37 @@ namespace stark
     void ASTStructDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTArray::accept(ASTVisitor *visitor) { visitor->visit(this); }
 
+    ASTIdentifier::ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifierList *members)
+    {
+        this->name = name;
+        this->index = index;
+
+        // Build members from list
+        ASTIdentifierList::const_iterator it;
+        ASTIdentifier *memberIdentifier = NULL;
+        ASTIdentifier *parentIdentifier = NULL;
+        if (members != NULL)
+        {
+            for (it = members->begin(); it != members->end(); it++)
+            {
+                ASTIdentifier *currentIdentifier = *it;
+
+                if (memberIdentifier == NULL)
+                {
+                    memberIdentifier = currentIdentifier;
+                }
+
+                if (parentIdentifier != NULL)
+                {
+                    parentIdentifier->member = currentIdentifier;
+                }
+
+                parentIdentifier = currentIdentifier;
+            }
+                }
+
+        this->member = memberIdentifier;
+
+    }
+
 } // namespace stark

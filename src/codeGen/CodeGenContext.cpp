@@ -106,8 +106,6 @@ namespace stark
 	CodeGenComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
 	{
 
-		cout << "@@@@@@@@@@ retrieve array type " << typeName << endl;
-
 		// If type name starts with "%" (happens when serialized from llvm type) drop it
 		if (typeName.rfind("%", 0) == 0) {
   			typeName = typeName.erase(0, 1);
