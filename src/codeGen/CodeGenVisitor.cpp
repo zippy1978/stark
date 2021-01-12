@@ -36,8 +36,7 @@ namespace stark
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-        // TODO : array element access crash !!!
-        // Array case must point to index element
+        // Array case : must point to index element
         if (identifier->index != NULL)
         {
             context->logger.logDebug("resolving array index");
@@ -53,9 +52,10 @@ namespace stark
             // Get elements pointer (and load in between 2 GEPs !)
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptrs");
             varValue = Builder.CreateLoad(elementsPointer);
+
             // Get position in elements pointer
             varValue = Builder.CreateInBoundsGEP(varValue, indexExprAsInt32);
-            
+            printDebugType(varValue);
 
             // Set current complex type as array element type
             complexType = context->getComplexType(elementsMember->typeName);
@@ -265,6 +265,7 @@ namespace stark
     {
 
         context->logger.logDebug(formatv("creating assignment for {0}", node->lhs.name));
+
         CodeGenVariable *var = context->getLocal(node->lhs.name);
         if (var == NULL)
         {
@@ -273,7 +274,10 @@ namespace stark
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
-        Value *varValue = getComplexTypeMemberValue(context->getComplexType(var->getTypeName()), var->getValue(), &node->lhs, context);
+        // Array case
+        CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
+
+        Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), &node->lhs, context);
 
         this->result = new StoreInst(v.result, varValue, false, context->getCurrentBlock());
     }

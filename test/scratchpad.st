@@ -55,7 +55,8 @@ thes: ship = army[0].ship
 thes.name = "fff"
 println(thes.name)
 
-//army[0].ship = thes
+army[0].name = "coucou"
+army[0].serial = 12
 
 
 println("------------")
