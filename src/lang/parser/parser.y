@@ -51,7 +51,6 @@
 /* Operator precedence */
 %left PLUS MINUS MUL DIV OR AND
 %left COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
-%left DOT
 
 %start program
 
@@ -211,21 +210,21 @@ ident:
             delete $1; 
       }
 |
-      IDENTIFIER DOT ident
+      ident DOT ident
       {
-            $$ = new stark::ASTIdentifier(*$1, $3); 
-            delete $1; 
+            std::cout << " ------- ident DOT ident " << $1->name << "." << $3->name << std::endl;
+            //$$ = new stark::ASTIdentifier(*$1, $3); 
+            $1->member = $3;
+            $$ = $1;
+            //delete $1; 
       }
 |
       IDENTIFIER LBRACKET expr RBRACKET
       {
+            std::cout << " ------- ident LBRACKET expr RBRACKET " << *$1  << "[expr]" << std::endl;
+            //$1->index = $3;
+            //$$ = $1;
             $$ = new stark::ASTIdentifier(*$1, $3, NULL); 
-            delete $1; 
-      }
-|
-      IDENTIFIER LBRACKET expr RBRACKET DOT ident
-      {
-            $$ = new stark::ASTIdentifier(*$1, $3, $6); 
             delete $1; 
       }
 ;

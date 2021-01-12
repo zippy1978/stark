@@ -26,12 +26,33 @@ namespace stark
         cout << ">>>>>> " << llvmTypeName << endl;
     }
 
+    static void printIdent(ASTIdentifier *ident)
+    {
+
+        cout << ident->name;
+
+        while (ident->member != NULL)
+        {
+            cout << "." << ident->member->name;
+            if (ident->member->index != NULL)
+            {
+                cout << "[expr]";
+            }
+            ident = ident->member;
+        }
+
+        cout << endl;
+    }
+
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
      */
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
     {
+        cout << ">>>> CALL getComplexTypeMemberValue ct = " << ((complexType != NULL) ? complexType->getName() : "none") << " value type = " << context->getTypeName(varValue->getType()) << " identifier = " << identifier->name << " index = " << identifier->index << endl;
+        printIdent(identifier);
+        printDebugType(varValue);
 
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -39,6 +60,11 @@ namespace stark
         // Array case : must point to index element
         if (identifier->index != NULL)
         {
+            if (!complexType->isArray())
+            {
+                context->logger.logError(formatv("{0} is not an array type", complexType->getName()));
+            }
+
             context->logger.logDebug("resolving array index");
 
             // Evaluate index expression
@@ -58,48 +84,42 @@ namespace stark
             printDebugType(varValue);
 
             // Set current complex type as array element type
-            complexType = context->getComplexType(elementsMember->typeName);
-        }
+            complexType = elementsMember->array ? context->getArrayComplexType(elementsMember->typeName) : context->getComplexType(elementsMember->typeName);
 
-        if (identifier->member == NULL)
-        {
-            return varValue;
+            cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@  " << elementsMember->array << endl;
+
+            // Remove index to be treated as normal complex type on next call
+            ASTIdentifier newId(identifier->name, NULL, identifier->member);
+
+            // Recurse
+            cout << "## ct after array " << complexType << endl;
+            return getComplexTypeMemberValue(complexType, varValue, &newId, context);
         }
-        else
+        else if (identifier->member != NULL)
         {
 
             context->logger.logDebug(formatv("resolving value for {0} in complex type {1}", identifier->member->name, complexType->getName()));
 
-            
-            
-
-            CodeGenComplexTypeMember *member = complexType->getMember(identifier->member->name);
-            if (member == NULL)
+            CodeGenComplexTypeMember *complexTypeMember = complexType->getMember(identifier->member->name);
+            if (complexTypeMember == NULL)
             {
                 context->logger.logError(formatv("no member named {0} for type {1}", identifier->member->name, complexType->getName()));
             }
 
             // Load member value
-
-            Value *memberValue = Builder.CreateStructGEP(varValue, member->position, "memberptr");
+            varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
 
             // Is member a complex type ?
             // Handle special type lookup for array
-            CodeGenComplexType *memberComplexType = member->array ? context->getArrayComplexType(member->typeName) : context->getComplexType(member->typeName);
-            if (memberComplexType != NULL)
-            {
-                // Recruse
-                return getComplexTypeMemberValue(memberComplexType, memberValue, identifier->member, context);
-            }
-            else
-            {
-                if (identifier->member->member != NULL)
-                {
-                    context->logger.logError(formatv("no member named {0}", identifier->member->member->name));
-                }
+            cout << "######### complexTypeMember->typeName " << complexTypeMember->typeName << endl;
+            complexType = complexTypeMember->array ? context->getArrayComplexType(complexTypeMember->typeName) : context->getComplexType(complexTypeMember->typeName);
 
-                return memberValue;
-            }
+            // Recurse
+            return getComplexTypeMemberValue(complexType, varValue, identifier->member, context);
+        }
+        else
+        {
+            return varValue;
         }
     }
 
@@ -184,7 +204,8 @@ namespace stark
 
             // Check that all elements in the array are of the same type
             std::string newTypeName = context->getTypeName(v.result->getType());
-            if (currentTypeName.compare("") != 0 && newTypeName.compare(currentTypeName) != 0) {
+            if (currentTypeName.compare("") != 0 && newTypeName.compare(currentTypeName) != 0)
+            {
                 context->logger.logError("array elements cannot be of different type");
             }
             currentTypeName = context->getTypeName(v.result->getType());
