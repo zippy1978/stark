@@ -1,5 +1,5 @@
-#ifndef LANG_AST_AST_H
-#define LANG_AST_AST_H
+#ifndef AST_AST_H
+#define AST_AST_H
 
 #include <iostream>
 #include <vector>

@@ -15,20 +15,20 @@ LDFLAGS="-L/usr/local/opt/flex/lib"
 CPPFLAGS="-I/usr/local/opt/flex/include"
 
 generate:
-	$(FLEX) -o $(SRC_DIR)/lang/parser/tokens.cpp $(SRC_DIR)/lang/parser/tokens.l
-	$(BISON) -d -o $(SRC_DIR)/lang/parser/parser.cpp $(SRC_DIR)/lang/parser/parser.y
+	$(FLEX) -o $(SRC_DIR)/parser/tokens.cpp $(SRC_DIR)/parser/tokens.l
+	$(BISON) -d -o $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.y
 
 
-compile: generate
+stark: generate
 	mkdir -p $(OUT_DIR)
-	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/lang/ast/*.cpp $(SRC_DIR)/lang/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/*.cpp
+	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/stark.cpp
 
 clean:
 	# Remove generated source files
-	rm $(SRC_DIR)/lang/parser/*.hh $(SRC_DIR)/lang/parser/*.hpp $(SRC_DIR)/lang/parser/*.cpp
+	rm $(SRC_DIR)/parser/*.hh $(SRC_DIR)/parser/*.hpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/tokens.cpp
 	rm -rf $(OUT_DIR)
 
-test: compile
+test: stark
 	./$(OUT_DIR)/stark test/comments.st
 	./$(OUT_DIR)/stark test/variables/declaration.st
 	./$(OUT_DIR)/stark test/variables/assignment.st

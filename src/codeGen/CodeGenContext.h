@@ -9,7 +9,7 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/Support/FormatVariadic.h>
 
-#include "../lang/ast/AST.h"
+#include "../ast/AST.h"
 #include "../util/Util.h"
 
 #include "CodeGenComplexType.h"
