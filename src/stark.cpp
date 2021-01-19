@@ -7,8 +7,6 @@
 
 using namespace stark;
 
-extern ASTBlock *programBlock;
-
 /**
  * Stark interpreter command
  * Runs code from a source file
@@ -31,11 +29,11 @@ int main(int argc, char *argv[])
 
     // Parse sources
     StarkParser parser(argv[1]);
-    parser.parse(&input);
+    ASTBlock* program = parser.parse(&input);
 
     // Generate and run code
     CodeGenContext context;
-    context.generateCode(*programBlock);
+    context.generateCode(*program);
     context.runCode();
 
     // TODO : return what code generated

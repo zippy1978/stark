@@ -4,9 +4,10 @@
 
 #include "StarkParser.h"
 
+// TODO : find a way to get rid of those globals !
 yyFlexLexer *lexer;
 stark::Logger parserLogger;
-
+extern stark::ASTBlock *programBlock;
 
 int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
 {
@@ -38,12 +39,14 @@ void yy::parser::error(const location_type &loc, const std::string &msg)
 
 namespace stark
 {
-    void StarkParser::parse(std::istream *input)
+    ASTBlock *StarkParser::parse(std::istream *input)
     {
         parserLogger.setFilename(filename);
         lexer = new yyFlexLexer(input);
         yy::parser parser;
         parser.parse();
         delete lexer;
+
+        return programBlock;
     }
 } // namespace stark
