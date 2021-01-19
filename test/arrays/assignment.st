@@ -52,8 +52,5 @@ shopGroups: shopGroup[] = [sg]
 assertIntEquals(shopGroups.len, 1)
 assertIntEquals(shopGroups[0].shops.len, 2)
 
-// Crash to fix
-//assertIntEquals(shopGroups[0].shops[0].id, 1)
-
-/*gg: shop[] = shopGroups[0].shops
-assertIntEquals(gg[0].id, 1)*/
+assertIntEquals(shopGroups[0].shops[0].id, 1)
+assertIntEquals(shopGroups[0].shops[1].id, 2)

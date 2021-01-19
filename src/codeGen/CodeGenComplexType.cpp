@@ -26,7 +26,7 @@ namespace stark
             if (m->array)
             {
                 // Array case : must use the matching array complex type
-                memberTypes.push_back(context->getArrayComplexType(m->name)->getType());
+                memberTypes.push_back(context->getArrayComplexType(m->typeName)->getType());
             }
             else
             {

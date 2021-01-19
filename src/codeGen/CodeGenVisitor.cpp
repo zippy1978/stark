@@ -17,6 +17,7 @@ using namespace stark;
 namespace stark
 {
 
+    /*
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -26,11 +27,21 @@ namespace stark
         cout << ">>>>>> " << llvmTypeName << endl;
     }
 
+    static void printDebugValue(Value *value)
+    {
+        std::string typeStr;
+        llvm::raw_string_ostream rso(typeStr);
+        value->print(rso);
+        std::string llvmTypeName = rso.str();
+        cout << ">>>>>> " << llvmTypeName << endl;
+    }
+
     static void printIdent(ASTIdentifier *ident)
     {
 
         cout << ident->name;
-        if (ident->index != NULL) {
+        if (ident->index != NULL)
+        {
             cout << "[expr]";
         }
 
@@ -45,7 +56,7 @@ namespace stark
         }
 
         cout << endl;
-    }
+    }*/
 
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
@@ -53,17 +64,13 @@ namespace stark
      */
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
     {
-        cout << ">>>> CALL getComplexTypeMemberValue ct = " << ((complexType != NULL) ? complexType->getName() : "none") << " value type = " << context->getTypeName(varValue->getType()) << " identifier = " << identifier->name << " index = " << identifier->index << endl;
-        printIdent(identifier);
-
+   
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Array case : must point to index element
         if (identifier->index != NULL)
         {
-
-            cout << "###### loading an array element" << endl;
 
             if (!complexType->isArray())
             {
@@ -80,13 +87,15 @@ namespace stark
             // Get elements member
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
 
+           
             // Get elements pointer (and load in between 2 GEPs !)
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptrs");
+            
+            // This load seems weird !!!
             varValue = Builder.CreateLoad(elementsPointer);
-
+            
             // Get position in elements pointer
             varValue = Builder.CreateInBoundsGEP(varValue, indexExprAsInt32);
-            printDebugType(varValue);
 
             // Set current complex type as array element type
             complexType = elementsMember->array ? context->getArrayComplexType(elementsMember->typeName) : context->getComplexType(elementsMember->typeName);
@@ -95,18 +104,12 @@ namespace stark
             ASTIdentifierList memberIds;
             memberIds.push_back(identifier->member);
             ASTIdentifier newId(elementsMember->typeName, NULL, &memberIds);
-            
-            /*if (elementsMember->array) {
-                varValue = Builder.CreateLoad(varValue);
-            }*/
 
             // Recurse
             return getComplexTypeMemberValue(complexType, varValue, &newId, context);
         }
         else if (identifier->member != NULL)
         {
-            cout << "###### loading a member" << endl;
-
             context->logger.logDebug(formatv("resolving value for {0} in complex type {1}", identifier->member->name, complexType->getName()));
 
             CodeGenComplexTypeMember *complexTypeMember = complexType->getMember(identifier->member->name);
@@ -116,20 +119,17 @@ namespace stark
             }
 
             // Load member value
-            
             varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
+
             // Is member a complex type ?
             // Handle special type lookup for array
             complexType = complexTypeMember->array ? context->getArrayComplexType(complexTypeMember->typeName) : context->getComplexType(complexTypeMember->typeName);
 
-            cout << "@@@@@@@ will load ct " << (complexType != NULL ? complexType->getName() : "none") << endl;
             // Recurse
             return getComplexTypeMemberValue(complexType, varValue, identifier->member, context);
         }
         else
         {
-            cout << "###### final return" << endl;
-
             return varValue;
         }
     }
@@ -751,6 +751,5 @@ namespace stark
         }
         context->declareComplexType(structType);
     }
-
 
 } // namespace stark

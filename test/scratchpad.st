@@ -35,5 +35,5 @@ sg.name = "the shop group"
 shopGroups: shopGroup[] = [sg]
 
 // Crash to fix
-printi(shopGroups[0].shops[0])
+println(shopGroups[0].shops[1].name)
 //assertIntEquals(shopGroups[0].shops[0].id, 1)
