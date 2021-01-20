@@ -29,21 +29,21 @@ clean:
 	rm -rf $(OUT_DIR)
 
 test: stark
-	./$(OUT_DIR)/stark test/comments.st
-	./$(OUT_DIR)/stark test/variables/declaration.st
-	./$(OUT_DIR)/stark test/variables/assignment.st
-	./$(OUT_DIR)/stark test/functions/declaration.st
-	./$(OUT_DIR)/stark test/functions/call.st
-	./$(OUT_DIR)/stark test/functions/external.st
-	./$(OUT_DIR)/stark test/expressions/binary.st
-	./$(OUT_DIR)/stark test/expressions/comparison.st
-	./$(OUT_DIR)/stark test/statements/ifelse.st
-	./$(OUT_DIR)/stark test/statements/while.st
-	./$(OUT_DIR)/stark test/types/string.st
-	./$(OUT_DIR)/stark test/structs/declaration.st
-	./$(OUT_DIR)/stark test/structs/assignment.st
-	./$(OUT_DIR)/stark test/arrays/declaration.st
-	./$(OUT_DIR)/stark test/arrays/assignment.st
+	./$(OUT_DIR)/stark -d test/comments.st
+	./$(OUT_DIR)/stark -d test/variables/declaration.st
+	./$(OUT_DIR)/stark -d test/variables/assignment.st
+	./$(OUT_DIR)/stark -d test/functions/declaration.st
+	./$(OUT_DIR)/stark -d test/functions/call.st
+	./$(OUT_DIR)/stark -d test/functions/external.st
+	./$(OUT_DIR)/stark -d test/expressions/binary.st
+	./$(OUT_DIR)/stark -d test/expressions/comparison.st
+	./$(OUT_DIR)/stark -d test/statements/ifelse.st
+	./$(OUT_DIR)/stark -d test/statements/while.st
+	./$(OUT_DIR)/stark -d test/types/string.st
+	./$(OUT_DIR)/stark -d test/structs/declaration.st
+	./$(OUT_DIR)/stark -d test/structs/assignment.st
+	./$(OUT_DIR)/stark -d test/arrays/declaration.st
+	./$(OUT_DIR)/stark -d test/arrays/assignment.st
 
 scratch:
-	./$(OUT_DIR)/stark test/scratchpad.st
+	./$(OUT_DIR)/stark -d test/scratchpad.st

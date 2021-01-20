@@ -58,6 +58,9 @@ namespace stark
     /* Holds array types (by type) */
     std::map<std::string, CodeGenComplexType *> arrayComplexTypes;
 
+    /* Run code generation in debug mode if enabled */
+    bool debugEnabled = false;
+
   private:
     /* Declare built-in complex types into the LLVMContext */
     void declareComplexTypes();
@@ -74,7 +77,7 @@ namespace stark
     void generateCode(ASTBlock &root);
 
     /* Execute geenrated program code */
-    int runCode();
+    int runCode(int argc, char *argv[]);
 
     /* Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
@@ -103,6 +106,8 @@ namespace stark
 
     Value *getReturnValue() { return blocks.top()->returnValue; }
     void setReturnValue(Value *value) { blocks.top()->returnValue = value; }
+
+    void setDebugEnabled(bool d) { debugEnabled = d; }
   };
 
 } // namespace stark

@@ -90,8 +90,6 @@ namespace stark
            
             // Get elements pointer (and load in between 2 GEPs !)
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptrs");
-            
-            // This load seems weird !!!
             varValue = Builder.CreateLoad(elementsPointer);
             
             // Get position in elements pointer

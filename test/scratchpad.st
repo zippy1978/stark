@@ -8,10 +8,5 @@ extern assertIntEquals(actual: int, expected: int): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 
-// Simple empty if on main
-if (false) {
-   
-} else {
-    println("false")
-    return 1
-}
+printi(args.len)
+printi(args[0].len)

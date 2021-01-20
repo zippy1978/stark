@@ -208,7 +208,6 @@ struct_decl:
 ident: 
       IDENTIFIER 
       { 
-            //std::cout << "IDENTIFIER " << *$1 << std::endl;
             $$ = new stark::ASTIdentifier(*$1, NULL, NULL); 
             delete $1; 
       }
@@ -221,14 +220,12 @@ ident:
 |
       IDENTIFIER LBRACKET expr RBRACKET
       {
-            std::cout << "IDENTIFIER LBRACKET expr RBRACKET" << std::endl;
             $$ = new stark::ASTIdentifier(*$1, $3, NULL); 
             delete $1; 
       }
 |
       IDENTIFIER LBRACKET expr RBRACKET DOT chained_ident
       {
-            std::cout << "IDENTIFIER LBRACKET expr RBRACKET DOT chained_ident" << std::endl;
             $$ = new stark::ASTIdentifier(*$1, $3, $6); 
             delete $1; 
       }
@@ -243,14 +240,12 @@ chained_ident:
 | 
       ident 
       { 
-            std::cout << ">>> chained_ident / ident " << $1->name << std::endl;
             $$ = new stark::ASTIdentifierList(); 
             $$->push_back($1); 
       }
 | 
       chained_ident DOT ident  
       {
-            std::cout << ">>> chained_ident DOT ident " << $1->size()  << "." << $3->name << std::endl;
             $1->push_back($3); 
       }
 
