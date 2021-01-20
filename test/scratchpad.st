@@ -8,34 +8,10 @@ extern assertIntEquals(actual: int, expected: int): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 
-<toto>
-
-struct shop {
-    id: int,
-    name: string
+// Simple empty if on main
+if (false) {
+   
+} else {
+    println("false")
+    return 1
 }
-
-struct shopGroup {
-    shops: shop[],
-    name: string
-}
-
-s1: shop
-s1.id = 1
-s1.name = "shop 1"
-
-s2: shop
-s2.id = 2
-s2.name = "shop 2"
-
-shops: shop[] = [s1, s2]
-
-sg: shopGroup
-sg.shops = shops
-sg.name = "the shop group"
-
-shopGroups: shopGroup[] = [sg]
-
-// Crash to fix
-println(shopGroups[0].shops[1].name)
-//assertIntEquals(shopGroups[0].shops[0].id, 1)

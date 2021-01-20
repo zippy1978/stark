@@ -572,6 +572,10 @@ namespace stark
         // Used to know if else block should be generated
         bool generateElseBlock = (node->falseBlock != NULL && node->falseBlock->statements.size() > 0);
 
+        if (node->trueBlock.statements.size() == 0 && !generateElseBlock) {
+            return;
+        }
+
         IRBuilder<> Builder(context->llvmContext);
 
         // Generate condition code

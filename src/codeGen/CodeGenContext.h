@@ -74,7 +74,7 @@ namespace stark
     void generateCode(ASTBlock &root);
 
     /* Execute geenrated program code */
-    GenericValue runCode();
+    int runCode();
 
     /* Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);

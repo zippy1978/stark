@@ -34,8 +34,5 @@ int main(int argc, char *argv[])
     // Generate and run code
     CodeGenContext context;
     context.generateCode(*program);
-    context.runCode();
-
-    // TODO : return what code generated
-    return 0;
+    return context.runCode();
 }

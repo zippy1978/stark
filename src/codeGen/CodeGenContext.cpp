@@ -80,7 +80,7 @@ namespace stark
 		{
 			return "bool";
 		}
-		else 
+		else
 		{
 			return llvmTypeName;
 		}
@@ -107,12 +107,13 @@ namespace stark
 	{
 
 		// If type name starts with "%" (happens when serialized from llvm type) drop it
-		if (typeName.rfind("%", 0) == 0) {
-  			typeName = typeName.erase(0, 1);
+		if (typeName.rfind("%", 0) == 0)
+		{
+			typeName = typeName.erase(0, 1);
 		}
 
-		// Remove everything aftr first space
-		// Case adresses here :
+		// Remove everything after first space
+		// Case adressed here :
 		// %trooper = type { %string, i64, %ship }
 		std::vector<std::string> nameParts = split(typeName, ' ');
 		typeName = *nameParts.begin();
@@ -127,7 +128,7 @@ namespace stark
 		// If not found : declare it
 		if (arrayComplexType == NULL)
 		{
-			
+
 			CodeGenComplexType *arrayType = new CodeGenComplexType(formatv("array.{0}", typeName), this, true);
 			arrayType->addMember("elements", typeName, getType(typeName)->getPointerTo());
 			arrayType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
@@ -214,7 +215,7 @@ namespace stark
 
 		// Create the top level interpreter function to call as entry
 		vector<Type *> argTypes;
-		FunctionType *ftype = FunctionType::get(Type::getVoidTy(llvmContext), makeArrayRef(argTypes), false);
+		FunctionType *ftype = FunctionType::get(Type::getInt64Ty(llvmContext), makeArrayRef(argTypes), false);
 		mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
 		BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
 
@@ -225,11 +226,16 @@ namespace stark
 		logger.logDebug(formatv("root type = {0}", typeid(root).name()));
 		root.accept(&visitor);
 
-		// No terminator detected, add a default return to the block
-		if (getCurrentBlock()->getTerminator() == NULL)
+		// No return provided on main function, add a default return to the block (with 0 return)
+		if (this->getReturnValue() != NULL)
 		{
-			logger.logDebug(formatv("not terminator on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
-			ReturnInst::Create(llvmContext, getCurrentBlock());
+			ReturnInst::Create(llvmContext, this->getReturnValue(), getCurrentBlock());
+		}
+		else
+		{
+			// If no return : return 0
+			logger.logDebug(formatv("not return on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
+			ReturnInst::Create(llvmContext, ConstantInt::get(Type::getInt64Ty(llvmContext), 0, true), getCurrentBlock());
 		}
 
 		popBlock();
@@ -243,7 +249,7 @@ namespace stark
 	}
 
 	/* Executes the AST by running the main function */
-	GenericValue CodeGenContext::runCode()
+	int CodeGenContext::runCode()
 	{
 
 		logger.logDebug("running code...");
@@ -261,10 +267,11 @@ namespace stark
 		// TODO: pass manager here !
 
 		ee->finalizeObject();
-		vector<GenericValue> noargs;
-		GenericValue v = ee->runFunction(mainFunction, noargs);
-		logger.logDebug("code was run");
-		return v;
+		const char *const *envp;
+		vector<std::string> argv;
+		int retValue = ee->runFunctionAsMain(mainFunction, argv, envp);
+		logger.logDebug(formatv("code was run, return code is {0}", retValue));
+		return retValue;
 	}
 
 } // namespace stark
