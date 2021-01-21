@@ -8,5 +8,11 @@ extern assertIntEquals(actual: int, expected: int): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 
+print("arg count is ")
 printi(args.len)
-printi(args[0].len)
+println("args are: ")
+i: int = 0
+while (i < args.len) {
+    println(args[i])
+    i = i + 1
+}

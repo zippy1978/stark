@@ -44,6 +44,8 @@ test: stark
 	./$(OUT_DIR)/stark -d test/structs/assignment.st
 	./$(OUT_DIR)/stark -d test/arrays/declaration.st
 	./$(OUT_DIR)/stark -d test/arrays/assignment.st
+	./$(OUT_DIR)/stark -d test/interpreter/args.st arg1 arg2
+	@./$(OUT_DIR)/stark -d test/interpreter/return.st && exit 1 || echo "expected return failure"
 
 scratch:
 	./$(OUT_DIR)/stark -d test/scratchpad.st

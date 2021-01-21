@@ -19,20 +19,13 @@
 
 #include "CodeGenContext.h"
 #include "CodeGenVisitor.h"
+#include "../runtime/Runtime.h"
 
 using namespace llvm;
 using namespace std;
 
 namespace stark
 {
-	static void printDebugValue(Value *value)
-	{
-		std::string typeStr;
-		llvm::raw_string_ostream rso(typeStr);
-		value->print(rso);
-		std::string llvmTypeName = rso.str();
-		cout << ">>>>>> " << llvmTypeName << endl;
-	}
 
 	class CodeGenVisitor;
 
@@ -221,9 +214,9 @@ namespace stark
 		declareComplexTypes();
 
 		// Create the top level interpreter function to call as entry
+
 		vector<Type *> argTypes;
-		argTypes.push_back(Type::getInt32Ty(llvmContext));
-		argTypes.push_back(Type::getInt8PtrTy(llvmContext)->getPointerTo());
+		argTypes.push_back(getArrayComplexType("string")->getType());
 		FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
 		mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
 		BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
@@ -231,9 +224,6 @@ namespace stark
 		// Push a new variable/block context
 		pushBlock(bblock);
 
-		// Probably wrong way to do !!!
-		/*
-		// Add local var "args" containing an array of strings
 		CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
 		declareLocal(argsVar);
 
@@ -242,30 +232,8 @@ namespace stark
 
 		// Get argc and argv values
 		Function::arg_iterator argsValues = mainFunction->arg_begin();
-		Value *argcValue = &*argsValues++;
-		Value *argvValue = &*argsValues++;
-
-		// Initialize "args" var
-		// Set len from argc
-		Value *lenMember = Builder.CreateStructGEP(argsVar->getValue(), 1, "");
-		new StoreInst(Builder.CreateIntCast(argcValue, Type::getInt64Ty(llvmContext), false), lenMember, false, getCurrentBlock());
-
-		// Allocate elements array
-		AllocaInst *elementsArray = Builder.CreateAlloca(getArrayComplexType("string")->getMember("elements")->type, argcValue);
-		
-		// Set first string
-		AllocaInst *stringInst = Builder.CreateAlloca(getComplexType("string")->getType());
-		// Set len
-		Value *strngLenMember = Builder.CreateStructGEP(stringInst, 1, "");
-		new StoreInst(argcValue, strngLenMember, false, getCurrentBlock());
-		// Store string in elements
-		Value *stringValue = Builder.CreateLoad(elementsArray);
-        // Get position in elements pointer
-        stringValue = Builder.CreateInBoundsGEP(stringValue, ConstantInt::get(Type::getInt32Ty(llvmContext), 0, true));
-		new StoreInst(argvValue, stringValue, false, getCurrentBlock());
-
-		// TODO : copy strings from argv here !!!!
-		*/
+		Value *argsValue = &*argsValues++;
+		new StoreInst(argsValue, argsVar->getValue(), false, getCurrentBlock());
 
 		// Start visitor on root
 		logger.logDebug(formatv("root type = {0}", typeid(root).name()));
@@ -313,15 +281,25 @@ namespace stark
 		// TODO: pass manager here !
 
 		ee->finalizeObject();
-		const char *const *envp = {nullptr};
-		vector<std::string> args;
-		args.insert(args.begin(), "argv");
-		for (int i = 1; i < argc; i++)
-		{
-			args.push_back(argv[i]);
-		}
 
-		int retValue = ee->runFunctionAsMain(mainFunction, args, envp);
+		// Build stark string array to pass to main function
+		stark::array args;
+		args.len = argc;
+		stark::string *elements = (stark::string *)malloc(sizeof(stark::string) * argc);
+		for (int i = 0; i < argc; i++)
+		{
+			stark::string s;
+			s.len = strlen(argv[i]);
+			s.data = (char *)malloc(sizeof(char) * s.len);
+			strcpy(s.data, argv[i]);
+			elements[i] = s;
+		}
+		args.elements = elements;
+
+		// Call main function
+		int (*main_func)(stark::array) = (int (*)(stark::array))ee->getFunctionAddress("main");
+		int retValue = main_func(args);
+
 		logger.logDebug(formatv("code was run, return code is {0}", retValue));
 		return retValue;
 	}

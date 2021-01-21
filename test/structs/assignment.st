@@ -3,6 +3,7 @@
  */
 
 extern assertIntEquals(actual: int, expected: int): void
+extern assertStringEquals(actual: string, expected: string): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 extern failure(): void
@@ -32,3 +33,4 @@ superMarket.prices = superMarketPrices
 
 assertIntEquals(superMarket.name.len, 14)
 assertIntEquals(superMarket.prices.wine, 10)
+assertStringEquals(superMarket.name, "super discount")

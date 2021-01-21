@@ -8,7 +8,13 @@ namespace stark
     typedef struct
     {
         char *data;
-        long long len;
+        sint len;
     } string;
+
+    typedef struct
+    {
+        void *elements;
+        sint len;
+    } array;
 
 } // namespace stark

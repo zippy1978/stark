@@ -3,6 +3,7 @@
  */
 
 extern assertIntEquals(actual: int, expected: int): void
+extern assertStringEquals(actual: int, expected: int): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 extern failure(): void
@@ -40,8 +41,10 @@ shops: shop[] = [s1, s2]
 assertIntEquals(shops.len, 2)
 assertIntEquals(shops[0].id, 1)
 assertIntEquals(shops[0].name.len, 6)
+assertStringEquals(shops[0].name, "shop 1")
 assertIntEquals(shops[1].id, 2)
 assertIntEquals(shops[1].name.len, 6)
+assertStringEquals(shops[1].name, "shop 2")
 
 // Array with complex types, containing arrays
 sg: shopGroup
@@ -54,3 +57,5 @@ assertIntEquals(shopGroups[0].shops.len, 2)
 
 assertIntEquals(shopGroups[0].shops[0].id, 1)
 assertIntEquals(shopGroups[0].shops[1].id, 2)
+assertStringEquals(shopGroups[0].shops[0].name, "shop 1")
+assertStringEquals(shopGroups[0].shops[1].name, "shop 2")
