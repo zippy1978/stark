@@ -25,8 +25,11 @@ stark: generate
 
 starkc: generate
 	mkdir -p $(OUT_DIR)
-	$(CC) -g -O3 -o $(OUT_DIR)/starkc `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/starkc.cpp
+	$(CC) -g -O3 -o $(OUT_DIR)/starkc `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/starkc.cpp
 
+runtime: 
+	$(CC) `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/runtime.o
+	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/runtime.o
 
 clean:
 	# Remove generated source files
@@ -55,8 +58,8 @@ test: stark
 scratch:
 	./$(OUT_DIR)/stark -d test/scratchpad.st
 
-compiler: starkc
+compiler: starkc runtime
 	./$(OUT_DIR)/starkc -d -o ./$(OUT_DIR)/main.bc test/main.st
 	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/main.bc
-	gcc -o ./$(OUT_DIR)/main ./$(OUT_DIR)/main.o
+	$(CC) -L./$(OUT_DIR) -o ./$(OUT_DIR)/main ./$(OUT_DIR)/main.o -lstark
 	./$(OUT_DIR)/main
