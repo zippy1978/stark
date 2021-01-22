@@ -59,7 +59,13 @@ scratch:
 	./$(OUT_DIR)/stark -d test/scratchpad.st
 
 compiler: starkc runtime
+	# Build main > .bc > .o
 	./$(OUT_DIR)/starkc -d -o ./$(OUT_DIR)/main.bc test/main.st
 	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/main.bc
-	$(CC) -L./$(OUT_DIR) -o ./$(OUT_DIR)/main ./$(OUT_DIR)/main.o -lstark
+	# Build module > .bc > .o
+	./$(OUT_DIR)/starkc -d -o ./$(OUT_DIR)/module.bc test/module.st
+	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/module.bc
+	# Build binary (and link stark runtime)
+	$(CC) -L./$(OUT_DIR) -o ./$(OUT_DIR)/main ./$(OUT_DIR)/main.o ./$(OUT_DIR)/module.o -lstark
+	# Run output program
 	./$(OUT_DIR)/main

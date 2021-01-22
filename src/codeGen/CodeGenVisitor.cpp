@@ -378,6 +378,7 @@ namespace stark
         Type *returnType = node->type.array ? context->getArrayComplexType(node->type.name)->getType() : typeOf(node->type, context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
+        // See https://llvm.org/docs/LangRef.html
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
 
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
