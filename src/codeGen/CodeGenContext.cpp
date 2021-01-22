@@ -14,6 +14,7 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
 // This is the interpreter implementation
 #include <llvm/ExecutionEngine/MCJIT.h>
 
@@ -213,53 +214,73 @@ namespace stark
 		// Declare complex types
 		declareComplexTypes();
 
-		// Create the top level interpreter function to call as entry
-
-		vector<Type *> argTypes;
-		argTypes.push_back(getArrayComplexType("string")->getType());
-		FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
-		mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
-		BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
-
-		// Push a new variable/block context
-		pushBlock(bblock);
-
-		CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
-		declareLocal(argsVar);
-
-		IRBuilder<> Builder(llvmContext);
-		Builder.SetInsertPoint(getCurrentBlock());
-
-		// Get argc and argv values
-		Function::arg_iterator argsValues = mainFunction->arg_begin();
-		Value *argsValue = &*argsValues++;
-		new StoreInst(argsValue, argsVar->getValue(), false, getCurrentBlock());
-
-		// Start visitor on root
-		logger.logDebug(formatv("root type = {0}", typeid(root).name()));
-		root.accept(&visitor);
-
-		// No return provided on main function, add a default return to the block (with 0 return)
-		if (this->getReturnValue() != NULL)
+		if (this->interpreterMode)
 		{
-			ReturnInst::Create(llvmContext, this->getReturnValue(), getCurrentBlock());
+			// Create the top level interpreter function to call as entry
+			vector<Type *> argTypes;
+			argTypes.push_back(getArrayComplexType("string")->getType());
+			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
+			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
+			BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
+
+			// Push a new variable/block context
+			pushBlock(bblock);
+
+			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
+			declareLocal(argsVar);
+
+			IRBuilder<> Builder(llvmContext);
+			Builder.SetInsertPoint(getCurrentBlock());
+
+			// Get argc and argv values
+			Function::arg_iterator argsValues = mainFunction->arg_begin();
+			Value *argsValue = &*argsValues++;
+			new StoreInst(argsValue, argsVar->getValue(), false, getCurrentBlock());
+
+			// Start visitor on root
+			logger.logDebug(formatv("root type = {0}", typeid(root).name()));
+			root.accept(&visitor);
+
+			// No return provided on main function, add a default return to the block (with 0 return)
+			if (this->getReturnValue() != NULL)
+			{
+				ReturnInst::Create(llvmContext, this->getReturnValue(), getCurrentBlock());
+			}
+			else
+			{
+				// If no return : return 0
+				logger.logDebug(formatv("not return on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
+				ReturnInst::Create(llvmContext, ConstantInt::get(Type::getInt32Ty(llvmContext), 0, true), getCurrentBlock());
+			}
+
+			popBlock();
 		}
 		else
 		{
-			// If no return : return 0
-			logger.logDebug(formatv("not return on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
-			ReturnInst::Create(llvmContext, ConstantInt::get(Type::getInt32Ty(llvmContext), 0, true), getCurrentBlock());
+			// Raw mode (no main function is generated)
+
+			// Start visitor on root
+			logger.logDebug(formatv("root type = {0}", typeid(root).name()));
+			root.accept(&visitor);
 		}
 
-		popBlock();
-
 		/* Print the IR in a human-readable format to see if our program compiled properly */
+
 		if (this->debugEnabled)
 		{
 			std::cout << "Code is generated.\n";
 			std::cout << "----------- DUMP -------------\n";
 			module->print(llvm::errs(), nullptr);
 		}
+	}
+
+	void CodeGenContext::compile(std::string filename)
+	{
+		// TODO : hande error
+		std::error_code errorCode;
+		//raw_ostream output = outs();
+		raw_fd_ostream output(filename, errorCode);
+		WriteBitcodeToFile(*module, output);
 	}
 
 	/* Executes the AST by running the main function */

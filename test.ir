@@ -1,29 +1,11 @@
 ; ModuleID = 'main'
 source_filename = "main"
 
-%string = type { i8, i64 }
+%string = type { i8*, i64 }
 
-@coucou = constant [7 x i8] c"coucou\00"
-@ciao = constant [5 x i8] c"ciao\00"
-@fuck = constant [5 x i8] c"fuck\00"
+@ok = constant [3 x i8] c"ok\00"
 
-define internal void @main() {
-entry:
-  %s = alloca %string, align 8
-  store %string { [7 x i8]* @coucou, i64 6 }, %string* %s, align 4
-  %load = load %string, %string* %s, align 4
-  call void @printStr(%string %load)
-  store %string { [5 x i8]* @ciao, i64 4 }, %string* %s, align 4
-  %load1 = load %string, %string* %s, align 4
-  call void @printStr(%string %load1)
-  %x = alloca %string, align 8
-  store %string { [5 x i8]* @fuck, i64 4 }, %string* %x, align 4
-  %load2 = load %string, %string* %x, align 4
-  call void @printStr(%string %load2)
-  ret void
-}
-
-declare void @printStr(%string)
+declare void @println(%string)
 
 declare void @print(%string)
 
@@ -38,3 +20,9 @@ declare void @assertIntEquals(i64, i64)
 declare void @assertDoubleEquals(double, double)
 
 declare void @assertTrue(i1)
+
+define internal void @main() {
+entry:
+  call void @println(%string { [3 x i8]* @ok, i64 2 })
+  ret i64 0
+}

@@ -20,6 +20,7 @@ typedef struct
     int argc = 0;
     char **argv = NULL;
     bool error = false;
+    char *outputfile = NULL;
 
 } CommandOptions;
 
@@ -28,16 +29,17 @@ CommandOptions options;
 void printUsage()
 {
     std::cout << std::endl
-              << "USAGE: stark [options] filename [args]" << std::endl;
+              << "USAGE: starkc [options] filename" << std::endl;
     std::cout << std::endl
               << "OPTIONS:" << std::endl;
+    std::cout << "  -o      Output file name" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
 }
 
 void printVersion()
 {
-    std::cout << stark::format("stark interpreter version %s", VERSION_NUMBER) << std::endl;
+    std::cout << stark::format("stark compiler version %s", VERSION_NUMBER) << std::endl;
 }
 
 void parseOptions(int argc, char *argv[])
@@ -46,7 +48,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dv")) != -1)
+    while ((c = getopt(argc, argv, "dvo:")) != -1)
         switch (c)
         {
         case 'd':
@@ -55,8 +57,13 @@ void parseOptions(int argc, char *argv[])
         case 'v':
             options.version = true;
             break;
+        case 'o':
+            options.outputfile = optarg;
+            break;
         case '?':
-            if (isprint(optopt))
+            if (optopt == 'o')
+                std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
+            else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
             else
                 std::cerr << stark::format("Unknown option character `\\x%x'.", optopt) << std::endl;
@@ -80,8 +87,7 @@ void parseOptions(int argc, char *argv[])
 }
 
 /**
- * Stark interpreter command
- * Runs code from a source file.
+ * Stark compiler command
  */
 int main(int argc, char *argv[])
 {
@@ -109,9 +115,8 @@ int main(int argc, char *argv[])
     else
     {
 
-        // Run file...
-        std::string filename = options.argv[0];
         // Read input file
+        std::string filename = options.argv[0];
         std::ifstream input(filename);
         if (!input)
         {
@@ -123,12 +128,18 @@ int main(int argc, char *argv[])
         StarkParser parser(filename);
         ASTBlock *program = parser.parse(&input);
 
-        // Generate and run code
+        // Compile
         CodeGenContext context;
         context.setDebugEnabled(options.debug);
-        context.setInterpreterMode(true);
         context.generateCode(*program);
-        return context.runCode(options.argc, options.argv);
+        if (options.outputfile != NULL)
+        {
+            context.compile(options.outputfile);
+        }
+        else
+        {
+            context.compile(filename.append(".bc"));
+        }
     }
 
     return 0;

@@ -61,6 +61,9 @@ namespace stark
     /* Run code generation in debug mode if enabled */
     bool debugEnabled = false;
 
+    /* If set to true : generates a wrapping main function on the source file nd inject args (as string[] in the scope) */
+    bool interpreterMode = false;
+
   private:
     /* Declare built-in complex types into the LLVMContext */
     void declareComplexTypes();
@@ -78,6 +81,9 @@ namespace stark
 
     /* Execute geenrated program code */
     int runCode(int argc, char *argv[]);
+
+    /* Compile code */
+    void compile(std::string filename);
 
     /* Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
@@ -108,6 +114,7 @@ namespace stark
     void setReturnValue(Value *value) { blocks.top()->returnValue = value; }
 
     void setDebugEnabled(bool d) { debugEnabled = d; }
+    void setInterpreterMode(bool m) { interpreterMode = m; }
   };
 
 } // namespace stark
