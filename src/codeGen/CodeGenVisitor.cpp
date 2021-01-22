@@ -185,8 +185,10 @@ namespace stark
 
         // Build and return string instance
         // TODO : use a builder on the complex type to generate the value with named parameters map
-        Constant *values[] = {v, ConstantInt::get(Type::getInt64Ty(context->llvmContext), utf8string.size(), true)};
+        Constant* vPointer = ConstantExpr::getBitCast(v, Type::getInt8Ty(context->llvmContext)->getPointerTo());
+        Constant *values[] = {vPointer, ConstantInt::get(Type::getInt64Ty(context->llvmContext), utf8string.size(), true)};
         this->result = ConstantStruct::get(context->getComplexType("string")->getType(), values);
+        
     }
 
     void CodeGenVisitor::visit(ASTArray *node)
