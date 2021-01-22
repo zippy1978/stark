@@ -57,7 +57,6 @@ scratch:
 
 compiler: starkc
 	./$(OUT_DIR)/starkc -d -o ./$(OUT_DIR)/main.bc test/main.st
-	#/usr/local/opt/llvm/bin/lli ./$(OUT_DIR)/main.bc
 	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/main.bc
 	gcc -o ./$(OUT_DIR)/main ./$(OUT_DIR)/main.o
 	./$(OUT_DIR)/main
