@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+#include "../util/Util.h"
+
 namespace stark
 {
 
@@ -41,6 +43,7 @@ namespace stark
   class ASTNode
   {
   public:
+    FileLocation location;
     virtual ~ASTNode() {}
     virtual void accept(ASTVisitor *visitor) = 0;
   };

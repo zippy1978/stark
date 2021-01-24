@@ -101,7 +101,7 @@ CodeGenContext *compileFile(std::string filename)
     ASTBlock *program = parser.parse(&input);
 
     // Generate IR
-    CodeGenContext *context = new CodeGenContext();
+    CodeGenContext *context = new CodeGenContext(filename);
     context->setDebugEnabled(options.debug);
     context->generateCode(*program);
 

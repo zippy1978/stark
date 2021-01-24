@@ -3,5 +3,6 @@
 
 #include "StringUtil.h"
 #include "Logger.h"
+#include "FileLocation.h"
 
 #endif

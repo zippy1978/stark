@@ -18,6 +18,7 @@ int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
     if (token == yy::parser::token::IDENTIFIER || token == yy::parser::token::INTEGER || token == yy::parser::token::DOUBLE)
     {
         yylval->string = new std::string(lexer->YYText());
+        std::cout << lexer->YYText() << " line " << lexer->lineno() << std::endl;
     }
 
     // On a string : quotes must be removed (first and last char)
@@ -31,10 +32,8 @@ int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
 
 void yy::parser::error(const location_type &loc, const std::string &msg)
 {
-    stark::LogPosition pos;
-    pos.line = loc.begin.line;
-    pos.column = loc.begin.column;
-    parserLogger.logError(pos, msg);
+    stark::FileLocation location(loc.begin.line, loc.begin.column);
+    parserLogger.logError(location, msg);
 }
 
 namespace stark

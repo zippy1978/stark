@@ -55,6 +55,10 @@ namespace stark
 		{
 			return Type::getDoubleTy(llvmContext);
 		}
+		else if (typeName.compare("void") == 0)
+		{
+			return Type::getVoidTy(llvmContext);
+		}
 
 		// Complex types
 		CodeGenComplexType *complexType = getComplexType(typeName);
@@ -63,8 +67,8 @@ namespace stark
 			return complexType->getType();
 		}
 
-		// Fallback to void
-		return Type::getVoidTy(llvmContext);
+		// Not found
+		return NULL;
 	}
 
 	std::string CodeGenContext::getTypeName(Type *type)
@@ -204,8 +208,9 @@ namespace stark
 	void CodeGenContext::generateCode(ASTBlock &root)
 	{
 
-		// Enable debug on code geenration
+		// Configure logger
 		logger.debugEnabled = this->debugEnabled;
+		logger.setFilename(filename);
 
 		logger.logDebug("generating code...");
 

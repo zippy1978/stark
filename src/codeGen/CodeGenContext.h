@@ -46,6 +46,9 @@ namespace stark
   class CodeGenContext
   {
 
+    /* Name of the file being processed */
+    std::string filename = NULL;
+
     /* Block stack */
     std::stack<CodeGenBlock *> blocks;
 
@@ -73,8 +76,7 @@ namespace stark
     LLVMContext llvmContext;
     stark::Logger logger;
 
-    // TODO : "main" should be the source file name
-    CodeGenContext() { module = new Module("main", llvmContext); }
+    CodeGenContext(std::string filename) : filename(filename) { module = new Module(filename, llvmContext); }
 
     /* Generate llvm program code */
     void generateCode(ASTBlock &root);

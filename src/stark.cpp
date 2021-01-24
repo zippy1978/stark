@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
         ASTBlock *program = parser.parse(&input);
 
         // Generate and run code
-        CodeGenContext context;
+        CodeGenContext context(filename);
         context.setDebugEnabled(options.debug);
         context.setInterpreterMode(true);
         context.generateCode(*program);
