@@ -21,6 +21,7 @@
 #include "CodeGenContext.h"
 #include "CodeGenVisitor.h"
 #include "../runtime/Runtime.h"
+#include "../util/Util.h"
 
 using namespace llvm;
 using namespace std;
@@ -72,7 +73,19 @@ namespace stark
 		std::string typeStr;
 		llvm::raw_string_ostream rso(typeStr);
 		type->print(rso);
+		rso.flush();
+		//std::string llvmTypeName = formatv("{0}", rso.str().c_str());
 		std::string llvmTypeName = rso.str();
+
+		// Strip type name to get the name only
+		// Case adressed here :
+		// %trooper = type { %string, i64, %ship } is changed to trooper
+		if (llvmTypeName.rfind("%", 0) == 0)
+		{
+			llvmTypeName = llvmTypeName.erase(0, 1);
+			std::vector<std::string> nameParts = split(llvmTypeName, ' ');
+			llvmTypeName = *nameParts.begin();
+		}
 
 		if (llvmTypeName.compare("i64") == 0)
 		{
@@ -108,19 +121,7 @@ namespace stark
 	CodeGenComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
 	{
 
-		// If type name starts with "%" (happens when serialized from llvm type) drop it
-		if (typeName.rfind("%", 0) == 0)
-		{
-			typeName = typeName.erase(0, 1);
-		}
-
-		// Remove everything after first space
-		// Case adressed here :
-		// %trooper = type { %string, i64, %ship }
-		std::vector<std::string> nameParts = split(typeName, ' ');
-		typeName = *nameParts.begin();
-
-		// First : try to find the array type (if alredy declared)
+		// First : try to find the array type (if already declared)
 		CodeGenComplexType *arrayComplexType = NULL;
 		if (arrayComplexTypes.find(typeName) != arrayComplexTypes.end())
 		{

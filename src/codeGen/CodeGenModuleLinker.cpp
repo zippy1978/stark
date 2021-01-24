@@ -20,19 +20,22 @@ namespace stark
         for (auto it = std::begin(contexts); it != std::end(contexts); ++it)
         {
             CodeGenContext *c = *it;
-            Linker::linkModules(*module, std::unique_ptr< Module >(c->getModule()));
+            Linker::linkModules(*module, std::unique_ptr<Module>(c->getModule()) /*, Linker::Flags::OverrideFromSrc*/);
 
             //if (Linker::linkModules(*getModule(), std::move(I.second), LinkFlags))
-  
         }
+
+        std::cout << "Code is linked .\n";
+        std::cout << "----------- DUMP -------------\n";
+        module->print(llvm::errs(), nullptr);
     }
     void CodeGenModuleLinker::writeCode(std::string filename)
     {
         // TODO : hande error
-		std::error_code errorCode;
-		//raw_ostream output = outs();
-		raw_fd_ostream output(filename, errorCode);
-		WriteBitcodeToFile(*module, output);
+        std::error_code errorCode;
+        //raw_ostream output = outs();
+        raw_fd_ostream output(filename, errorCode);
+        WriteBitcodeToFile(*module, output);
     }
 
 } // namespace stark

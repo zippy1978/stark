@@ -64,7 +64,7 @@ namespace stark
      */
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
     {
-   
+
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
 
@@ -87,11 +87,10 @@ namespace stark
             // Get elements member
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
 
-           
             // Get elements pointer (and load in between 2 GEPs !)
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptrs");
             varValue = Builder.CreateLoad(elementsPointer);
-            
+
             // Get position in elements pointer
             varValue = Builder.CreateInBoundsGEP(varValue, indexExprAsInt32);
 
@@ -185,10 +184,9 @@ namespace stark
 
         // Build and return string instance
         // TODO : use a builder on the complex type to generate the value with named parameters map
-        Constant* vPointer = ConstantExpr::getBitCast(v, Type::getInt8Ty(context->llvmContext)->getPointerTo());
+        Constant *vPointer = ConstantExpr::getBitCast(v, Type::getInt8Ty(context->llvmContext)->getPointerTo());
         Constant *values[] = {vPointer, ConstantInt::get(Type::getInt64Ty(context->llvmContext), utf8string.size(), true)};
         this->result = ConstantStruct::get(context->getComplexType("string")->getType(), values);
-        
     }
 
     void CodeGenVisitor::visit(ASTArray *node)
@@ -314,6 +312,14 @@ namespace stark
 
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), &node->lhs, context);
 
+        // Check types
+        std::string valueTypeName = context->getTypeName(v.result->getType());
+        std::string varTypeName = context->getTypeName(varValue->getType()->getPointerElementType());
+        if (varTypeName.compare(valueTypeName) != 0)
+        {
+            context->logger.logError(formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, var->getName(),  varTypeName));
+        }
+
         this->result = new StoreInst(v.result, varValue, false, context->getCurrentBlock());
     }
 
@@ -429,6 +435,7 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
+        // TODO : instead of failing when not found ! : create an external declaration !!!
         Function *function = context->module->getFunction(node->id.name.c_str());
         if (function == NULL)
         {
@@ -572,7 +579,8 @@ namespace stark
         // Used to know if else block should be generated
         bool generateElseBlock = (node->falseBlock != NULL && node->falseBlock->statements.size() > 0);
 
-        if (node->trueBlock.statements.size() == 0 && !generateElseBlock) {
+        if (node->trueBlock.statements.size() == 0 && !generateElseBlock)
+        {
             return;
         }
 
