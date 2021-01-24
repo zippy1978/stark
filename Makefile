@@ -1,5 +1,6 @@
 all: test
 
+ROOT_DIR = $(realpath .)
 OUT_DIR = bin
 SRC_DIR = src
 CC = llvm-g++
@@ -30,13 +31,14 @@ starkc: generate
 runtime: 
 	$(CC) `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/runtime.o
 	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/runtime.o
+	ar rcs $(OUT_DIR)/libstark.a $(OUT_DIR)/runtime.o
 
 clean:
 	# Remove generated source files
 	rm $(SRC_DIR)/parser/*.hh $(SRC_DIR)/parser/*.hpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/tokens.cpp
 	rm -rf $(OUT_DIR)
 
-test: stark
+test_lang: stark
 	./$(OUT_DIR)/stark -d test/comments.st
 	./$(OUT_DIR)/stark -d test/variables/declaration.st
 	./$(OUT_DIR)/stark -d test/variables/assignment.st
@@ -53,19 +55,14 @@ test: stark
 	./$(OUT_DIR)/stark -d test/arrays/declaration.st
 	./$(OUT_DIR)/stark -d test/arrays/assignment.st
 	./$(OUT_DIR)/stark -d test/interpreter/args.st arg1 arg2
+
+test_interpreter: stark
 	@./$(OUT_DIR)/stark -d test/interpreter/return.st && exit 1 || echo "expected return failure"
+
+test_compiler: starkc runtime
+	@cd $(ROOT_DIR)/test/compiler/singlefile && make
+
+test: test_lang test_interpreter test_compiler
 
 scratch:
 	./$(OUT_DIR)/stark -d test/scratchpad.st
-
-compiler: starkc runtime
-	# Build main > .bc > .o
-	./$(OUT_DIR)/starkc -d -o ./$(OUT_DIR)/main.bc test/main.st
-	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/main.bc
-	# Build module > .bc > .o
-	./$(OUT_DIR)/starkc -d -o ./$(OUT_DIR)/module.bc test/module.st
-	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/module.bc
-	# Build binary (and link stark runtime)
-	$(CC) -L./$(OUT_DIR) -o ./$(OUT_DIR)/main ./$(OUT_DIR)/main.o ./$(OUT_DIR)/module.o -lstark
-	# Run output program
-	./$(OUT_DIR)/main
