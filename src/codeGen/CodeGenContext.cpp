@@ -274,7 +274,7 @@ namespace stark
 		}
 	}
 
-	void CodeGenContext::compile(std::string filename)
+	void CodeGenContext::writeCode(std::string filename)
 	{
 		// TODO : hande error
 		std::error_code errorCode;

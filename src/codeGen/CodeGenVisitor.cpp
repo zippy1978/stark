@@ -429,7 +429,6 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
-
         Function *function = context->module->getFunction(node->id.name.c_str());
         if (function == NULL)
         {

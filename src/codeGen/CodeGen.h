@@ -2,5 +2,6 @@
 #define CODEGEN_CODEGEN_H
 
 #include "CodeGenContext.h"
+#include "CodeGenModuleLinker.h"
 
 #endif

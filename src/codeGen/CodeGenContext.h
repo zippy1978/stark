@@ -79,11 +79,11 @@ namespace stark
     /* Generate llvm program code */
     void generateCode(ASTBlock &root);
 
-    /* Execute geenrated program code */
+    /* Execute generated program code */
     int runCode(int argc, char *argv[]);
 
-    /* Compile code */
-    void compile(std::string filename);
+    /* Write generated code to file */
+    void writeCode(std::string filename);
 
     /* Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
@@ -115,6 +115,8 @@ namespace stark
 
     void setDebugEnabled(bool d) { debugEnabled = d; }
     void setInterpreterMode(bool m) { interpreterMode = m; }
+
+    Module *getModule() { return module; }
   };
 
 } // namespace stark

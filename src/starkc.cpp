@@ -86,6 +86,28 @@ void parseOptions(int argc, char *argv[])
     options.argv = otherArgv;
 }
 
+CodeGenContext *compileFile(std::string filename)
+{
+    // Read input file
+    std::ifstream input(filename);
+    if (!input)
+    {
+        std::cerr << "Cannot open input file: " << filename << std::endl;
+        exit(1);
+    }
+
+    // Parse sources
+    StarkParser parser(filename);
+    ASTBlock *program = parser.parse(&input);
+
+    // Generate IR
+    CodeGenContext *context = new CodeGenContext();
+    context->setDebugEnabled(options.debug);
+    context->generateCode(*program);
+
+    return context;
+}
+
 /**
  * Stark compiler command
  */
@@ -115,31 +137,30 @@ int main(int argc, char *argv[])
     else
     {
 
-        // Read input file
-        std::string filename = options.argv[0];
-        std::ifstream input(filename);
-        if (!input)
+        CodeGenModuleLinker linker("default");
+
+        // Compile source files
+        // And add them to the moduel linker
+        for (int i = 0; i < options.argc; i++)
         {
-            std::cerr << "Cannot open input file: " << filename << std::endl;
-            exit(1);
+            std::string filename = options.argv[i];
+            linker.addContext(compileFile(filename));
         }
 
-        // Parse sources
-        StarkParser parser(filename);
-        ASTBlock *program = parser.parse(&input);
+        // Link generated code
+        linker.link();
 
-        // Compile
-        CodeGenContext context;
-        context.setDebugEnabled(options.debug);
-        context.generateCode(*program);
+        // Output to file
         if (options.outputfile != NULL)
         {
-            context.compile(options.outputfile);
+            linker.writeCode(options.outputfile);
         }
         else
         {
-            context.compile(filename.append(".bc"));
+            std::string defaultName = options.argv[0];
+            linker.writeCode(defaultName.append(".bc"));
         }
+
     }
 
     return 0;
