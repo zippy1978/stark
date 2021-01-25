@@ -11,14 +11,12 @@ extern stark::ASTBlock *programBlock;
 
 int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
 {
-    yylloc->begin.line = lexer->lineno();
     int token = lexer->yylex();
 
     // This stores the value of tokens as string into yylval
     if (token == yy::parser::token::IDENTIFIER || token == yy::parser::token::INTEGER || token == yy::parser::token::DOUBLE)
     {
         yylval->string = new std::string(lexer->YYText());
-        std::cout << lexer->YYText() << " line " << lexer->lineno() << std::endl;
     }
 
     // On a string : quotes must be removed (first and last char)
@@ -26,6 +24,9 @@ int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
     {
         yylval->string = new std::string(lexer->YYText() + 1, lexer->YYLeng() - 2);
     }
+
+    // Must be set at the end otherwise does not work
+    yylloc->begin.line = lexer->lineno();
 
     return token;
 }

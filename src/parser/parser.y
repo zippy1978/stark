@@ -159,7 +159,6 @@ var_decl:
             $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, $5);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
-            std::cout << "in parser, line " << @1.begin.line << " " << $1->name << std::endl;
       }
 |
       RETURN expr 

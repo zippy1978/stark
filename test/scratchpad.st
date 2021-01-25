@@ -7,21 +7,13 @@ extern now(): int
 extern assertIntEquals(actual: int, expected: int): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
- 
-
-
-
-
-
-
-
-
-
-
-
-println("ok")
-
 // test
-i: tring = "dddd"
+// test
+//qqq
+// test
+/*if (true) {
+    qsdqd
+    println("ok")
+}*/
+g: ting = "ff"
 
-println("ok")

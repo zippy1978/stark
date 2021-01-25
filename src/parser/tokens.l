@@ -19,7 +19,7 @@
 <COMMENT>"*/"           { BEGIN(INITIAL); }
 <COMMENT>\n             { }
 <COMMENT>.              { }
-[ \t\n]                 // Whitespaces skipped.
+[ \t\r\n]                 // Whitespaces skipped.
 "//".*                  // Comments skipped.
 
 extern                  return parser::token::EXTERN;
