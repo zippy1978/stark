@@ -40,24 +40,33 @@ namespace stark
 		declareComplexType(stringType);
 	}
 
+	void CodeGenContext::registerPrimaryTypes()
+	{
+
+		// int
+		CodeGenIntType *intType = new CodeGenIntType(this);
+		primaryTypes[intType->getName()] = intType;
+
+		// double
+		CodeGenDoubleType *doubleType = new CodeGenDoubleType(this);
+		primaryTypes[doubleType->getName()] = doubleType;
+
+		// bool
+		CodeGenBoolType *boolType = new CodeGenBoolType(this);
+		primaryTypes[boolType->getName()] = boolType;
+
+		// void
+		CodeGenVoidType *voidType = new CodeGenVoidType(this);
+		primaryTypes[voidType->getName()] = voidType;
+	}
+
 	Type *CodeGenContext::getType(std::string typeName)
 	{
 		// Primary types
-		if (typeName.compare("int") == 0)
+		CodeGenPrimaryType *primaryType = getPrimaryType(typeName);
+		if (primaryType != NULL)
 		{
-			return Type::getInt64Ty(llvmContext);
-		}
-		else if (typeName.compare("bool") == 0)
-		{
-			return Type::getInt1Ty(llvmContext);
-		}
-		else if (typeName.compare("double") == 0)
-		{
-			return Type::getDoubleTy(llvmContext);
-		}
-		else if (typeName.compare("void") == 0)
-		{
-			return Type::getVoidTy(llvmContext);
+			return primaryType->getType();
 		}
 
 		// Complex types
@@ -74,11 +83,11 @@ namespace stark
 	std::string CodeGenContext::getTypeName(Type *type)
 	{
 
+		// Extract llvm type name
 		std::string typeStr;
 		llvm::raw_string_ostream rso(typeStr);
 		type->print(rso);
 		rso.flush();
-		//std::string llvmTypeName = formatv("{0}", rso.str().c_str());
 		std::string llvmTypeName = rso.str();
 
 		// Strip type name to get the name only
@@ -91,18 +100,20 @@ namespace stark
 			llvmTypeName = *nameParts.begin();
 		}
 
-		if (llvmTypeName.compare("i64") == 0)
+		// Look for matching primary type
+		for (auto it = primaryTypes.begin(); it != primaryTypes.end(); it++)
 		{
-			return "int";
+			
+			CodeGenPrimaryType *primaryType = it->second;
+			if (primaryType->getLLvmTypeName().compare(llvmTypeName) == 0) {
+				return primaryType->getName();
+			}
+			
 		}
-		else if (llvmTypeName.compare("i1") == 0)
-		{
-			return "bool";
-		}
-		else
-		{
-			return llvmTypeName;
-		}
+
+		// If not a primary type : must be a comlex type : return llvm type name
+		return llvmTypeName;
+		
 	}
 
 	void CodeGenContext::declareComplexType(CodeGenComplexType *complexType)
@@ -112,11 +123,11 @@ namespace stark
 		complexTypes[complexType->getName()] = complexType;
 	}
 
-	CodeGenComplexType *CodeGenContext::getComplexType(std::string name)
+	CodeGenComplexType *CodeGenContext::getComplexType(std::string typeName)
 	{
-		if (complexTypes.find(name) != complexTypes.end())
+		if (complexTypes.find(typeName) != complexTypes.end())
 		{
-			return complexTypes[name];
+			return complexTypes[typeName];
 		}
 
 		return NULL;
@@ -145,6 +156,16 @@ namespace stark
 		}
 
 		return arrayComplexType;
+	}
+
+	CodeGenPrimaryType *CodeGenContext::getPrimaryType(std::string typeName)
+	{
+		if (primaryTypes.find(typeName) != primaryTypes.end())
+		{
+			return primaryTypes[typeName];
+		}
+
+		return NULL;
 	}
 
 	void CodeGenContext::declareLocal(CodeGenVariable *var)
@@ -216,6 +237,9 @@ namespace stark
 
 		// Root visitor
 		CodeGenVisitor visitor(this);
+
+		// Register primary types
+		registerPrimaryTypes();
 
 		// Declare complex types
 		declareComplexTypes();

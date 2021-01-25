@@ -3,7 +3,7 @@
  */
 
 extern assertIntEquals(actual: int, expected: int): void
-extern assertStringEquals(actual: int, expected: int): void
+extern assertStringEquals(actual: string, expected: string): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 extern failure(): void

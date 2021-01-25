@@ -317,7 +317,7 @@ namespace stark
         std::string varTypeName = context->getTypeName(varValue->getType()->getPointerElementType());
         if (varTypeName.compare(valueTypeName) != 0)
         {
-            context->logger.logError(node->location, formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, var->getName(),  varTypeName));
+            context->logger.logError(node->location, formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, var->getName(), varTypeName));
         }
 
         this->result = new StoreInst(v.result, varValue, false, context->getCurrentBlock());
@@ -350,7 +350,8 @@ namespace stark
             type = context->getArrayComplexType(node->type.name)->getType();
         }
 
-        if (type == NULL) {
+        if (type == NULL)
+        {
             context->logger.logError(node->location, formatv("unknown type {0}", node->type.name));
         }
 
@@ -439,7 +440,6 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
-        // TODO : instead of failing when not found ! : create an external declaration !!!
         Function *function = context->module->getFunction(node->id.name.c_str());
         if (function == NULL)
         {
@@ -447,11 +447,22 @@ namespace stark
         }
         std::vector<Value *> args;
         ASTExpressionList::const_iterator it;
+        int i = 0;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
             CodeGenVisitor v(context);
             (**it).accept(&v);
+
+            // Check arg type
+            std::string argTypeName = context->getTypeName(function->getArg(i)->getType());
+            std::string valueTypeName = context->getTypeName(v.result->getType());
+            if (argTypeName.compare(valueTypeName) != 0)
+            {
+                context->logger.logError(node->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", node->id.name, argTypeName, i, valueTypeName));
+            }
+
             args.push_back(v.result);
+            i++;
         }
 
         CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());

@@ -12,7 +12,8 @@
 #include "../ast/AST.h"
 #include "../util/Util.h"
 
-#include "CodeGenComplexType.h"
+#include "types/CodeGenComplexType.h"
+#include "types/CodeGenPrimaryType.h"
 #include "CodeGenVariable.h"
 
 using namespace llvm;
@@ -61,6 +62,9 @@ namespace stark
     /* Holds array types (by type) */
     std::map<std::string, CodeGenComplexType *> arrayComplexTypes;
 
+    /* Holds primary types */
+    std::map<std::string, CodeGenPrimaryType *> primaryTypes;
+
     /* Run code generation in debug mode if enabled */
     bool debugEnabled = false;
 
@@ -70,6 +74,9 @@ namespace stark
   private:
     /* Declare built-in complex types into the LLVMContext */
     void declareComplexTypes();
+
+    /* Register primary types */
+    void registerPrimaryTypes();
 
   public:
     Module *module;
@@ -91,10 +98,13 @@ namespace stark
     void declareComplexType(CodeGenComplexType *complexType);
 
     /* Return matching complex type information from a type name */
-    CodeGenComplexType *getComplexType(std::string name);
+    CodeGenComplexType *getComplexType(std::string typeName);
 
     /* Return matching array type (complex type) for a given enclosing type name */
     CodeGenComplexType *getArrayComplexType(std::string typeName);
+
+    /* Return matching primary type from a type name */
+    CodeGenPrimaryType *getPrimaryType(std::string typeName);
 
     /* Return LLVM type from a type name */
     Type *getType(std::string typeName);

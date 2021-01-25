@@ -42,7 +42,11 @@ namespace stark
         bool array;
 
     public:
-        CodeGenComplexType(std::string name, CodeGenContext *context) : name(name), context(context) { type = NULL; array = false; }
+        CodeGenComplexType(std::string name, CodeGenContext *context) : name(name), context(context)
+        {
+            type = NULL;
+            array = false;
+        }
         CodeGenComplexType(std::string name, CodeGenContext *context, bool array) : name(name), context(context), array(array) { type = NULL; }
         /* Generate declration code of the complex type inside the llvm::LLVMContext */
         void declare();
@@ -53,7 +57,6 @@ namespace stark
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
         bool isArray() { return array; }
-        
     };
 
 } // namespace stark
