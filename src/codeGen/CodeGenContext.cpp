@@ -310,12 +310,12 @@ namespace stark
 		ee->finalizeObject();
 
 		// Build stark string array to pass to main function
-		stark::array args;
+		stark::array_t args;
 		args.len = argc;
-		stark::string *elements = (stark::string *)malloc(sizeof(stark::string) * argc);
+		stark::string_t *elements = (stark::string_t *)malloc(sizeof(stark::string_t) * argc);
 		for (int i = 0; i < argc; i++)
 		{
-			stark::string s;
+			stark::string_t s;
 			s.len = strlen(argv[i]);
 			s.data = (char *)malloc(sizeof(char) * s.len);
 			strcpy(s.data, argv[i]);
@@ -324,7 +324,7 @@ namespace stark
 		args.elements = elements;
 
 		// Call main function
-		int (*main_func)(stark::array) = (int (*)(stark::array))ee->getFunctionAddress("main");
+		int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress("main");
 		int retValue = main_func(args);
 
 		logger.logDebug(formatv("code was run, return code is {0}", retValue));

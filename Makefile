@@ -29,9 +29,10 @@ starkc: generate
 	$(CC) -g -O3 -o $(OUT_DIR)/starkc `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/starkc.cpp
 
 runtime: 
-	$(CC) `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/runtime.o
-	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/runtime.o
-	ar rcs $(OUT_DIR)/libstark.a $(OUT_DIR)/runtime.o
+	$(CC) -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/io.o
+	$(CC) -g -c $(SRC_DIR)/runtime/Cast.cpp -o $(OUT_DIR)/cast.o
+	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/io.o $(OUT_DIR)/cast.o
+	ar rcs $(OUT_DIR)/libstark.a $(OUT_DIR)/io.o $(OUT_DIR)/cast.o
 
 clean:
 	# Remove generated source files

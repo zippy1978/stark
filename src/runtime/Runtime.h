@@ -5,28 +5,29 @@
 
 namespace stark
 {
-    using sint = long long;
-    using sdouble = double;
+    using int_t = long long;
+    using double_t = double;
 
     typedef struct
     {
         char *data;
-        sint len;
-    } string;
+        int_t len;
+    } string_t;
 
     typedef struct
     {
         void *elements;
-        sint len;
-    } array;
+        int_t len;
+    } array_t;
 
     class Runtime
     {
     public:
-        static std::string getDeclarations() {
-            return 
-            "extern println(s: string): void\n"
-            "extern print(s: string): void\n";
+        /* Returns runtime declarations available to all source files */
+        static std::string getDeclarations()
+        {
+            return "extern println(s: string): void\n"
+                   "extern print(s: string): void\n";
         }
     };
 

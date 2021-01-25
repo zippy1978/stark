@@ -10,7 +10,7 @@
 
 /* Test functions */
 
-extern "C" void assertIntEquals(long long actual, long long expected)
+extern "C" void assertIntEquals(stark::int_t actual, stark::int_t expected)
 {
     if (actual != expected)
     {
@@ -19,7 +19,7 @@ extern "C" void assertIntEquals(long long actual, long long expected)
     }
 }
 
-extern "C" void assertDoubleEquals(double actual, double expected)
+extern "C" void assertDoubleEquals(stark::double_t actual, stark::double_t expected)
 {
     if (actual != expected)
     {
@@ -27,7 +27,7 @@ extern "C" void assertDoubleEquals(double actual, double expected)
         exit(1);
     }
 }
-extern "C" void assertStringEquals(stark::string actual, stark::string expected)
+extern "C" void assertStringEquals(stark::string_t actual, stark::string_t expected)
 {
     char actualCString[actual.len + 1];
     strcpy(actualCString, actual.data);
