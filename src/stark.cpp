@@ -127,12 +127,10 @@ int main(int argc, char *argv[])
 
         // Load and parse runtime declarations
         StarkParser runtimeParser("runtime");
-        std::string runtimeDeclarations = Runtime::getDeclarations();
-        std::istrstream istr(runtimeDeclarations.c_str());
-        ASTBlock *declarations = parser.parse(&istr);
+        ASTBlock *declarations = runtimeParser.parse(Runtime::getDeclarations());
 
         // ... And preprend it to the source AST
-        program->statements.insert(program->statements.begin(), declarations->statements.begin(), declarations->statements.end());
+        program->preprend(declarations);
 
         // Generate and run code
         CodeGenContext context(filename);

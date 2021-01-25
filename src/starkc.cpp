@@ -103,7 +103,7 @@ CodeGenContext *compileFile(std::string filename, ASTBlock *declarations)
     ASTBlock *program = parser.parse(&input);
     
     // Prepend runtime declarations
-    program->statements.insert(program->statements.begin(), declarations->statements.begin(), declarations->statements.end());
+    program->preprend(declarations);
     
 
     // Generate IR
@@ -147,9 +147,7 @@ int main(int argc, char *argv[])
 
         // Load and parse runtime declarations
         StarkParser parser("runtime");
-        std::string runtimeDeclarations = Runtime::getDeclarations();
-        std::istrstream istr(runtimeDeclarations.c_str());
-        ASTBlock *declarations = parser.parse(&istr);
+        ASTBlock *declarations = parser.parse(Runtime::getDeclarations());
 
         // Compile source files
         // And add them to the module linker

@@ -1,3 +1,5 @@
+#include <strstream>
+#include <stdlib.h>
 #include <FlexLexer.h>
 #include "../ast/AST.h"
 #include "../util/Util.h"
@@ -49,4 +51,18 @@ namespace stark
 
         return programBlock;
     }
+
+    ASTBlock *StarkParser::parse(std::string input)
+    {
+        parserLogger.setFilename(filename);
+        std::istrstream istr(input.c_str());
+        lexer = new yyFlexLexer(&istr);
+        yy::parser parser;
+        parser.parse();
+        delete lexer;
+
+        return programBlock;
+    }
+
+    
 } // namespace stark

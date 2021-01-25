@@ -12,6 +12,7 @@ namespace stark
     public:
         StarkParser(std::string filename) : filename(filename) {}
         ASTBlock *parse(std::istream *input);
+        ASTBlock *parse(std::string input);
     };
 
 } // namespace stark

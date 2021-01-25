@@ -117,6 +117,11 @@ namespace stark
   public:
     ASTStatementList statements;
     ASTBlock() {}
+    /* Prepend statements of a block to the current block */
+    void preprend(ASTBlock *block)
+    {
+      statements.insert(statements.begin(), block->statements.begin(), block->statements.end());
+    }
     void accept(ASTVisitor *visitor);
   };
 
