@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <strstream>
 
 #include "ast/AST.h"
 #include "parser/StarkParser.h"
 #include "codeGen/CodeGen.h"
+#include "runtime/Runtime.h"
 #include "util/Util.h"
 #include "version.h"
 
@@ -86,7 +88,7 @@ void parseOptions(int argc, char *argv[])
     options.argv = otherArgv;
 }
 
-CodeGenContext *compileFile(std::string filename)
+CodeGenContext *compileFile(std::string filename, ASTBlock *declarations)
 {
     // Read input file
     std::ifstream input(filename);
@@ -99,6 +101,10 @@ CodeGenContext *compileFile(std::string filename)
     // Parse sources
     StarkParser parser(filename);
     ASTBlock *program = parser.parse(&input);
+    
+    // Prepend runtime declarations
+    program->statements.insert(program->statements.begin(), declarations->statements.begin(), declarations->statements.end());
+    
 
     // Generate IR
     CodeGenContext *context = new CodeGenContext(filename);
@@ -139,12 +145,18 @@ int main(int argc, char *argv[])
 
         CodeGenModuleLinker linker("default");
 
+        // Load and parse runtime declarations
+        StarkParser parser("runtime");
+        std::string runtimeDeclarations = Runtime::getDeclarations();
+        std::istrstream istr(runtimeDeclarations.c_str());
+        ASTBlock *declarations = parser.parse(&istr);
+
         // Compile source files
-        // And add them to the moduel linker
+        // And add them to the module linker
         for (int i = 0; i < options.argc; i++)
         {
             std::string filename = options.argv[i];
-            linker.addContext(compileFile(filename));
+            linker.addContext(compileFile(filename, declarations));
         }
 
         // Link generated code
@@ -160,7 +172,6 @@ int main(int argc, char *argv[])
             std::string defaultName = options.argv[0];
             linker.writeCode(defaultName.append(".bc"));
         }
-
     }
 
     return 0;

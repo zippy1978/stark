@@ -4,5 +4,6 @@
 extern returnOne(): int
 
 func main(): int {
+    println("hello from main.st")
     return returnOne()   
 }

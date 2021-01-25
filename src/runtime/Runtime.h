@@ -1,4 +1,7 @@
+#ifndef RUNTIME_RUNTIME_H
+#define RUNTIME_RUNTIME_H
 
+#include <string>
 
 namespace stark
 {
@@ -17,4 +20,16 @@ namespace stark
         sint len;
     } array;
 
+    class Runtime
+    {
+    public:
+        static std::string getDeclarations() {
+            return 
+            "extern println(s: string): void\n"
+            "extern print(s: string): void\n";
+        }
+    };
+
 } // namespace stark
+
+#endif
