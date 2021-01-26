@@ -4,7 +4,7 @@
 
 #include "Runtime.h"
 
-extern "C" stark::string_t castIntToString(stark::int_t i)
+extern "C" stark::string_t intToString(stark::int_t i)
 {
     char str[30];
     sprintf(str, "%lld", i);

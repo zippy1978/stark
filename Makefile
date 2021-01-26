@@ -30,9 +30,9 @@ starkc: generate
 
 runtime: 
 	$(CC) -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/io.o
-	$(CC) -g -c $(SRC_DIR)/runtime/Cast.cpp -o $(OUT_DIR)/cast.o
-	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/io.o $(OUT_DIR)/cast.o
-	ar rcs $(OUT_DIR)/libstark.a $(OUT_DIR)/io.o $(OUT_DIR)/cast.o
+	$(CC) -g -c $(SRC_DIR)/runtime/Convert.cpp -o $(OUT_DIR)/convert.o
+	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/io.o $(OUT_DIR)/convert.o
+	ar rcs $(OUT_DIR)/libstark.a $(OUT_DIR)/io.o $(OUT_DIR)/convert.o
 
 clean:
 	# Remove generated source files

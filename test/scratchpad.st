@@ -1,11 +1,7 @@
-extern castIntToString(i: int): string
 
-println(1)
-
-s: string = castIntToString(12)
-println(s)
-println(castIntToString(s.len))
+println("Hello !")
 i: int = 0
+t.i = 10
 while (i < args.len) {
     println(args[i])
     i = i + 1

@@ -32,7 +32,7 @@ namespace stark
         std::string getName() { return name; }
         std::string getLLvmTypeName() { return llvmTypeName; }
         /* Cast a value of the current type to a given type */
-        virtual Value* cast(Value* value, std::string typeName) = 0;
+        Value* cast(Value* value, std::string typeName);
     };
 
     /**
@@ -42,7 +42,6 @@ namespace stark
     {
     public:
         CodeGenIntType(CodeGenContext *context);
-        Value* cast(Value* value, std::string typeName);
     };
 
     /**
@@ -52,7 +51,6 @@ namespace stark
     {
     public:
         CodeGenDoubleType(CodeGenContext *context);
-        Value* cast(Value* value, std::string typeName);
     };
 
     /**
@@ -62,7 +60,6 @@ namespace stark
     {
     public:
         CodeGenBoolType(CodeGenContext *context);
-        Value* cast(Value* value, std::string typeName);
     };
 
     /**
@@ -72,7 +69,6 @@ namespace stark
     {
     public:
         CodeGenVoidType(CodeGenContext *context);
-        Value* cast(Value* value, std::string typeName);
     };
 
 } // namespace stark
