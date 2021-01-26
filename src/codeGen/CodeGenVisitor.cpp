@@ -148,20 +148,20 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating integer {0}", node->value));
-        this->result = ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->value, true);
+        this->result = context->getPrimaryType("int")->createConstant(node->value);
     }
 
     void CodeGenVisitor::visit(ASTBoolean *node)
     {
         context->logger.logDebug(node->location, formatv("creating boolean {0}", node->value));
-        this->result = ConstantInt::get(Type::Type::getInt1Ty(context->llvmContext), node->value, true);
+        this->result = context->getPrimaryType("bool")->createConstant(node->value);
     }
 
     void CodeGenVisitor::visit(ASTDouble *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating double {0}", node->value));
-        this->result = ConstantFP::get(Type::getDoubleTy(context->llvmContext), node->value);
+        this->result = context->getPrimaryType("double")->createConstant(node->value);
     }
 
     void CodeGenVisitor::visit(ASTString *node)

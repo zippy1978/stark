@@ -7,7 +7,6 @@
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/BasicBlock.h>
 
 using namespace llvm;
 
@@ -33,6 +32,9 @@ namespace stark
         std::string getLLvmTypeName() { return llvmTypeName; }
         /* Cast a value of the current type to a given type */
         Value* cast(Value* value, std::string typeName);
+        virtual Value* createConstant(long long i);
+        virtual Value* createConstant(double d);
+        virtual Value* createConstant(bool b);
     };
 
     /**
@@ -42,6 +44,7 @@ namespace stark
     {
     public:
         CodeGenIntType(CodeGenContext *context);
+        Value* createConstant(long long i);
     };
 
     /**
@@ -51,6 +54,7 @@ namespace stark
     {
     public:
         CodeGenDoubleType(CodeGenContext *context);
+        Value* createConstant(double d);
     };
 
     /**
@@ -60,6 +64,7 @@ namespace stark
     {
     public:
         CodeGenBoolType(CodeGenContext *context);
+        Value* createConstant(bool b);
     };
 
     /**

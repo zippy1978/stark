@@ -1,3 +1,5 @@
+#include <llvm/IR/Constants.h>
+
 #include "CodeGenPrimaryType.h"
 #include "../CodeGenContext.h"
 
@@ -19,6 +21,41 @@ namespace stark
             context->logger.logError(formatv("cast from {0} to {1} is not supported", this->name, typeName));
             return NULL;
         }
+    }
+
+    Value *CodeGenPrimaryType::createConstant(long long i)
+    {
+        context->logger.logError(formatv("cannot create constant of type {0} with value {1}", this->name, i));
+        return NULL;
+    }
+
+    Value *CodeGenPrimaryType::createConstant(double d)
+    {
+        context->logger.logError(formatv("cannot create constant of type {0} with value {1}", this->name, d));
+        return NULL;
+    }
+    Value *CodeGenPrimaryType::createConstant(bool b)
+    {
+        context->logger.logError(formatv("cannot create constant of type {0} with value {1}", this->name, b));
+        return NULL;
+    }
+
+    Value *CodeGenIntType::createConstant(long long i)
+    {
+
+        return ConstantInt::get(this->getType(), i);
+    }
+
+    Value *CodeGenDoubleType::createConstant(double d)
+    {
+
+        return ConstantFP::get(this->getType(), d);
+    }
+
+    Value *CodeGenBoolType::createConstant(bool b)
+    {
+
+        return ConstantInt::get(this->getType(), b);
     }
 
 } // namespace stark
