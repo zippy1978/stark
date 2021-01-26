@@ -1,0 +1,13 @@
+# Bin dir
+/bin
+
+# Dependencies dir
+/dependencies
+
+# Generated sources
+src/parser/location.hh
+src/parser/parser.cpp
+src/parser/parser.hpp
+src/parser/position.hh
+src/parser/stack.hh
+src/parser/tokens.cpp
