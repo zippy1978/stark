@@ -1,8 +1,12 @@
 
-println("Hello !")
-i: int = 0
-while (i < args.len) {
-    println(args[i])
-    i = i + 1
-}
+//stark_runtime_init_gc()
 
+struct test {
+    i: int
+}
+//t: test = stark_runtime_malloc_gc(4)
+
+
+func test(): any {
+
+}

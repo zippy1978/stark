@@ -7,6 +7,7 @@ namespace stark
 {
     using int_t = long long;
     using double_t = double;
+    using any_t = void *;
 
     typedef struct
     {
@@ -26,7 +27,9 @@ namespace stark
         /* Returns runtime declarations available to all source files */
         static std::string getDeclarations()
         {
-            return "extern println(s: string): void\n"
+            return "extern stark_runtime_init_gc(): void\n"
+                   "extern stark_runtime_malloc_gc(size: int): any\n"
+                   "extern println(s: string): void\n"
                    "extern print(s: string): void\n";
         }
     };

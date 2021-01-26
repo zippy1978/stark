@@ -40,10 +40,13 @@ starkc: generate
 	$(CC) -g -O3 -o $(OUT_DIR)/starkc `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/starkc.cpp
 
 runtime: deps
-	$(CC) -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/io.o
-	$(CC) -g -c $(SRC_DIR)/runtime/Convert.cpp -o $(OUT_DIR)/convert.o
-	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/io.o $(OUT_DIR)/convert.o
-	ar rcs $(OUT_DIR)/libstark.a $(OUT_DIR)/io.o $(OUT_DIR)/convert.o $(DEPS_DIR)/bdwgc/libgc.a
+	mkdir -p $(OUT_DIR)/libstark
+	$(CC) -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/libstark/io.o
+	$(CC) -g -c $(SRC_DIR)/runtime/Convert.cpp -o $(OUT_DIR)/libstark/convert.o
+	$(CC) -g -c $(SRC_DIR)/runtime/Memory.cpp -o $(OUT_DIR)/libstark/memory.o
+	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/libstark/io.o $(OUT_DIR)/libstark/convert.o $(OUT_DIR)/libstark/memory.o $(DEPS_DIR)/bdwgc/libgc.a
+	cd $(OUT_DIR)/libstark && ar -x ../../$(DEPS_DIR)/bdwgc/libgc.a
+	ar rcs $(OUT_DIR)/libstark.a  $(OUT_DIR)/libstark/*.o
 
 clean:
 	# Remove generated source files

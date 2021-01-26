@@ -76,6 +76,15 @@ namespace stark
         CodeGenVoidType(CodeGenContext *context);
     };
 
+    /**
+     * Represents a pointer type
+     */
+    class CodeGenAnyType : public CodeGenPrimaryType
+    {
+    public:
+        CodeGenAnyType(CodeGenContext *context);
+    };
+
 } // namespace stark
 
 #endif

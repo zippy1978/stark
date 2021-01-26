@@ -128,6 +128,9 @@ namespace stark
     void setDebugEnabled(bool d) { debugEnabled = d; }
     void setInterpreterMode(bool m) { interpreterMode = m; }
 
+    /* Initialize garbage collector */
+    void initGC();
+
     Module *getModule() { return module; }
   };
 

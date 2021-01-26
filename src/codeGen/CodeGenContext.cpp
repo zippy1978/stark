@@ -58,6 +58,10 @@ namespace stark
 		// void
 		CodeGenVoidType *voidType = new CodeGenVoidType(this);
 		primaryTypes[voidType->getName()] = voidType;
+
+		// any
+		CodeGenAnyType *anyType = new CodeGenAnyType(this);
+		primaryTypes[anyType->getName()] = anyType;
 	}
 
 	Type *CodeGenContext::getType(std::string typeName)
@@ -103,17 +107,16 @@ namespace stark
 		// Look for matching primary type
 		for (auto it = primaryTypes.begin(); it != primaryTypes.end(); it++)
 		{
-			
+
 			CodeGenPrimaryType *primaryType = it->second;
-			if (primaryType->getLLvmTypeName().compare(llvmTypeName) == 0) {
+			if (primaryType->getLLvmTypeName().compare(llvmTypeName) == 0)
+			{
 				return primaryType->getName();
 			}
-			
 		}
 
 		// If not a primary type : must be a comlex type : return llvm type name
 		return llvmTypeName;
-		
 	}
 
 	void CodeGenContext::declareComplexType(CodeGenComplexType *complexType)
@@ -353,6 +356,18 @@ namespace stark
 
 		logger.logDebug(formatv("code was run, return code is {0}", retValue));
 		return retValue;
+	}
+
+	void CodeGenContext::initGC()
+	{
+		Function *function = this->module->getFunction("stark_runtime_init_gc");
+		if (function == NULL)
+		{
+			this->logger.logError("cannot initialize garbage collector : make sure runtime is linked");
+		}
+		std::vector<Value *> args;
+        CallInst *call = CallInst::Create(function, makeArrayRef(args), "", this->getCurrentBlock());
+        this->logger.logDebug("garbage collector initialized");
 	}
 
 } // namespace stark
