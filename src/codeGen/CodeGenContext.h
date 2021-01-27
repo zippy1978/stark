@@ -71,6 +71,9 @@ namespace stark
     /* If set to true : generates a wrapping main function on the source file nd inject args (as string[] in the scope) */
     bool interpreterMode = false;
 
+    /* Indicate if GC was initialized */
+    bool gcInitialized = false;
+
   private:
     /* Declare built-in complex types into the LLVMContext */
     void declareComplexTypes();
@@ -127,8 +130,9 @@ namespace stark
 
     void setDebugEnabled(bool d) { debugEnabled = d; }
     void setInterpreterMode(bool m) { interpreterMode = m; }
+    bool isInterpreterMode() { return interpreterMode; }
 
-    /* Initialize garbage collector */
+    /* Try to initialize the garbage collector. Can be called many times, will initialize only once, if conditions are met */
     void initGC();
 
     Module *getModule() { return module; }

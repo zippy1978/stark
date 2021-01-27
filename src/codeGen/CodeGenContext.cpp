@@ -360,14 +360,25 @@ namespace stark
 
 	void CodeGenContext::initGC()
 	{
-		Function *function = this->module->getFunction("stark_runtime_init_gc");
-		if (function == NULL)
+		if (this->gcInitialized)
 		{
-			this->logger.logError("cannot initialize garbage collector : make sure runtime is linked");
+			return;
 		}
-		std::vector<Value *> args;
-        CallInst *call = CallInst::Create(function, makeArrayRef(args), "", this->getCurrentBlock());
-        this->logger.logDebug("garbage collector initialized");
+
+		// To initialize GC : 
+		// 1. Runtime function must be already declared
+		// 2. It must be done as soon as possible in the main function
+		Function *parentFunction = getCurrentBlock()->getParent();
+		Function *function = this->module->getFunction("stark_runtime_init_gc");
+		if (function != NULL && (parentFunction->getName().compare("main") == 0))
+		{
+
+			std::vector<Value *> args;
+			CallInst *call = CallInst::Create(function, makeArrayRef(args), "", this->getCurrentBlock());
+			this->logger.logDebug("garbage collector initialized");
+
+			this->gcInitialized = true;
+		}
 	}
 
 } // namespace stark

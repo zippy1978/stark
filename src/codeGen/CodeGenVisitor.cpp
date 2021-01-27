@@ -409,6 +409,13 @@ namespace stark
             StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->getValue(), false, context->getCurrentBlock());
         }
 
+        // When not running in interpreter mode : try init GC 
+        // (must be done athe the begening of the main function)
+        if (!context->isInterpreterMode())
+        {
+            context->initGC();
+        }
+
         CodeGenVisitor v(context);
         node->block.accept(&v);
 
@@ -485,6 +492,12 @@ namespace stark
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
         this->result = function;
+
+        // If in interpreter mode : try to init the GC as soon as the required runtime fucntion is declared
+        if (context->isInterpreterMode())
+        {
+            context->initGC();
+        }
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)
