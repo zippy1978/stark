@@ -369,7 +369,7 @@ namespace stark
 		// 1. Runtime function must be already declared
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
-		Function *function = this->module->getFunction("stark_runtime_init_gc");
+		Function *function = this->module->getFunction("stark_runtime_gc_init");
 		if (function != NULL && (parentFunction->getName().compare("main") == 0))
 		{
 
