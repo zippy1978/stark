@@ -365,7 +365,7 @@ namespace stark
 			return;
 		}
 
-		// To initialize GC : 
+		// To initialize GC :
 		// 1. Runtime function must be already declared
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
@@ -379,6 +379,19 @@ namespace stark
 
 			this->gcInitialized = true;
 		}
+	}
+
+	Value *CodeGenContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
+	{
+		Function *function = this->module->getFunction("stark_runtime_mm_alloc");
+		if (function == NULL)
+		{
+			this->logger.logError("cannot allocate memory: cannot find runtime function");
+		}
+		std::vector<Value *> args;
+		args.push_back(size);
+		Value *alloc = CallInst::Create(function, makeArrayRef(args), "alloc", insertAtEnd);
+		return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
 	}
 
 } // namespace stark

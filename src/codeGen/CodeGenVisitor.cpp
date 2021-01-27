@@ -171,22 +171,43 @@ namespace stark
 
         std::string utf8string = node->value;
         // Create constant vector of the string size
-        std::vector<llvm::Constant *> chars(utf8string.size() + 1);
+        std::vector<llvm::Constant *> chars(utf8string.size() );
         // Set each char of the string in the vector
         for (unsigned int i = 0; i < utf8string.size(); i++)
             chars[i] = ConstantInt::get(Type::getInt8Ty(context->llvmContext), utf8string[i]);
-        // Add string terminator
-        chars[utf8string.size()] = ConstantInt::get(Type::getInt8Ty(context->llvmContext), '\0');
 
-        // Set value as global variable
-        auto init = ConstantArray::get(ArrayType::get(Type::getInt8Ty(context->llvmContext), chars.size()), chars);
-        GlobalVariable *v = new GlobalVariable(*context->module, init->getType(), true, GlobalVariable::ExternalLinkage, init, utf8string);
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
-        // Build and return string instance
-        // TODO : use a builder on the complex type to generate the value with named parameters map
-        Constant *vPointer = ConstantExpr::getBitCast(v, Type::getInt8Ty(context->llvmContext)->getPointerTo());
-        Constant *values[] = {vPointer, ConstantInt::get(Type::getInt64Ty(context->llvmContext), utf8string.size(), true)};
-        this->result = ConstantStruct::get(context->getComplexType("string")->getType(), values);
+        Type *charType = Type::getInt8Ty(context->llvmContext);
+
+        Value *innerArrayAlloc = context->createMemoryAllocation(ArrayType::get(charType, chars.size()), ConstantInt::get(Type::getInt64Ty(context->llvmContext), chars.size(), true), context->getCurrentBlock());
+        long index = 0;
+        for (auto it = chars.begin(); it != chars.end(); it++)
+        {
+            std::vector<llvm::Value *> indices;
+            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
+            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, index, true)));
+            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
+            Builder.CreateStore(*it, elementVarValue);
+            index++;
+        }
+
+        // Create array instance
+        Value *arrayAlloc = context->createMemoryAllocation(context->getComplexType("string")->getType(), ConstantInt::get(Type::getInt64Ty(context->llvmContext), 1, true), context->getCurrentBlock());
+
+        // Set len member
+        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
+        Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->llvmContext), chars.size(), true), lenMember);
+
+        // Set elements member with inner array
+        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
+        //Builder.CreateStore(innerArrayAlloc, elementsMemberPointer);
+        Builder.CreateStore(new BitCastInst(innerArrayAlloc, charType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
+
+
+        // Return new instance
+        this->result = Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
     }
 
     void CodeGenVisitor::visit(ASTArray *node)
@@ -221,8 +242,9 @@ namespace stark
         }
 
         // Alloc inner array
-        AllocaInst *innerArrayAlloc = new AllocaInst(ArrayType::get(elementType, node->arguments.size()), 0, "arrayinneralloc", context->getCurrentBlock());
-
+        Type *innerArrayType = ArrayType::get(elementType, node->arguments.size());
+        Value* innerArrayAllocSize = Builder.CreateBinOp(Instruction::Mul, ConstantExpr::getSizeOf(innerArrayType->getPointerTo()), ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->arguments.size(), true), "");
+        Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         // Initialize inner array with elements
         // TODO : there is probably a way to write the whole content in a single instruction !!!
         long index = 0;
@@ -236,17 +258,18 @@ namespace stark
             index++;
         }
 
-        // Create array instance
-
-        Value *arrayAlloc = new AllocaInst(context->getArrayComplexType(context->getTypeName(elementType))->getType(), 0, "arrayinit", context->getCurrentBlock());
+        // Create array 
+        Type *arrayType = context->getArrayComplexType(context->getTypeName(elementType))->getType();
+        Constant* arrayAllocSize = ConstantExpr::getSizeOf(arrayType->getPointerTo());
+        Value *arrayAlloc = context->createMemoryAllocation(arrayType, arrayAllocSize, context->getCurrentBlock());
 
         // Set len member
         Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
-        Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->arguments.size(), true), lenMember);
+        Builder.CreateStore(ConstantInt::get(context->getPrimaryType("int")->getType(), node->arguments.size(), true), lenMember);
 
         // Set elements member with inner array
         Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
-        Builder.CreateStore(innerArrayAlloc, elementsMemberPointer);
+        Builder.CreateStore(new BitCastInst(innerArrayAlloc, elementType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
 
         // Return new instance
         this->result = Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
@@ -409,7 +432,7 @@ namespace stark
             StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->getValue(), false, context->getCurrentBlock());
         }
 
-        // When not running in interpreter mode : try init memory manager 
+        // When not running in interpreter mode : try init memory manager
         // (must be done after the begining of the main function)
         if (!context->isInterpreterMode())
         {
@@ -493,7 +516,7 @@ namespace stark
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
         this->result = function;
 
-        // If in interpreter mode : try to init the memory manager 
+        // If in interpreter mode : try to init the memory manager
         // as soon as the required runtime function is declared
         if (context->isInterpreterMode())
         {

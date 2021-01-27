@@ -27,8 +27,8 @@ namespace stark
         /* Returns runtime declarations available to all source files */
         static std::string getDeclarations()
         {
-            return "extern stark_runtime_init_gc(): void\n"
-                   "extern stark_runtime_malloc_gc(size: int): any\n"
+            return "extern stark_runtime_mm_init(): void\n"
+                   "extern stark_runtime_mm_alloc(size: int): any\n"
                    "extern println(s: string): void\n"
                    "extern print(s: string): void\n";
         }

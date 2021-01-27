@@ -132,11 +132,16 @@ namespace stark
     void setInterpreterMode(bool m) { interpreterMode = m; }
     bool isInterpreterMode() { return interpreterMode; }
 
-   /**
-    * Try to initialize the memory maanger. 
-    * Can be called many times, will initialize only once, if conditions are met 
+    /**
+    * Try to initialize the memory manager. 
+    * Can be called many times, will initialize only once, if conditions are met.
     */
     void initMemoryManager();
+
+    /** 
+     * Create a memory allocation using the memory manager.
+     */
+    Value *createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd);
 
     Module *getModule() { return module; }
   };
