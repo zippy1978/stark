@@ -409,11 +409,11 @@ namespace stark
             StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->id.name)->getValue(), false, context->getCurrentBlock());
         }
 
-        // When not running in interpreter mode : try init GC 
-        // (must be done athe the begening of the main function)
+        // When not running in interpreter mode : try init memory manager 
+        // (must be done after the begining of the main function)
         if (!context->isInterpreterMode())
         {
-            context->initGC();
+            context->initMemoryManager();
         }
 
         CodeGenVisitor v(context);
@@ -493,10 +493,11 @@ namespace stark
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
         this->result = function;
 
-        // If in interpreter mode : try to init the GC as soon as the required runtime fucntion is declared
+        // If in interpreter mode : try to init the memory manager 
+        // as soon as the required runtime function is declared
         if (context->isInterpreterMode())
         {
-            context->initGC();
+            context->initMemoryManager();
         }
     }
 

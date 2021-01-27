@@ -132,8 +132,11 @@ namespace stark
     void setInterpreterMode(bool m) { interpreterMode = m; }
     bool isInterpreterMode() { return interpreterMode; }
 
-    /* Try to initialize the garbage collector. Can be called many times, will initialize only once, if conditions are met */
-    void initGC();
+   /**
+    * Try to initialize the memory maanger. 
+    * Can be called many times, will initialize only once, if conditions are met 
+    */
+    void initMemoryManager();
 
     Module *getModule() { return module; }
   };
