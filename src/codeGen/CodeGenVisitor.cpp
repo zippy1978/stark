@@ -593,7 +593,7 @@ namespace stark
             context->logger.logError(node->location, formatv("cannot compare values of diffrent types"));
         }
 
-        // Binary operation are supported on primary types only
+        // Comparisons are supported on primary types only
         if (!context->isPrimaryType(lhsTypeName)) {
             context->logger.logError(node->location, formatv("comparison is not supported on type {0}", lhsTypeName));
         }
