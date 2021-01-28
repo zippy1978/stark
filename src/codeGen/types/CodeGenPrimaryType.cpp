@@ -48,6 +48,12 @@ namespace stark
         return NULL;
     }
 
+    Value *CodeGenPrimaryType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    {
+        context->logger.logError(location, formatv("unsupported comparison for type {0}", this->name));
+        return NULL;
+    }
+
     Value *CodeGenIntType::createConstant(long long i, FileLocation location)
     {
 
@@ -83,6 +89,35 @@ namespace stark
         }
 
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
+    }
+
+    Value *CodeGenIntType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    {
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Instruction::BinaryOps instr;
+        switch (op)
+        {
+        case EQ:
+            return Builder.CreateICmpEQ(lhs, rhs, "cmp");
+            break;
+        case NE:
+            return Builder.CreateICmpNE(lhs, rhs, "cmp");
+            break;
+        case LT:
+            return Builder.CreateICmpSLT(lhs, rhs, "cmp");
+            break;
+        case LE:
+            return Builder.CreateICmpSLE(lhs, rhs, "cmp");
+            break;
+        case GT:
+            return Builder.CreateICmpSGT(lhs, rhs, "cmp");
+            break;
+        case GE:
+            return Builder.CreateICmpSGE(lhs, rhs, "cmp");
+            break;
+        }
     }
 
     Value *CodeGenDoubleType::createConstant(double d, FileLocation location)
@@ -122,6 +157,35 @@ namespace stark
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
+    Value *CodeGenDoubleType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    {
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Instruction::BinaryOps instr;
+        switch (op)
+        {
+        case EQ:
+            return Builder.CreateFCmpOEQ(lhs, rhs, "cmp");
+            break;
+        case NE:
+            return Builder.CreateFCmpONE(lhs, rhs, "cmp");
+            break;
+        case LT:
+            return Builder.CreateFCmpOLT(lhs, rhs, "cmp");
+            break;
+        case LE:
+            return Builder.CreateFCmpOLE(lhs, rhs, "cmp");
+            break;
+        case GT:
+            return Builder.CreateFCmpOGT(lhs, rhs, "cmp");
+            break;
+        case GE:
+            return Builder.CreateFCmpOGE(lhs, rhs, "cmp");
+            break;
+        }
+    }
+
     Value *CodeGenBoolType::createConstant(bool b, FileLocation location)
     {
 
@@ -148,6 +212,35 @@ namespace stark
         }
 
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
+    }
+
+    Value *CodeGenBoolType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    {
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Instruction::BinaryOps instr;
+        switch (op)
+        {
+        case EQ:
+            return Builder.CreateICmpEQ(lhs, rhs, "cmp");
+            break;
+        case NE:
+            return Builder.CreateICmpNE(lhs, rhs, "cmp");
+            break;
+        case LT:
+            return Builder.CreateICmpSLT(lhs, rhs, "cmp");
+            break;
+        case LE:
+            return Builder.CreateICmpSLE(lhs, rhs, "cmp");
+            break;
+        case GT:
+            return Builder.CreateICmpSGT(lhs, rhs, "cmp");
+            break;
+        case GE:
+            return Builder.CreateICmpSGE(lhs, rhs, "cmp");
+            break;
+        }
     }
 
 } // namespace stark

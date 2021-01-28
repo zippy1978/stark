@@ -38,6 +38,7 @@ namespace stark
         virtual Value* createConstant(double d, FileLocation location);
         virtual Value* createConstant(bool b, FileLocation location);
         virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
+        virtual Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
 
     /**
@@ -49,6 +50,7 @@ namespace stark
         CodeGenIntType(CodeGenContext *context);
         Value* createConstant(long long i, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
 
     /**
@@ -60,6 +62,7 @@ namespace stark
         CodeGenDoubleType(CodeGenContext *context);
         Value* createConstant(double d, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
 
     /**
@@ -71,6 +74,7 @@ namespace stark
         CodeGenBoolType(CodeGenContext *context);
         Value* createConstant(bool b, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
 
     /**

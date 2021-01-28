@@ -561,12 +561,12 @@ namespace stark
 
         // Operands must be of same type
         if (lhsTypeName.compare(rhsTypeName) != 0) {
-            context->logger.logError(node->location, formatv("operands must be of same type on binary operations"));
+            context->logger.logError(node->location, formatv("operands must be of same type for binary operations"));
         }
 
         // Binary operation are supported on primary types only
         if (!context->isPrimaryType(lhsTypeName)) {
-            context->logger.logError(node->location, formatv("binary operation not supported on type {0}", lhsTypeName));
+            context->logger.logError(node->location, formatv("binary operation is not supported on type {0}", lhsTypeName));
         }
 
         this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->op, vr.result, node->location);
@@ -585,31 +585,20 @@ namespace stark
         CodeGenVisitor vr(context);
         node->rhs.accept(&vr);
 
-        Builder.SetInsertPoint(context->getCurrentBlock());
+        std::string lhsTypeName = context->getTypeName(vl.result->getType());
+        std::string rhsTypeName = context->getTypeName(vr.result->getType());
 
-        bool isDouble = vl.result->getType()->isDoubleTy();
-        Instruction::BinaryOps instr;
-        switch (node->op)
-        {
-        case EQ:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOEQ(vl.result, vr.result, "cmp") : Builder.CreateICmpEQ(vl.result, vr.result, "cmp");
-            break;
-        case NE:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpONE(vl.result, vr.result, "cmp") : Builder.CreateICmpNE(vl.result, vr.result, "cmp");
-            break;
-        case LT:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLT(vl.result, vr.result, "cmp") : Builder.CreateICmpSLT(vl.result, vr.result, "cmp");
-            break;
-        case LE:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOLE(vl.result, vr.result, "cmp") : Builder.CreateICmpSLE(vl.result, vr.result, "cmp");
-            break;
-        case GT:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGT(vl.result, vr.result, "cmp") : Builder.CreateICmpSGT(vl.result, vr.result, "cmp");
-            break;
-        case GE:
-            this->result = vl.result->getType()->isDoubleTy() ? Builder.CreateFCmpOGE(vl.result, vr.result, "cmp") : Builder.CreateICmpSGE(vl.result, vr.result, "cmp");
-            break;
+        // Operands must be of same type
+        if (lhsTypeName.compare(rhsTypeName) != 0) {
+            context->logger.logError(node->location, formatv("cannot compare values of diffrent types"));
         }
+
+        // Binary operation are supported on primary types only
+        if (!context->isPrimaryType(lhsTypeName)) {
+            context->logger.logError(node->location, formatv("comparison is not supported on type {0}", lhsTypeName));
+        }
+
+        this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->op, vr.result, node->location);
     }
 
     void CodeGenVisitor::visit(ASTIfElseStatement *node)
