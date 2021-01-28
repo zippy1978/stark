@@ -148,20 +148,20 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating integer {0}", node->value));
-        this->result = context->getPrimaryType("int")->createConstant(node->value);
+        this->result = context->getPrimaryType("int")->createConstant(node->value, node->location);
     }
 
     void CodeGenVisitor::visit(ASTBoolean *node)
     {
         context->logger.logDebug(node->location, formatv("creating boolean {0}", node->value));
-        this->result = context->getPrimaryType("bool")->createConstant(node->value);
+        this->result = context->getPrimaryType("bool")->createConstant(node->value, node->location);
     }
 
     void CodeGenVisitor::visit(ASTDouble *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating double {0}", node->value));
-        this->result = context->getPrimaryType("double")->createConstant(node->value);
+        this->result = context->getPrimaryType("double")->createConstant(node->value, node->location);
     }
 
     void CodeGenVisitor::visit(ASTString *node)
@@ -561,7 +561,7 @@ namespace stark
 
         // Operands must be of same type
         if (lhsTypeName.compare(rhsTypeName) != 0) {
-            context->logger.logError(node->location, formatv("operands must be of same type on binary operations {0}", lhsTypeName));
+            context->logger.logError(node->location, formatv("operands must be of same type on binary operations"));
         }
 
         // Binary operation are supported on primary types only
@@ -569,7 +569,7 @@ namespace stark
             context->logger.logError(node->location, formatv("binary operation not supported on type {0}", lhsTypeName));
         }
 
-        this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->op, vr.result);
+        this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->op, vr.result, node->location);
  
     }
 

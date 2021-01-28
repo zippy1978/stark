@@ -32,12 +32,12 @@ namespace stark
         Type *getType() { return type; }
         std::string getName() { return name; }
         std::string getLLvmTypeName() { return llvmTypeName; }
-        /* Cast a value of the current type to a given type */
-        Value* cast(Value* value, std::string typeName);
-        virtual Value* createConstant(long long i);
-        virtual Value* createConstant(double d);
-        virtual Value* createConstant(bool b);
-        virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        /* Convert a value of the current type to a given type */
+        Value* convert(Value* value, std::string typeName);
+        virtual Value* createConstant(long long i, FileLocation location);
+        virtual Value* createConstant(double d, FileLocation location);
+        virtual Value* createConstant(bool b, FileLocation location);
+        virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
     };
 
     /**
@@ -47,8 +47,8 @@ namespace stark
     {
     public:
         CodeGenIntType(CodeGenContext *context);
-        Value* createConstant(long long i);
-        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        Value* createConstant(long long i, FileLocation location);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
     };
 
     /**
@@ -58,8 +58,8 @@ namespace stark
     {
     public:
         CodeGenDoubleType(CodeGenContext *context);
-        Value* createConstant(double d);
-        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        Value* createConstant(double d, FileLocation location);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
     };
 
     /**
@@ -69,8 +69,8 @@ namespace stark
     {
     public:
         CodeGenBoolType(CodeGenContext *context);
-        Value* createConstant(bool b);
-        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        Value* createConstant(bool b, FileLocation location);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
     };
 
     /**

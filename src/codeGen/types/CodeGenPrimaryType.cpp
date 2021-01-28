@@ -12,7 +12,7 @@ namespace stark
     CodeGenVoidType::CodeGenVoidType(CodeGenContext *context) : CodeGenPrimaryType("void", context, Type::getVoidTy(context->llvmContext), "void") {}
     CodeGenAnyType::CodeGenAnyType(CodeGenContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->llvmContext), "i8*") {}
 
-    Value *CodeGenPrimaryType::cast(Value *value, std::string typeName)
+    Value *CodeGenPrimaryType::convert(Value *value, std::string typeName)
     {
         if (typeName.compare(this->name) == 0)
         {
@@ -25,36 +25,36 @@ namespace stark
         }
     }
 
-    Value *CodeGenPrimaryType::createConstant(long long i)
+    Value *CodeGenPrimaryType::createConstant(long long i, FileLocation location)
     {
-        context->logger.logError(formatv("cannot create constant of type {0} with value {1}", this->name, i));
+        context->logger.logError(location, formatv("cannot create constant of type {0} with value {1}", this->name, i));
         return NULL;
     }
 
-    Value *CodeGenPrimaryType::createConstant(double d)
+    Value *CodeGenPrimaryType::createConstant(double d, FileLocation location)
     {
-        context->logger.logError(formatv("cannot create constant of type {0} with value {1}", this->name, d));
+        context->logger.logError(location, formatv("cannot create constant of type {0} with value {1}", this->name, d));
         return NULL;
     }
-    Value *CodeGenPrimaryType::createConstant(bool b)
+    Value *CodeGenPrimaryType::createConstant(bool b, FileLocation location)
     {
-        context->logger.logError(formatv("cannot create constant of type {0} with value {1}", this->name, b));
-        return NULL;
-    }
-
-    Value *CodeGenPrimaryType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
-    {
-        context->logger.logError(formatv("unsupported binary operation for type {0}", this->name));
+        context->logger.logError(location, formatv("cannot create constant of type {0} with value {1}", this->name, b));
         return NULL;
     }
 
-    Value *CodeGenIntType::createConstant(long long i)
+    Value *CodeGenPrimaryType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
+    {
+        context->logger.logError(location, formatv("unsupported binary operation for type {0}", this->name));
+        return NULL;
+    }
+
+    Value *CodeGenIntType::createConstant(long long i, FileLocation location)
     {
 
         return ConstantInt::get(this->getType(), i);
     }
 
-    Value *CodeGenIntType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    Value *CodeGenIntType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -85,13 +85,13 @@ namespace stark
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
-    Value *CodeGenDoubleType::createConstant(double d)
+    Value *CodeGenDoubleType::createConstant(double d, FileLocation location)
     {
 
         return ConstantFP::get(this->getType(), d);
     }
 
-    Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -122,13 +122,13 @@ namespace stark
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
-    Value *CodeGenBoolType::createConstant(bool b)
+    Value *CodeGenBoolType::createConstant(bool b, FileLocation location)
     {
 
         return ConstantInt::get(this->getType(), b);
     }
 
-    Value *CodeGenBoolType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    Value *CodeGenBoolType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
         IRBuilder<> Builder(context->llvmContext);
         Builder.SetInsertPoint(context->getCurrentBlock());
