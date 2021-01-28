@@ -23,18 +23,18 @@ namespace stark
         }
     }
 
-    Value *CodeGenPrimaryType::createConstant(long long i, FileLocation location)
+    Value *CodeGenPrimaryType::create(long long i, FileLocation location)
     {
         context->logger.logError(location, formatv("cannot create constant of type {0} with value {1}", this->name, i));
         return NULL;
     }
 
-    Value *CodeGenPrimaryType::createConstant(double d, FileLocation location)
+    Value *CodeGenPrimaryType::create(double d, FileLocation location)
     {
         context->logger.logError(location, formatv("cannot create constant of type {0} with value {1}", this->name, d));
         return NULL;
     }
-    Value *CodeGenPrimaryType::createConstant(bool b, FileLocation location)
+    Value *CodeGenPrimaryType::create(bool b, FileLocation location)
     {
         context->logger.logError(location, formatv("cannot create constant of type {0} with value {1}", this->name, b));
         return NULL;

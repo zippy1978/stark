@@ -9,7 +9,7 @@ namespace stark
 
     CodeGenBoolType::CodeGenBoolType(CodeGenContext *context) : CodeGenPrimaryType("bool", context, Type::getInt1Ty(context->llvmContext), "i1") {}
 
-    Value *CodeGenBoolType::createConstant(bool b, FileLocation location)
+    Value *CodeGenBoolType::create(bool b, FileLocation location)
     {
 
         return ConstantInt::get(this->getType(), b);

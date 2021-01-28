@@ -8,7 +8,7 @@ namespace stark
 {
     CodeGenDoubleType::CodeGenDoubleType(CodeGenContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->llvmContext), "double") {}
 
-    Value *CodeGenDoubleType::createConstant(double d, FileLocation location)
+    Value *CodeGenDoubleType::create(double d, FileLocation location)
     {
 
         return ConstantFP::get(this->getType(), d);

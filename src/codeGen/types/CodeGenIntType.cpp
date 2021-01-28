@@ -8,7 +8,7 @@ namespace stark
 {
     CodeGenIntType::CodeGenIntType(CodeGenContext *context) : CodeGenPrimaryType("int", context, Type::getInt64Ty(context->llvmContext), "i64") {}
 
-    Value *CodeGenIntType::createConstant(long long i, FileLocation location)
+    Value *CodeGenIntType::create(long long i, FileLocation location)
     {
 
         return ConstantInt::get(this->getType(), i);

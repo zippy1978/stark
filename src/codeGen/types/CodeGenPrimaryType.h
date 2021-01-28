@@ -34,9 +34,9 @@ namespace stark
         std::string getLLvmTypeName() { return llvmTypeName; }
         /* Convert a value of the current type to a given type */
         Value* convert(Value* value, std::string typeName);
-        virtual Value* createConstant(long long i, FileLocation location);
-        virtual Value* createConstant(double d, FileLocation location);
-        virtual Value* createConstant(bool b, FileLocation location);
+        virtual Value* create(long long i, FileLocation location);
+        virtual Value* create(double d, FileLocation location);
+        virtual Value* create(bool b, FileLocation location);
         virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         virtual Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
@@ -48,7 +48,7 @@ namespace stark
     {
     public:
         CodeGenIntType(CodeGenContext *context);
-        Value* createConstant(long long i, FileLocation location);
+        Value* create(long long i, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
@@ -60,7 +60,7 @@ namespace stark
     {
     public:
         CodeGenDoubleType(CodeGenContext *context);
-        Value* createConstant(double d, FileLocation location);
+        Value* create(double d, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
@@ -72,7 +72,7 @@ namespace stark
     {
     public:
         CodeGenBoolType(CodeGenContext *context);
-        Value* createConstant(bool b, FileLocation location);
+        Value* create(bool b, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };

@@ -35,6 +35,7 @@ namespace stark
      */
     class CodeGenComplexType
     {
+    protected:
         std::vector<CodeGenComplexTypeMember *> members;
         CodeGenContext *context;
         StructType *type;
@@ -57,6 +58,14 @@ namespace stark
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
         bool isArray() { return array; }
+        virtual Value *create(std::vector<Value *> values, FileLocation location);
+    };
+
+    class CodeGenArrayComplexType : public CodeGenComplexType
+    {
+    public:
+        CodeGenArrayComplexType(std::string typeName, CodeGenContext *context);
+        Value *create(std::vector<Value *> values, FileLocation location);
     };
 
 } // namespace stark
