@@ -30,7 +30,7 @@ namespace stark
     void visit(ASTFunctionCall *node);
     void visit(ASTExternDeclaration *node);
     void visit(ASTReturnStatement *node);
-    void visit(ASTBinaryOperator *node);
+    void visit(ASTBinaryOperation *node);
     void visit(ASTComparison *node);
     void visit(ASTIfElseStatement *node);
     void visit(ASTWhileStatement *node);

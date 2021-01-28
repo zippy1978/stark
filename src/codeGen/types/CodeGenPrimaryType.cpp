@@ -1,4 +1,5 @@
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/IRBuilder.h>
 
 #include "CodeGenPrimaryType.h"
 #include "../CodeGenContext.h"
@@ -41,10 +42,47 @@ namespace stark
         return NULL;
     }
 
+    Value *CodeGenPrimaryType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        context->logger.logError(formatv("unsupported binary operation for type {0}", this->name));
+        return NULL;
+    }
+
     Value *CodeGenIntType::createConstant(long long i)
     {
 
         return ConstantInt::get(this->getType(), i);
+    }
+
+    Value *CodeGenIntType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Instruction::BinaryOps instr;
+        switch (op)
+        {
+        case ADD:
+            instr = Instruction::Add;
+            break;
+        case SUB:
+            instr = Instruction::Sub;
+            break;
+        case MUL:
+            instr = Instruction::Mul;
+            break;
+        case DIV:
+            instr = Instruction::SDiv;
+            break;
+        case OR:
+            instr = Instruction::Or;
+            break;
+        case AND:
+            instr = Instruction::And;
+            break;
+        }
+
+        return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
     Value *CodeGenDoubleType::createConstant(double d)
@@ -53,10 +91,63 @@ namespace stark
         return ConstantFP::get(this->getType(), d);
     }
 
+    Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Instruction::BinaryOps instr;
+        switch (op)
+        {
+        case ADD:
+            instr = Instruction::FAdd;
+            break;
+        case SUB:
+            instr = Instruction::FSub;
+            break;
+        case MUL:
+            instr = Instruction::FMul;
+            break;
+        case DIV:
+            instr = Instruction::FDiv;
+            break;
+        case OR:
+            instr = Instruction::Or;
+            break;
+        case AND:
+            instr = Instruction::And;
+            break;
+        }
+
+        return Builder.CreateBinOp(instr, lhs, rhs, "binop");
+    }
+
     Value *CodeGenBoolType::createConstant(bool b)
     {
 
         return ConstantInt::get(this->getType(), b);
+    }
+
+    Value *CodeGenBoolType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        IRBuilder<> Builder(context->llvmContext);
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        Instruction::BinaryOps instr;
+        switch (op)
+        {
+        case OR:
+            instr = Instruction::Or;
+            break;
+        case AND:
+            instr = Instruction::And;
+            break;
+        default:
+            context->logger.logError(formatv("unsupported binary operation for type {0}", this->name));
+            return NULL;
+        }
+
+        return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
 } // namespace stark

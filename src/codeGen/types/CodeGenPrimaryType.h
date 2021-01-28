@@ -8,6 +8,8 @@
 #include <llvm/IR/Value.h>
 #include <llvm/IR/LLVMContext.h>
 
+#include "../../ast/AST.h"
+
 using namespace llvm;
 
 namespace stark
@@ -35,6 +37,7 @@ namespace stark
         virtual Value* createConstant(long long i);
         virtual Value* createConstant(double d);
         virtual Value* createConstant(bool b);
+        virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
     };
 
     /**
@@ -45,6 +48,7 @@ namespace stark
     public:
         CodeGenIntType(CodeGenContext *context);
         Value* createConstant(long long i);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
     };
 
     /**
@@ -55,6 +59,7 @@ namespace stark
     public:
         CodeGenDoubleType(CodeGenContext *context);
         Value* createConstant(double d);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
     };
 
     /**
@@ -65,6 +70,7 @@ namespace stark
     public:
         CodeGenBoolType(CodeGenContext *context);
         Value* createConstant(bool b);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
     };
 
     /**

@@ -1,22 +1,7 @@
-/**
- *  Array assignments tests.
- */
-
-
-struct shop {
-    id: int,
-    name: string
+println("hello")
+i: int = 0
+s: string = "fgdgsfsfs"
+while(true) {
+    i = i + 1
+    s = "jfjfjf"
 }
-
-struct shopGroup {
-    shops: shop[],
-    name: string
-}
-
-
-// Array with primary types
-p: int[] = [1, 2, 3]
-
-println("hello world")
-    return  2
-

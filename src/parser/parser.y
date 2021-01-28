@@ -432,42 +432,42 @@ expr:
 |     
       expr MUL expr 
       { 
-            $$ = new stark::ASTBinaryOperator(*$1, stark::MUL, *$3);
+            $$ = new stark::ASTBinaryOperation(*$1, stark::MUL, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 | 
       expr DIV expr 
       { 
-            $$ = new stark::ASTBinaryOperator(*$1, stark::DIV, *$3);
+            $$ = new stark::ASTBinaryOperation(*$1, stark::DIV, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |     
       expr PLUS expr 
       { 
-            $$ = new stark::ASTBinaryOperator(*$1, stark::ADD, *$3);
+            $$ = new stark::ASTBinaryOperation(*$1, stark::ADD, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 | 
       expr MINUS expr 
       { 
-            $$ = new stark::ASTBinaryOperator(*$1, stark::SUB, *$3);
+            $$ = new stark::ASTBinaryOperation(*$1, stark::SUB, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |    
       expr AND expr 
       { 
-            $$ = new stark::ASTBinaryOperator(*$1, stark::AND, *$3);
+            $$ = new stark::ASTBinaryOperation(*$1, stark::AND, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |    
       expr OR expr 
       { 
-            $$ = new stark::ASTBinaryOperator(*$1, stark::OR, *$3);
+            $$ = new stark::ASTBinaryOperation(*$1, stark::OR, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }

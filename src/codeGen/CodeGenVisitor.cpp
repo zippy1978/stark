@@ -544,45 +544,33 @@ namespace stark
         this->result = returnValue;
     }
 
-    void CodeGenVisitor::visit(ASTBinaryOperator *node)
+    void CodeGenVisitor::visit(ASTBinaryOperation *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating binary operation {0}", node->op));
 
+
+        // Evaluate operands
         CodeGenVisitor vl(context);
         node->lhs.accept(&vl);
         CodeGenVisitor vr(context);
         node->rhs.accept(&vr);
 
-        IRBuilder<> Builder(context->llvmContext);
+        std::string lhsTypeName = context->getTypeName(vl.result->getType());
+        std::string rhsTypeName = context->getTypeName(vr.result->getType());
 
-        Builder.SetInsertPoint(context->getCurrentBlock());
-
-        bool isDouble = vl.result->getType()->isDoubleTy();
-        Instruction::BinaryOps instr;
-        switch (node->op)
-        {
-        case ADD:
-            instr = isDouble ? Instruction::FAdd : Instruction::Add;
-            break;
-        case SUB:
-            instr = isDouble ? Instruction::FSub : Instruction::Sub;
-            break;
-        case MUL:
-            instr = isDouble ? Instruction::FMul : Instruction::Mul;
-            break;
-        case DIV:
-            instr = isDouble ? Instruction::FDiv : Instruction::SDiv;
-            break;
-        case OR:
-            instr = Instruction::Or;
-            break;
-        case AND:
-            instr = Instruction::And;
-            break;
+        // Operands must be of same type
+        if (lhsTypeName.compare(rhsTypeName) != 0) {
+            context->logger.logError(node->location, formatv("operatnds must be of same type on binary operations {0}", lhsTypeName));
         }
 
-        this->result = Builder.CreateBinOp(instr, vl.result, vr.result, "binop");
+        // Binary operation are supported on primary types only
+        if (!context->isPrimaryType(lhsTypeName)) {
+            context->logger.logError(node->location, formatv("binary operation not supported on type {0}", lhsTypeName));
+        }
+
+        this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->op, vr.result);
+ 
     }
 
     void CodeGenVisitor::visit(ASTComparison *node)

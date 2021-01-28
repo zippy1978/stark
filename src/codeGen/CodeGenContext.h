@@ -109,6 +109,9 @@ namespace stark
     /* Return matching primary type from a type name */
     CodeGenPrimaryType *getPrimaryType(std::string typeName);
 
+    /* Check if the given type name is a primary type */
+    bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }
+
     /* Return LLVM type from a type name */
     Type *getType(std::string typeName);
 

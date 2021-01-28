@@ -20,7 +20,7 @@ namespace stark
   typedef std::vector<ASTVariableDeclaration *> ASTVariableList;
   typedef std::vector<ASTIdentifier *> ASTIdentifierList;
 
-  enum ASTBinaryOperation
+  enum ASTBinaryOperator
   {
     AND,
     OR,
@@ -30,7 +30,7 @@ namespace stark
     DIV
   };
 
-  enum ASTComparisonOperation
+  enum ASTComparisonOperator
   {
     EQ,
     NE,
@@ -192,23 +192,23 @@ namespace stark
     void accept(ASTVisitor *visitor);
   };
 
-  class ASTBinaryOperator : public ASTExpression
+  class ASTBinaryOperation : public ASTExpression
   {
   public:
-    ASTBinaryOperation op;
+    ASTBinaryOperator op;
     ASTExpression &lhs;
     ASTExpression &rhs;
-    ASTBinaryOperator(ASTExpression &lhs, ASTBinaryOperation op, ASTExpression &rhs) : lhs(lhs), op(op), rhs(rhs) {}
+    ASTBinaryOperation(ASTExpression &lhs, ASTBinaryOperator op, ASTExpression &rhs) : lhs(lhs), op(op), rhs(rhs) {}
     void accept(ASTVisitor *visitor);
   };
 
   class ASTComparison : public ASTExpression
   {
   public:
-    ASTComparisonOperation op;
+    ASTComparisonOperator op;
     ASTExpression &lhs;
     ASTExpression &rhs;
-    ASTComparison(ASTExpression &lhs, ASTComparisonOperation op, ASTExpression &rhs) : lhs(lhs), op(op), rhs(rhs) {}
+    ASTComparison(ASTExpression &lhs, ASTComparisonOperator op, ASTExpression &rhs) : lhs(lhs), op(op), rhs(rhs) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -259,7 +259,7 @@ namespace stark
     virtual void visit(ASTFunctionCall *node) = 0;
     virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
-    virtual void visit(ASTBinaryOperator *node) = 0;
+    virtual void visit(ASTBinaryOperation *node) = 0;
     virtual void visit(ASTComparison *node) = 0;
     virtual void visit(ASTIfElseStatement *node) = 0;
     virtual void visit(ASTWhileStatement *node) = 0;
