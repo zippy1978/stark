@@ -561,7 +561,7 @@ namespace stark
 
         // Operands must be of same type
         if (lhsTypeName.compare(rhsTypeName) != 0) {
-            context->logger.logError(node->location, formatv("operatnds must be of same type on binary operations {0}", lhsTypeName));
+            context->logger.logError(node->location, formatv("operands must be of same type on binary operations {0}", lhsTypeName));
         }
 
         // Binary operation are supported on primary types only
