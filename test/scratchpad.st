@@ -1,17 +1,34 @@
 println("hello")
 
-/*i: int = 0
-s: string = "fgdgsfsfs"
-while(true) {
-    i = i + 1
-    s = "jfjfjf"
-}*/
-
-if (args.len > 1) {
-    println(args[1])
-} else {
-    println("no arg provided !")
+struct Employee {
+    name: string,
+    age: int
 }
 
-s: string = "a"
-res: string = args[0] * s
+struct Company {
+    name: string,
+    employees: Employee[]
+}
+
+mickael: Employee
+mickael.name = "Mickael"
+mickael.age = 32
+
+david: Employee
+david.name = "David"
+david.age = 34
+
+insideapp: Company
+insideapp.name = "inside|app"
+insideapp.employees = [mickael, david]
+
+print("My company is ")
+println(insideapp.name)
+println("Employees are: ")
+i: int = 0
+while (i < insideapp.employees.len) {
+    print(" - ")
+    e: Employee = insideapp.employees[i]
+    println(e.name)
+    i = i + 1
+}

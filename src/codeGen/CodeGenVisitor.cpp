@@ -241,38 +241,9 @@ namespace stark
             currentTypeName = context->getTypeName(v.result->getType());
         }
 
-        // Alloc inner array
-        Type *innerArrayType = ArrayType::get(elementType, node->arguments.size());
-        Value* innerArrayAllocSize = Builder.CreateBinOp(Instruction::Mul, ConstantExpr::getSizeOf(innerArrayType->getPointerTo()), ConstantInt::get(Type::getInt64Ty(context->llvmContext), node->arguments.size(), true), "");
-        Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
-        // Initialize inner array with elements
-        // TODO : there is probably a way to write the whole content in a single instruction !!!
-        long index = 0;
-        for (auto it = elementValues.begin(); it != elementValues.end(); it++)
-        {
-            std::vector<llvm::Value *> indices;
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, index, true)));
-            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
-            Builder.CreateStore(*it, elementVarValue);
-            index++;
-        }
-
-        // Create array 
-        Type *arrayType = context->getArrayComplexType(context->getTypeName(elementType))->getType();
-        Constant* arrayAllocSize = ConstantExpr::getSizeOf(arrayType->getPointerTo());
-        Value *arrayAlloc = context->createMemoryAllocation(arrayType, arrayAllocSize, context->getCurrentBlock());
-
-        // Set len member
-        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
-        Builder.CreateStore(ConstantInt::get(context->getPrimaryType("int")->getType(), node->arguments.size(), true), lenMember);
-
-        // Set elements member with inner array
-        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
-        Builder.CreateStore(new BitCastInst(innerArrayAlloc, elementType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
-
+       
         // Return new instance
-        this->result = Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
+        this->result = context->getArrayComplexType(context->getTypeName(elementType))->create(elementValues, node->location);
     }
 
     void CodeGenVisitor::visit(ASTIdentifier *node)

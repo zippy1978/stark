@@ -136,11 +136,11 @@ namespace stark
 		return NULL;
 	}
 
-	CodeGenComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
+	CodeGenArrayComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
 	{
 
 		// First : try to find the array type (if already declared)
-		CodeGenComplexType *arrayComplexType = NULL;
+		CodeGenArrayComplexType *arrayComplexType = NULL;
 		if (arrayComplexTypes.find(typeName) != arrayComplexTypes.end())
 		{
 			arrayComplexType = arrayComplexTypes[typeName];
@@ -149,7 +149,7 @@ namespace stark
 		// If not found : declare it
 		if (arrayComplexType == NULL)
 		{
-			CodeGenComplexType *arrayType = new CodeGenArrayComplexType(typeName, this);
+			CodeGenArrayComplexType *arrayType = new CodeGenArrayComplexType(typeName, this);
 			arrayType->declare();
 			arrayComplexType = arrayType;
 			arrayComplexTypes[typeName] = arrayType;

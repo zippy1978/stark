@@ -60,7 +60,7 @@ namespace stark
     std::map<std::string, CodeGenComplexType *> complexTypes;
 
     /* Holds array types (by type) */
-    std::map<std::string, CodeGenComplexType *> arrayComplexTypes;
+    std::map<std::string, CodeGenArrayComplexType *> arrayComplexTypes;
 
     /* Holds primary types */
     std::map<std::string, CodeGenPrimaryType *> primaryTypes;
@@ -104,7 +104,7 @@ namespace stark
     CodeGenComplexType *getComplexType(std::string typeName);
 
     /* Return matching array type (complex type) for a given enclosing type name */
-    CodeGenComplexType *getArrayComplexType(std::string typeName);
+    CodeGenArrayComplexType *getArrayComplexType(std::string typeName);
 
     /* Return matching primary type from a type name */
     CodeGenPrimaryType *getPrimaryType(std::string typeName);
