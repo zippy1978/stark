@@ -34,10 +34,7 @@ namespace stark
 	void CodeGenContext::declareComplexTypes()
 	{
 		// string
-		CodeGenComplexType *stringType = new CodeGenComplexType("string", this);
-		stringType->addMember("data", "-", Type::getInt8PtrTy(llvmContext));
-		stringType->addMember("len", "int", IntegerType::getInt64Ty(llvmContext));
-		declareComplexType(stringType);
+		declareComplexType(new CodeGenStringComplexType(this));
 	}
 
 	void CodeGenContext::registerPrimaryTypes()

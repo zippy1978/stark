@@ -57,4 +57,9 @@ namespace stark
         return NULL;
     }
 
+    Value *CodeGenComplexType::create(std::string string, FileLocation location)
+    {
+        return NULL;
+    }
+
 } // namespace stark

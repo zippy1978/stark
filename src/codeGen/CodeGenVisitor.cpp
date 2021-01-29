@@ -166,48 +166,8 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTString *node)
     {
-
         context->logger.logDebug(node->location, formatv("creating string {0}", node->value));
-
-        std::string utf8string = node->value;
-        // Create constant vector of the string size
-        std::vector<llvm::Constant *> chars(utf8string.size() );
-        // Set each char of the string in the vector
-        for (unsigned int i = 0; i < utf8string.size(); i++)
-            chars[i] = ConstantInt::get(Type::getInt8Ty(context->llvmContext), utf8string[i]);
-
-        IRBuilder<> Builder(context->llvmContext);
-        Builder.SetInsertPoint(context->getCurrentBlock());
-
-        Type *charType = Type::getInt8Ty(context->llvmContext);
-
-        Value *innerArrayAlloc = context->createMemoryAllocation(ArrayType::get(charType, chars.size()), ConstantInt::get(Type::getInt64Ty(context->llvmContext), chars.size(), true), context->getCurrentBlock());
-        long index = 0;
-        for (auto it = chars.begin(); it != chars.end(); it++)
-        {
-            std::vector<llvm::Value *> indices;
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, index, true)));
-            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
-            Builder.CreateStore(*it, elementVarValue);
-            index++;
-        }
-
-        // Create array instance
-        Value *arrayAlloc = context->createMemoryAllocation(context->getComplexType("string")->getType(), ConstantInt::get(Type::getInt64Ty(context->llvmContext), 1, true), context->getCurrentBlock());
-
-        // Set len member
-        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
-        Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->llvmContext), chars.size(), true), lenMember);
-
-        // Set elements member with inner array
-        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
-        //Builder.CreateStore(innerArrayAlloc, elementsMemberPointer);
-        Builder.CreateStore(new BitCastInst(innerArrayAlloc, charType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
-
-
-        // Return new instance
-        this->result = Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
+        this->result = context->getComplexType("string")->create(node->value, node->location);
     }
 
     void CodeGenVisitor::visit(ASTArray *node)
@@ -241,7 +201,6 @@ namespace stark
             currentTypeName = context->getTypeName(v.result->getType());
         }
 
-       
         // Return new instance
         this->result = context->getArrayComplexType(context->getTypeName(elementType))->create(elementValues, node->location);
     }
@@ -520,7 +479,6 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating binary operation {0}", node->op));
 
-
         // Evaluate operands
         CodeGenVisitor vl(context);
         node->lhs.accept(&vl);
@@ -531,17 +489,18 @@ namespace stark
         std::string rhsTypeName = context->getTypeName(vr.result->getType());
 
         // Operands must be of same type
-        if (lhsTypeName.compare(rhsTypeName) != 0) {
+        if (lhsTypeName.compare(rhsTypeName) != 0)
+        {
             context->logger.logError(node->location, formatv("operands must be of same type for binary operations"));
         }
 
         // Binary operation are supported on primary types only
-        if (!context->isPrimaryType(lhsTypeName)) {
+        if (!context->isPrimaryType(lhsTypeName))
+        {
             context->logger.logError(node->location, formatv("binary operation is not supported on type {0}", lhsTypeName));
         }
 
         this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->op, vr.result, node->location);
- 
     }
 
     void CodeGenVisitor::visit(ASTComparison *node)
@@ -560,12 +519,14 @@ namespace stark
         std::string rhsTypeName = context->getTypeName(vr.result->getType());
 
         // Operands must be of same type
-        if (lhsTypeName.compare(rhsTypeName) != 0) {
+        if (lhsTypeName.compare(rhsTypeName) != 0)
+        {
             context->logger.logError(node->location, formatv("cannot compare values of diffrent types"));
         }
 
         // Comparisons are supported on primary types only
-        if (!context->isPrimaryType(lhsTypeName)) {
+        if (!context->isPrimaryType(lhsTypeName))
+        {
             context->logger.logError(node->location, formatv("comparison is not supported on type {0}", lhsTypeName));
         }
 

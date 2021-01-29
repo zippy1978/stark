@@ -59,13 +59,27 @@ namespace stark
         std::string getName() { return name; }
         bool isArray() { return array; }
         virtual Value *create(std::vector<Value *> values, FileLocation location);
+        virtual Value *create(std::string string, FileLocation location);
     };
 
+    /**
+     * Represents an array complex type.
+     */
     class CodeGenArrayComplexType : public CodeGenComplexType
     {
     public:
         CodeGenArrayComplexType(std::string typeName, CodeGenContext *context);
         Value *create(std::vector<Value *> values, FileLocation location);
+    };
+
+    /**
+     * Represnets a string complex type.
+     */
+    class CodeGenStringComplexType : public CodeGenComplexType
+    {
+    public:
+        CodeGenStringComplexType(CodeGenContext *context);
+        Value *create(std::string string, FileLocation location);
     };
 
 } // namespace stark

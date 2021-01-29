@@ -5,7 +5,7 @@
 #include "Runtime.h"
 #include "Memory.h"
 
-extern "C" stark::string_t intToString(stark::int_t i)
+extern "C" stark::string_t stark_runtime_conv_int_string(stark::int_t i)
 {
     char str[30];
     sprintf(str, "%lld", i);

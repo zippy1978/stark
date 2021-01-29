@@ -29,6 +29,7 @@ namespace stark
         {
             return "extern stark_runtime_mm_init(): void\n"
                    "extern stark_runtime_mm_alloc(size: int): any\n"
+                   "extern stark_runtime_conv_int_string(i: int): string\n"
                    "extern println(s: string): void\n"
                    "extern print(s: string): void\n";
         }
