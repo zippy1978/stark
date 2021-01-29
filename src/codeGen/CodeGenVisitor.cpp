@@ -325,7 +325,7 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->id.name));
 
-        if (context->module->getFunction(node->id.name.c_str()) != NULL)
+        if (context->getLLvmModule()->getFunction(node->id.name.c_str()) != NULL)
         {
             context->logger.logError(node->location, formatv("function {0} already declared", node->id.name));
         }
@@ -343,7 +343,7 @@ namespace stark
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->getLLvmModule());
 
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
 
@@ -400,7 +400,7 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
-        Function *function = context->module->getFunction(node->id.name.c_str());
+        Function *function = context->getLLvmModule()->getFunction(node->id.name.c_str());
         if (function == NULL)
         {
             context->logger.logError(node->location, formatv("undeclared function {0}", node->id.name));
@@ -447,7 +447,7 @@ namespace stark
 
         Type *returnType = node->type.array ? context->getArrayComplexType(node->type.name)->getType() : typeOf(node->type, context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->module);
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->getLLvmModule());
         this->result = function;
 
         // If in interpreter mode : try to init the memory manager

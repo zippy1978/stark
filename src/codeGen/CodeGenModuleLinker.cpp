@@ -20,7 +20,7 @@ namespace stark
         for (auto it = std::begin(contexts); it != std::end(contexts); ++it)
         {
             CodeGenContext *c = *it;
-            Linker::linkModules(*module, std::unique_ptr<Module>(c->getModule()) /*, Linker::Flags::OverrideFromSrc*/);
+            Linker::linkModules(*module, std::unique_ptr<Module>(c->getLLvmModule()) /*, Linker::Flags::OverrideFromSrc*/);
 
             //if (Linker::linkModules(*getModule(), std::move(I.second), LinkFlags))
         }

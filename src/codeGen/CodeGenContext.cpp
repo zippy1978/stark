@@ -228,6 +228,8 @@ namespace stark
 	/* Generate code from AST root */
 	void CodeGenContext::generateCode(ASTBlock &root)
 	{
+		// Create module
+		llvmModule = new Module(filename, llvmContext);
 
 		// Configure logger
 		logger.debugEnabled = this->debugEnabled;
@@ -250,7 +252,7 @@ namespace stark
 			vector<Type *> argTypes;
 			argTypes.push_back(getArrayComplexType("string")->getType());
 			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
-			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, MAIN_FUNCTION_NAME, module);
+			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
 			BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
 
 			// Push a new variable/block context
@@ -300,7 +302,7 @@ namespace stark
 		{
 			std::cout << "Code is generated.\n";
 			std::cout << "----------- DUMP -------------\n";
-			module->print(llvm::errs(), nullptr);
+			llvmModule->print(llvm::errs(), nullptr);
 		}
 	}
 
@@ -310,7 +312,7 @@ namespace stark
 		std::error_code errorCode;
 		//raw_ostream output = outs();
 		raw_fd_ostream output(filename, errorCode);
-		WriteBitcodeToFile(*module, output);
+		WriteBitcodeToFile(*llvmModule, output);
 	}
 
 	/* Executes the AST by running the main function */
@@ -323,7 +325,7 @@ namespace stark
 		LLVMInitializeNativeTarget();
 		LLVMInitializeNativeAsmPrinter();
 		LLVMInitializeNativeAsmParser();
-		ExecutionEngine *ee = EngineBuilder(unique_ptr<Module>(module)).setErrorStr(&err).create();
+		ExecutionEngine *ee = EngineBuilder(unique_ptr<Module>(llvmModule)).setErrorStr(&err).create();
 		if (!ee)
 		{
 			logger.logError(formatv("JIT error: {0}", err));
@@ -366,7 +368,7 @@ namespace stark
 		// 1. Runtime function must be already declared
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
-		Function *function = this->module->getFunction("stark_runtime_mm_init");
+		Function *function = this->getLLvmModule()->getFunction("stark_runtime_mm_init");
 		if (function != NULL && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
 		{
 
@@ -380,7 +382,7 @@ namespace stark
 
 	Value *CodeGenContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
 	{
-		Function *function = this->module->getFunction("stark_runtime_mm_alloc");
+		Function *function = this->getLLvmModule()->getFunction("stark_runtime_mm_alloc");
 		if (function == NULL)
 		{
 			this->logger.logError("cannot allocate memory: cannot find runtime function");
