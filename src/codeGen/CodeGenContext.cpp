@@ -26,6 +26,9 @@
 using namespace llvm;
 using namespace std;
 
+#define MAIN_FUNCTION_NAME "main"
+#define RUNTIME_FUNCTION_PREFIX "stark_runtime"
+
 namespace stark
 {
 
@@ -247,7 +250,7 @@ namespace stark
 			vector<Type *> argTypes;
 			argTypes.push_back(getArrayComplexType("string")->getType());
 			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
-			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
+			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, MAIN_FUNCTION_NAME, module);
 			BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
 
 			// Push a new variable/block context
@@ -345,7 +348,7 @@ namespace stark
 		args.elements = elements;
 
 		// Call main function
-		int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress("main");
+		int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
 		int retValue = main_func(args);
 
 		logger.logDebug(formatv("code was run, return code is {0}", retValue));
@@ -364,7 +367,7 @@ namespace stark
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
 		Function *function = this->module->getFunction("stark_runtime_mm_init");
-		if (function != NULL && (parentFunction->getName().compare("main") == 0))
+		if (function != NULL && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
 		{
 
 			std::vector<Value *> args;
@@ -386,6 +389,17 @@ namespace stark
 		args.push_back(size);
 		Value *alloc = CallInst::Create(function, makeArrayRef(args), "alloc", insertAtEnd);
 		return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
+	}
+
+	void CodeGenContext::checkFunctionCallAccess(std::string name, FileLocation location)
+	{
+		if (name.compare(MAIN_FUNCTION_NAME) == 0) {
+			logger.logError(location, "main function cannot be called");
+		}
+
+		if (name.rfind(RUNTIME_FUNCTION_PREFIX, 0) == 0) {
+			logger.logError(location, "calling private runtime functions is not allowed");
+		}
 	}
 
 } // namespace stark

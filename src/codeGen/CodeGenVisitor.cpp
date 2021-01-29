@@ -405,6 +405,10 @@ namespace stark
         {
             context->logger.logError(node->location, formatv("undeclared function {0}", node->id.name));
         }
+
+        // Check that function can be called
+        context->checkFunctionCallAccess(node->id.name, node->location);
+
         std::vector<Value *> args;
         ASTExpressionList::const_iterator it;
         int i = 0;

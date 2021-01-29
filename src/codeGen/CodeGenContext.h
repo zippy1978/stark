@@ -135,15 +135,16 @@ namespace stark
     void setInterpreterMode(bool m) { interpreterMode = m; }
     bool isInterpreterMode() { return interpreterMode; }
 
+    /* Check that the given function is allowed to be called. If call is not allowed, logs the error (and so stop the generation) */
+    void checkFunctionCallAccess(std::string name, FileLocation location);
+
     /**
     * Try to initialize the memory manager. 
     * Can be called many times, will initialize only once, if conditions are met.
     */
     void initMemoryManager();
 
-    /** 
-     * Create a memory allocation using the memory manager.
-     */
+    /* Create a memory allocation using the memory manager. */
     Value *createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd);
 
     Module *getModule() { return module; }
