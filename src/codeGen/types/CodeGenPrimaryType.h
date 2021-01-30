@@ -33,7 +33,7 @@ namespace stark
         std::string getName() { return name; }
         std::string getLLvmTypeName() { return llvmTypeName; }
         /* Convert a value of the current type to a given type */
-        Value* convert(Value* value, std::string typeName);
+        virtual Value* convert(Value* value, std::string typeName, FileLocation location);
         virtual Value* create(long long i, FileLocation location);
         virtual Value* create(double d, FileLocation location);
         virtual Value* create(bool b, FileLocation location);
@@ -48,6 +48,7 @@ namespace stark
     {
     public:
         CodeGenIntType(CodeGenContext *context);
+        Value* convert(Value* value, std::string typeName, FileLocation location);
         Value* create(long long i, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
@@ -60,6 +61,7 @@ namespace stark
     {
     public:
         CodeGenDoubleType(CodeGenContext *context);
+        Value* convert(Value* value, std::string typeName, FileLocation location);
         Value* create(double d, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);

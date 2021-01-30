@@ -757,4 +757,25 @@ namespace stark
         context->declareComplexType(structType);
     }
 
+    void CodeGenVisitor::visit(ASTTypeConversion *node)
+    {
+        context->logger.logDebug(node->location, formatv("creating type convertion tp type {0}", node->type.name));
+
+        // Evaluate expression
+        CodeGenVisitor v(context);
+        node->expression.accept(&v);
+
+        std::string exprTypeName = context->getTypeName(v.result->getType());
+
+        // Type conversion is not suported on complex types
+        if (context->isPrimaryType(exprTypeName))
+        {
+            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->type.name, node->location);
+        }
+        else
+        {
+            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->type.name, node->location);
+        }
+    }
+
 } // namespace stark

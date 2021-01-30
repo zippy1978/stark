@@ -33,7 +33,8 @@ while (i < insideapp.employees.len) {
     i = i + 1
 }
 
-func testf(): void {
-    println("hello mangler !")
-}
-testf()
+
+y: int = 30
+println(y as string)
+d: double = 34.35
+println(d as string)

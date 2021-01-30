@@ -10,7 +10,7 @@ namespace stark
     CodeGenVoidType::CodeGenVoidType(CodeGenContext *context) : CodeGenPrimaryType("void", context, Type::getVoidTy(context->llvmContext), "void") {}
     CodeGenAnyType::CodeGenAnyType(CodeGenContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->llvmContext), "i8*") {}
 
-    Value *CodeGenPrimaryType::convert(Value *value, std::string typeName)
+    Value *CodeGenPrimaryType::convert(Value *value, std::string typeName, FileLocation location)
     {
         if (typeName.compare(this->name) == 0)
         {
@@ -18,7 +18,7 @@ namespace stark
         }
         else
         {
-            context->logger.logError(formatv("cast from {0} to {1} is not supported", this->name, typeName));
+            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return NULL;
         }
     }

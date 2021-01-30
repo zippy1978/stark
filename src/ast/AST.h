@@ -234,9 +234,18 @@ namespace stark
   class ASTStructDeclaration : public ASTStatement
   {
   public:
-    ASTIdentifier &id;
+    const ASTIdentifier &id;
     ASTVariableList arguments;
-    ASTStructDeclaration(ASTIdentifier &id, const ASTVariableList &arguments) : id(id), arguments(arguments) {}
+    ASTStructDeclaration(const ASTIdentifier &id, const ASTVariableList &arguments) : id(id), arguments(arguments) {}
+    void accept(ASTVisitor *visitor);
+  };
+
+  class ASTTypeConversion : public ASTExpression
+  {
+  public:
+    ASTExpression &expression;
+    const ASTIdentifier &type;
+    ASTTypeConversion(ASTExpression &expression, const ASTIdentifier &type) : expression(expression), type(type) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -265,6 +274,7 @@ namespace stark
     virtual void visit(ASTWhileStatement *node) = 0;
     virtual void visit(ASTStructDeclaration *node) = 0;
     virtual void visit(ASTArray *node) = 0;
+    virtual void visit(ASTTypeConversion *node) = 0;
   };
 
 } // namespace stark

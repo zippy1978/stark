@@ -41,10 +41,11 @@
 %token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
 %token IF ELSE
 %token WHILE
+%token AS
 
 %type <ident> ident
 %type <identvec> chained_ident
-%type <expr> numeric expr str comparison array
+%type <expr> numeric expr str comparison array type_conversion
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_decl struct_decl extern_decl if_else_stmt while_stmt
 %type <varvec> decl_args
@@ -357,6 +358,14 @@ numeric:
       }
 ;
 
+type_conversion:
+      expr AS ident
+      {
+            $$ = new stark::ASTTypeConversion(*$1, *$3);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+
 comparison:
       expr COMP_EQ expr 
       { 
@@ -429,6 +438,8 @@ expr:
       str
 |
       comparison
+|
+      type_conversion
 |     
       expr MUL expr 
       { 

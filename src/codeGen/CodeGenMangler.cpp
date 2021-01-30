@@ -1,16 +1,10 @@
 #include "CodeGenMangler.h"
 
 #define STARK_FUNCTION_PREFIX "stark.functions."
-#define STARK_TYPE_PREFIX "stark.types."
 #define STARK_PUBLIC_RUNTIME_FUNCTION_PREFIX "stark_runtime_pub_"
 
 namespace stark
 {
-    std::string CodeGenMangler::mangleTypeName(std::string typeName, std::string moduleName)
-    {
-        std::string result = STARK_TYPE_PREFIX;
-        return result.append(moduleName).append(".").append(typeName);
-    }
 
     std::string CodeGenMangler::mangleFunctionName(std::string functionName, std::string moduleName)
     {

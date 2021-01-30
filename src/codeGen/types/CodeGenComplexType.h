@@ -60,6 +60,7 @@ namespace stark
         bool isArray() { return array; }
         virtual Value *create(std::vector<Value *> values, FileLocation location);
         virtual Value *create(std::string string, FileLocation location);
+        virtual Value* convert(Value* value, std::string typeName, FileLocation location);
     };
 
     /**

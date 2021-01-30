@@ -62,4 +62,10 @@ namespace stark
         return NULL;
     }
 
+    Value *CodeGenComplexType::convert(Value *value, std::string typeName, FileLocation location)
+    {
+        context->logger.logError(location, formatv("cannot covert type {0} to type {1}", this->name, typeName));
+        return NULL;
+    }
+
 } // namespace stark

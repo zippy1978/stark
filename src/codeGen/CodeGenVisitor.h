@@ -36,6 +36,7 @@ namespace stark
     void visit(ASTWhileStatement *node);
     void visit(ASTStructDeclaration *node);
     void visit(ASTArray *node);
+    void visit(ASTTypeConversion *node);
 
   };
 

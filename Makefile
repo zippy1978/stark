@@ -63,6 +63,7 @@ test_lang: stark
 	./$(OUT_DIR)/stark -d test/functions/external.st
 	./$(OUT_DIR)/stark -d test/expressions/binary.st
 	./$(OUT_DIR)/stark -d test/expressions/comparison.st
+	./$(OUT_DIR)/stark -d test/expressions/conversion.st
 	./$(OUT_DIR)/stark -d test/statements/ifelse.st
 	./$(OUT_DIR)/stark -d test/statements/while.st
 	./$(OUT_DIR)/stark -d test/types/string.st

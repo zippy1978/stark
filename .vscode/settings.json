@@ -1,5 +1,8 @@
 {
     "C_Cpp.default.includePath": [
         "/usr/local/opt/llvm/include"
-    ]
+    ],
+    "files.associations": {
+        "typeinfo": "cpp"
+    }
 }

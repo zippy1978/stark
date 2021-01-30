@@ -13,7 +13,6 @@ namespace stark
         
 
     public:
-        std::string mangleTypeName(std::string typeName, std::string moduleName);
         std::string mangleFunctionName(std::string functionName, std::string moduleName);
         std::string manglePublicRuntimeFunctionName(std::string functionName);
     };

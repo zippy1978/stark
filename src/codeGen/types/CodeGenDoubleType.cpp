@@ -8,6 +8,28 @@ namespace stark
 {
     CodeGenDoubleType::CodeGenDoubleType(CodeGenContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->llvmContext), "double") {}
 
+    Value *CodeGenDoubleType::convert(Value *value, std::string typeName, FileLocation location)
+    {
+
+        // string
+        if (typeName.compare("string") == 0)
+        {
+            Function *function = context->getLLvmModule()->getFunction("stark_runtime_priv_conv_double_string");
+            if (function == NULL)
+            {
+                context->logger.logError("cannot find runtime function");
+            }
+            std::vector<Value *> args;
+            args.push_back(value);
+            return CallInst::Create(function, makeArrayRef(args), "conv", context->getCurrentBlock());
+        }
+        else
+        {
+            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            return NULL;
+        }
+    }
+
     Value *CodeGenDoubleType::create(double d, FileLocation location)
     {
 

@@ -21,6 +21,7 @@ namespace stark
     void ASTWhileStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTStructDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTArray::accept(ASTVisitor *visitor) { visitor->visit(this); }
+    void ASTTypeConversion::accept(ASTVisitor *visitor) { visitor->visit(this); }
 
     ASTIdentifier::ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifierList *members)
     {
