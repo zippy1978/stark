@@ -236,9 +236,10 @@ namespace stark
         ASTStatementList::const_iterator it;
         Value *last = NULL;
 
+        context->logger.logDebug(node->location, "generating block");
+
         for (it = node->statements.begin(); it != node->statements.end(); it++)
         {
-            context->logger.logDebug(node->location, formatv("generating code for {0}", typeid(**it).name()));
             CodeGenVisitor v(context);
             (**it).accept(&v);
             last = v.result;
@@ -325,7 +326,10 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->id.name));
 
-        if (context->getLLvmModule()->getFunction(node->id.name.c_str()) != NULL)
+        // Mangle name
+        std::string functionName = context->getMangler()->mangleFunctionName(node->id.name, context->getModuleName());
+
+        if (context->getLLvmModule()->getFunction(functionName.c_str()) != NULL)
         {
             context->logger.logError(node->location, formatv("function {0} already declared", node->id.name));
         }
@@ -343,7 +347,7 @@ namespace stark
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->getLLvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
 
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
 
@@ -400,7 +404,19 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
-        Function *function = context->getLLvmModule()->getFunction(node->id.name.c_str());
+        // First try to find a runtime function
+        Function *function = context->getLLvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->id.name).c_str());
+        // Then look in stark functions
+        if (function == NULL)
+        {
+            function = context->getLLvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->id.name, context->getModuleName()).c_str());
+        }
+        // Finally : look for an unmangled function
+        if (function == NULL)
+        {
+            function = context->getLLvmModule()->getFunction(node->id.name.c_str());
+        }
+
         if (function == NULL)
         {
             context->logger.logError(node->location, formatv("undeclared function {0}", node->id.name));
@@ -438,6 +454,17 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->id.name));
+
+        std::string functionName = node->id.name;
+
+        // TODO : never mangle extern (if possible)
+        // Because only the module linker have to link stark functions between modules, and then : will mangle directly !
+        // If function declartion is not a runtime function name : mangle it !
+        /*if (!context->isRuntimeFunctionName(functionName))
+        {
+            functionName = context->getMangler()->mangleFunctionName(functionName, context->getModuleName());
+        }*/
+
         vector<Type *> argTypes;
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
@@ -447,7 +474,7 @@ namespace stark
 
         Type *returnType = node->type.array ? context->getArrayComplexType(node->type.name)->getType() : typeOf(node->type, context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, node->id.name.c_str(), context->getLLvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
         this->result = function;
 
         // If in interpreter mode : try to init the memory manager

@@ -5,7 +5,7 @@
 #include "Runtime.h"
 #include "Memory.h"
 
-extern "C" stark::string_t stark_runtime_conv_int_string(stark::int_t i)
+extern "C" stark::string_t stark_runtime_priv_conv_int_string(stark::int_t i)
 {
     char str[30];
     sprintf(str, "%lld", i);
@@ -13,7 +13,7 @@ extern "C" stark::string_t stark_runtime_conv_int_string(stark::int_t i)
     stark::string_t result;
     result.len = strlen(str);
     // TODO : leak here ! will use GC when available
-    result.data = (char *)stark_runtime_mm_alloc(sizeof(char) * result.len);
+    result.data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result.len);
 	strcpy(result.data, str);
     return result;
 }

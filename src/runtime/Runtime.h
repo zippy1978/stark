@@ -27,11 +27,11 @@ namespace stark
         /* Returns runtime declarations available to all source files */
         static std::string getDeclarations()
         {
-            return "extern stark_runtime_mm_init(): void\n"
-                   "extern stark_runtime_mm_alloc(size: int): any\n"
-                   "extern stark_runtime_conv_int_string(i: int): string\n"
-                   "extern println(s: string): void\n"
-                   "extern print(s: string): void\n";
+            return "extern stark_runtime_priv_mm_init(): void\n"
+                   "extern stark_runtime_priv_mm_alloc(size: int): any\n"
+                   "extern stark_runtime_priv_conv_int_string(i: int): string\n"
+                   "extern stark_runtime_pub_println(s: string): void\n"
+                   "extern stark_runtime_pub_print(s: string): void\n";
         }
     };
 

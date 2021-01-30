@@ -32,3 +32,8 @@ while (i < insideapp.employees.len) {
     println(e.name)
     i = i + 1
 }
+
+func testf(): void {
+    println("hello mangler !")
+}
+testf()

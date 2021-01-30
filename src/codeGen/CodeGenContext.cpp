@@ -27,7 +27,8 @@ using namespace llvm;
 using namespace std;
 
 #define MAIN_FUNCTION_NAME "main"
-#define RUNTIME_FUNCTION_PREFIX "stark_runtime"
+#define RUNTIME_FUNCTION_PREFIX "stark_runtime_"
+#define RUNTIME_PRIVATE_FUNCTION_PREFIX "stark_runtime_priv_"
 
 namespace stark
 {
@@ -368,7 +369,7 @@ namespace stark
 		// 1. Runtime function must be already declared
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
-		Function *function = this->getLLvmModule()->getFunction("stark_runtime_mm_init");
+		Function *function = this->getLLvmModule()->getFunction("stark_runtime_priv_mm_init");
 		if (function != NULL && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
 		{
 
@@ -382,7 +383,7 @@ namespace stark
 
 	Value *CodeGenContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
 	{
-		Function *function = this->getLLvmModule()->getFunction("stark_runtime_mm_alloc");
+		Function *function = this->getLLvmModule()->getFunction("stark_runtime_priv_mm_alloc");
 		if (function == NULL)
 		{
 			this->logger.logError("cannot allocate memory: cannot find runtime function");
@@ -395,13 +396,20 @@ namespace stark
 
 	void CodeGenContext::checkFunctionCallAccess(std::string name, FileLocation location)
 	{
-		if (name.compare(MAIN_FUNCTION_NAME) == 0) {
+		if (name.compare(MAIN_FUNCTION_NAME) == 0)
+		{
 			logger.logError(location, "main function cannot be called");
 		}
 
-		if (name.rfind(RUNTIME_FUNCTION_PREFIX, 0) == 0) {
+		if (name.rfind(RUNTIME_PRIVATE_FUNCTION_PREFIX, 0) == 0)
+		{
 			logger.logError(location, "calling private runtime functions is not allowed");
 		}
+	}
+
+	bool CodeGenContext::isRuntimeFunctionName(std::string functionName)
+	{
+		return (functionName.rfind(RUNTIME_FUNCTION_PREFIX, 0) == 0);
 	}
 
 } // namespace stark
