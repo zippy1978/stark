@@ -9,6 +9,47 @@ namespace stark
 
     CodeGenBoolType::CodeGenBoolType(CodeGenContext *context) : CodeGenPrimaryType("bool", context, Type::getInt1Ty(context->llvmContext), "i1") {}
 
+    Value *CodeGenBoolType::convert(Value *value, std::string typeName, FileLocation location)
+    {
+        if (typeName.compare(this->name) == 0) {
+            return value;
+        }
+
+        std::string runtimeFunctionName = "none";
+        // string
+        if (typeName.compare("string") == 0)
+        {
+            runtimeFunctionName = "stark_runtime_priv_conv_bool_string";
+        }
+        // int
+        else if (typeName.compare("int") == 0)
+        {
+            runtimeFunctionName = "stark_runtime_priv_conv_bool_int";
+        }
+        // double
+        else if (typeName.compare("double") == 0)
+        {
+            runtimeFunctionName = "stark_runtime_priv_conv_bool_double";
+        }
+
+        if (runtimeFunctionName.compare("none") != 0)
+        {
+            Function *function = context->getLLvmModule()->getFunction(runtimeFunctionName);
+            if (function == NULL)
+            {
+                context->logger.logError("cannot find runtime function");
+            }
+            std::vector<Value *> args;
+            args.push_back(value);
+            return CallInst::Create(function, makeArrayRef(args), "conv", context->getCurrentBlock());
+        }
+        else
+        {
+            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            return NULL;
+        }
+    }
+
     Value *CodeGenBoolType::create(bool b, FileLocation location)
     {
 

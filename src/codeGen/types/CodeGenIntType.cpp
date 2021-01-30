@@ -10,6 +10,9 @@ namespace stark
 
     Value *CodeGenIntType::convert(Value *value, std::string typeName, FileLocation location)
     {
+        if (typeName.compare(this->name) == 0) {
+            return value;
+        }
 
         std::string runtimeFunctionName = "none";
         // string

@@ -16,11 +16,52 @@ namespace stark
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
+    Value *CodeGenStringComplexType::convert(Value *value, std::string typeName, FileLocation location)
+    {
+        if (typeName.compare(this->name) == 0) {
+            return value;
+        }
+
+        std::string runtimeFunctionName = "none";
+        // int
+        if (typeName.compare("int") == 0)
+        {
+            runtimeFunctionName = "stark_runtime_priv_conv_string_int";
+        }
+        // double
+        else if (typeName.compare("double") == 0)
+        {
+            runtimeFunctionName = "stark_runtime_priv_conv_string_double";
+        }
+        // bool
+        else if (typeName.compare("bool") == 0)
+        {
+            runtimeFunctionName = "stark_runtime_priv_conv_string_bool";
+        }
+
+        if (runtimeFunctionName.compare("none") != 0)
+        {
+            Function *function = context->getLLvmModule()->getFunction(runtimeFunctionName);
+            if (function == NULL)
+            {
+                context->logger.logError("cannot find runtime function");
+            }
+            std::vector<Value *> args;
+            args.push_back(value);
+            return CallInst::Create(function, makeArrayRef(args), "conv", context->getCurrentBlock());
+        }
+        else
+        {
+            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            return NULL;
+        }
+    }
+
     Value *CodeGenStringComplexType::create(std::string string, FileLocation location)
     {
 
         // Create constant vector of the string size
-        std::vector<llvm::Constant *> chars(string.size() );
+        std::vector<llvm::Constant *> chars(string.size());
 
         // Set each char of the string in the vector
         for (unsigned int i = 0; i < string.size(); i++)

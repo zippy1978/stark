@@ -1,4 +1,4 @@
-println("hello")
+println("This is a simple scratchpad program")
 
 struct Employee {
     name: string,
@@ -32,9 +32,5 @@ while (i < insideapp.employees.len) {
     println(e.name)
     i = i + 1
 }
-
-
-y: int = 30
-println(y as string)
-d: double = 34.35
-println(d as string)
+print("Total count is: ")
+println(insideapp.employees.len as string)

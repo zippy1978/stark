@@ -42,9 +42,9 @@ starkc: generate
 runtime: deps
 	mkdir -p $(OUT_DIR)/libstark
 	$(CC) -g -c $(SRC_DIR)/runtime/IO.cpp -o $(OUT_DIR)/libstark/io.o
-	$(CC) -g -c $(SRC_DIR)/runtime/Convert.cpp -o $(OUT_DIR)/libstark/convert.o
+	$(CC) -g -c $(SRC_DIR)/runtime/Conversion.cpp -o $(OUT_DIR)/libstark/conversion.o
 	$(CC) -g -c $(SRC_DIR)/runtime/Memory.cpp -o $(OUT_DIR)/libstark/memory.o
-	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/libstark/io.o $(OUT_DIR)/libstark/convert.o $(OUT_DIR)/libstark/memory.o $(DEPS_DIR)/bdwgc/libgc.a
+	$(CC) -shared -o $(OUT_DIR)/libstark.so $(OUT_DIR)/libstark/io.o $(OUT_DIR)/libstark/conversion.o $(OUT_DIR)/libstark/memory.o $(DEPS_DIR)/bdwgc/libgc.a
 	cd $(OUT_DIR)/libstark && ar -x ../../$(DEPS_DIR)/bdwgc/libgc.a
 	ar rcs $(OUT_DIR)/libstark.a  $(OUT_DIR)/libstark/*.o
 

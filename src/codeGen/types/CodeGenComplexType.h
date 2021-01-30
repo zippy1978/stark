@@ -80,6 +80,7 @@ namespace stark
     {
     public:
         CodeGenStringComplexType(CodeGenContext *context);
+        Value* convert(Value* value, std::string typeName, FileLocation location);
         Value *create(std::string string, FileLocation location);
     };
 

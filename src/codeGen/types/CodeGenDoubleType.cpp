@@ -10,6 +10,9 @@ namespace stark
 
     Value *CodeGenDoubleType::convert(Value *value, std::string typeName, FileLocation location)
     {
+        if (typeName.compare(this->name) == 0) {
+            return value;
+        }
 
         // string
         if (typeName.compare("string") == 0)

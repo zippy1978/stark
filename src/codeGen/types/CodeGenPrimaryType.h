@@ -74,6 +74,7 @@ namespace stark
     {
     public:
         CodeGenBoolType(CodeGenContext *context);
+        Value* convert(Value* value, std::string typeName, FileLocation location);
         Value* create(bool b, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
         Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
