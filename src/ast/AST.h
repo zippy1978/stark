@@ -107,8 +107,11 @@ namespace stark
     ASTIdentifier *member = NULL; // Nullable because not mandatory
     ASTExpression *index = NULL;  // Index to handle varArray[index]
     bool array = false;           // Indicates it is an array in case of usage in a delcaration
-    ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifierList *members);
-    //ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifier *member) : name(name), index(index), member(member) {}
+    ASTIdentifier(std::string &name, ASTExpression *index, ASTIdentifierList *members);
+    /* Return the count of nested members */
+    int countNestedMembers();
+    /* Get the identifier fullname, for example id.member.submember... */
+    std::string getFullName();
     void accept(ASTVisitor *visitor);
   };
 
@@ -145,42 +148,52 @@ namespace stark
   class ASTVariableDeclaration : public ASTStatement
   {
   public:
-    const ASTIdentifier &type;
+    ASTIdentifier &type;
     ASTIdentifier &id;
     ASTExpression *assignmentExpr; // Pointer, because nullable
     bool isArray;
-    ASTVariableDeclaration(const ASTIdentifier &type, ASTIdentifier &id, bool isArray, ASTExpression *assignmentExpr) : type(type), id(id), isArray(isArray), assignmentExpr(assignmentExpr) {}
+    ASTVariableDeclaration(ASTIdentifier &type, ASTIdentifier &id, bool isArray, ASTExpression *assignmentExpr) : type(type), id(id), isArray(isArray), assignmentExpr(assignmentExpr) {}
     void accept(ASTVisitor *visitor);
   };
 
-  class ASTFunctionDeclaration : public ASTStatement
+  class ASTFunctionDefinition : public ASTStatement
   {
   public:
-    const ASTIdentifier &type;
-    const ASTIdentifier &id;
+    ASTIdentifier &type;
+    ASTIdentifier &id;
     ASTVariableList arguments;
     ASTBlock &block;
-    ASTFunctionDeclaration(const ASTIdentifier &type, const ASTIdentifier &id, const ASTVariableList &arguments, ASTBlock &block) : type(type), id(id), arguments(arguments), block(block) {}
+    ASTFunctionDefinition(ASTIdentifier &type, ASTIdentifier &id, ASTVariableList &arguments, ASTBlock &block) : type(type), id(id), arguments(arguments), block(block) {}
     void accept(ASTVisitor *visitor);
   };
 
   class ASTFunctionCall : public ASTExpression
   {
   public:
-    const ASTIdentifier &id;
+    ASTIdentifier &id;
     ASTExpressionList arguments;
-    ASTFunctionCall(const ASTIdentifier &id, ASTExpressionList &arguments) : id(id), arguments(arguments) {}
-    ASTFunctionCall(const ASTIdentifier &id) : id(id) {}
+    ASTFunctionCall(ASTIdentifier &id, ASTExpressionList &arguments) : id(id), arguments(arguments) {}
+    ASTFunctionCall(ASTIdentifier &id) : id(id) {}
     void accept(ASTVisitor *visitor);
   };
 
   class ASTExternDeclaration : public ASTStatement
   {
   public:
-    const ASTIdentifier &type;
-    const ASTIdentifier &id;
+    ASTIdentifier &type;
+    ASTIdentifier &id;
     ASTVariableList arguments;
-    ASTExternDeclaration(const ASTIdentifier &type, const ASTIdentifier &id, const ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
+    ASTExternDeclaration(ASTIdentifier &type, ASTIdentifier &id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
+    void accept(ASTVisitor *visitor);
+  };
+
+  class ASTFunctionDeclaration : public ASTStatement
+  {
+  public:
+    ASTIdentifier &type;
+    ASTIdentifier &id;
+    ASTVariableList arguments;
+    ASTFunctionDeclaration(ASTIdentifier &type, ASTIdentifier &id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -234,9 +247,9 @@ namespace stark
   class ASTStructDeclaration : public ASTStatement
   {
   public:
-    const ASTIdentifier &id;
+    ASTIdentifier &id;
     ASTVariableList arguments;
-    ASTStructDeclaration(const ASTIdentifier &id, const ASTVariableList &arguments) : id(id), arguments(arguments) {}
+    ASTStructDeclaration(ASTIdentifier &id, const ASTVariableList &arguments) : id(id), arguments(arguments) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -244,8 +257,8 @@ namespace stark
   {
   public:
     ASTExpression &expression;
-    const ASTIdentifier &type;
-    ASTTypeConversion(ASTExpression &expression, const ASTIdentifier &type) : expression(expression), type(type) {}
+    ASTIdentifier &type;
+    ASTTypeConversion(ASTExpression &expression, ASTIdentifier &type) : expression(expression), type(type) {}
     void accept(ASTVisitor *visitor);
   };
 
@@ -264,7 +277,7 @@ namespace stark
     virtual void visit(ASTAssignment *node) = 0;
     virtual void visit(ASTExpressionStatement *node) = 0;
     virtual void visit(ASTVariableDeclaration *node) = 0;
-    virtual void visit(ASTFunctionDeclaration *node) = 0;
+    virtual void visit(ASTFunctionDefinition *node) = 0;
     virtual void visit(ASTFunctionCall *node) = 0;
     virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
@@ -275,6 +288,7 @@ namespace stark
     virtual void visit(ASTStructDeclaration *node) = 0;
     virtual void visit(ASTArray *node) = 0;
     virtual void visit(ASTTypeConversion *node) = 0;
+    virtual void visit(ASTFunctionDeclaration *node) = 0;
   };
 
 } // namespace stark

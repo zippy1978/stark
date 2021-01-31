@@ -26,7 +26,7 @@ namespace stark
     void visit(ASTAssignment *node);
     void visit(ASTExpressionStatement *node);
     void visit(ASTVariableDeclaration *node);
-    void visit(ASTFunctionDeclaration *node);
+    void visit(ASTFunctionDefinition *node);
     void visit(ASTFunctionCall *node);
     void visit(ASTExternDeclaration *node);
     void visit(ASTReturnStatement *node);
@@ -37,6 +37,7 @@ namespace stark
     void visit(ASTStructDeclaration *node);
     void visit(ASTArray *node);
     void visit(ASTTypeConversion *node);
+    void visit(ASTFunctionDeclaration *node);
 
   };
 

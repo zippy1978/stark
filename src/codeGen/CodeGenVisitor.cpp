@@ -321,10 +321,10 @@ namespace stark
         this->result = var->getValue();
     }
 
-    void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
+    void CodeGenVisitor::visit(ASTFunctionDefinition *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->id.name));
+        context->logger.logDebug(node->location, formatv("creating function definition for {0}", node->id.name));
 
         // Mangle name
         std::string functionName = context->getMangler()->mangleFunctionName(node->id.name, context->getModuleName());
@@ -450,20 +450,43 @@ namespace stark
         this->result = call;
     }
 
+    void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
+    {
+        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->id.name));
+
+        // Does exactly the same as extern, but mangle name
+        std::string moduleName = "main";
+        std::string functionName = node->id.name;
+
+        int memberCount = node->id.countNestedMembers();
+        // If identifier has a member : then it is module.function
+        if (memberCount == 1)
+        {
+            moduleName = node->id.name;
+            functionName = node->id.member->name;
+        }
+        // If more than one member : identifier is invalid
+        else if (memberCount > 1)
+        {
+            context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->id.getFullName()));
+        }
+
+        // Mangle
+        std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
+        ASTIdentifier newId(mangledName, NULL, NULL);
+
+        // Generate new extern
+        ASTExternDeclaration externDeclaration(node->type, newId, node->arguments);
+        CodeGenVisitor v(context);
+        externDeclaration.accept(&v);
+    }
+
     void CodeGenVisitor::visit(ASTExternDeclaration *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->id.name));
 
         std::string functionName = node->id.name;
-
-        // TODO : never mangle extern (if possible)
-        // Because only the module linker have to link stark functions between modules, and then : will mangle directly !
-        // If function declartion is not a runtime function name : mangle it !
-        /*if (!context->isRuntimeFunctionName(functionName))
-        {
-            functionName = context->getMangler()->mangleFunctionName(functionName, context->getModuleName());
-        }*/
 
         vector<Type *> argTypes;
         ASTVariableList::const_iterator it;

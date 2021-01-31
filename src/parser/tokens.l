@@ -23,6 +23,7 @@
 "//".*                  // Comments skipped.
 
 extern                  return parser::token::EXTERN;
+declare                 return parser::token::DECLARE;
 func                    return parser::token::FUNC;
 struct                  return parser::token::STRUCT;
 return                  return parser::token::RETURN;

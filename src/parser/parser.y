@@ -35,7 +35,7 @@
 %token COMMA
 %token COLON
 %token DOT
-%token FUNC EXTERN RETURN STRUCT
+%token FUNC EXTERN RETURN STRUCT DECLARE
 %token PLUS MINUS MUL DIV OR AND
 %token TRUE FALSE
 %token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
@@ -47,7 +47,7 @@
 %type <identvec> chained_ident
 %type <expr> numeric expr str comparison array type_conversion
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl struct_decl extern_decl if_else_stmt while_stmt
+%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl
 %type <varvec> decl_args
 %type <exprvec> expr_args
 
@@ -82,11 +82,13 @@ stmts:
 stmt: 
       var_decl
 | 
-      func_decl
+      func_def
 |
       struct_decl
 | 
       extern_decl
+|
+      func_decl
 | 
       expr 
       { 
@@ -187,10 +189,29 @@ extern_decl:
       }
 ;
 
-func_decl: 
+func_decl:
+      DECLARE ident LPAREN decl_args RPAREN COLON ident
+      { 
+            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4);
+            delete $4;
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+|
+      DECLARE ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS
+      { 
+            $7->array = true;
+            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4);
+            delete $4;
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+;
+
+func_def: 
       FUNC ident LPAREN decl_args RPAREN COLON ident block
       { 
-            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4, *$8);
+            $$ = new stark::ASTFunctionDefinition(*$7, *$2, *$4, *$8);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 
@@ -199,7 +220,7 @@ func_decl:
       FUNC ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS block
       { 
             $7->array = true;
-            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4, *$9);
+            $$ = new stark::ASTFunctionDefinition(*$7, *$2, *$4, *$9);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 

@@ -11,7 +11,7 @@ namespace stark
     void ASTAssignment::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTExpressionStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTVariableDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
-    void ASTFunctionDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
+    void ASTFunctionDefinition::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTFunctionCall::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTExternDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTReturnStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
@@ -22,8 +22,9 @@ namespace stark
     void ASTStructDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTArray::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTTypeConversion::accept(ASTVisitor *visitor) { visitor->visit(this); }
+    void ASTFunctionDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
 
-    ASTIdentifier::ASTIdentifier(const std::string &name, ASTExpression *index, ASTIdentifierList *members)
+    ASTIdentifier::ASTIdentifier(std::string &name, ASTExpression *index, ASTIdentifierList *members)
     {
         this->name = name;
         this->index = index;
@@ -50,10 +51,46 @@ namespace stark
 
                 parentIdentifier = currentIdentifier;
             }
-                }
+        }
 
         this->member = memberIdentifier;
+    }
 
+    int ASTIdentifier::countNestedMembers()
+    {
+        int result = 0;
+
+        ASTIdentifier *ident = this;
+        while (ident->member != NULL)
+        {
+            result++;
+            ident = ident->member;
+        }
+
+        return result;
+    }
+
+    std::string ASTIdentifier::getFullName()
+    {
+        std::string result = this->name;
+
+        if (this->index != NULL)
+        {
+            result.append("[expr]");
+        }
+
+        ASTIdentifier *ident = this;
+        while (ident->member != NULL)
+        {
+            result.append(".").append(ident->member->name);
+            if (ident->member->index != NULL)
+            {
+                result.append("[expr]");
+            }
+            ident = ident->member;
+        }
+
+        return result;
     }
 
 } // namespace stark

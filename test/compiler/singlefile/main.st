@@ -1,5 +1,10 @@
 // Simple empty program
-func main(): int {
+
+func printHello(): void {
     println("hello world")
+}
+
+func main(): int {
+    printHello()
     return  2
 }
