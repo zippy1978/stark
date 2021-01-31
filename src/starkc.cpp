@@ -11,6 +11,7 @@
 #include "codeGen/CodeGen.h"
 #include "runtime/Runtime.h"
 #include "util/Util.h"
+#include "compiler/Compiler.h"
 #include "version.h"
 
 using namespace stark;
@@ -88,32 +89,6 @@ void parseOptions(int argc, char *argv[])
     options.argv = otherArgv;
 }
 
-CodeGenContext *compileFile(std::string filename, ASTBlock *declarations)
-{
-    // Read input file
-    std::ifstream input(filename);
-    if (!input)
-    {
-        std::cerr << "Cannot open input file: " << filename << std::endl;
-        exit(1);
-    }
-
-    // Parse sources
-    StarkParser parser(filename);
-    ASTBlock *program = parser.parse(&input);
-    
-    // Prepend runtime declarations
-    program->preprend(declarations);
-    
-
-    // Generate IR
-    CodeGenContext *context = new CodeGenContext(filename);
-    context->setDebugEnabled(options.debug);
-    context->generateCode(*program);
-
-    return context;
-}
-
 /**
  * Stark compiler command
  */
@@ -142,34 +117,25 @@ int main(int argc, char *argv[])
     }
     else
     {
+        CompilerModule module("main");
 
-        CodeGenModuleLinker linker("default");
-
-        // Load and parse runtime declarations
-        StarkParser parser("runtime");
-        ASTBlock *declarations = parser.parse(Runtime::getDeclarations());
-
-        // Compile source files
-        // And add them to the module linker
+        // Add source files to the module
         for (int i = 0; i < options.argc; i++)
         {
-            std::string filename = options.argv[i];
-            linker.addContext(compileFile(filename, declarations));
+            module.addSourceFile(options.argv[i]);
         }
 
-        // Link generated code
-        linker.link();
-
-        // Output to file
+        // Determine output filename
+        std::string outputFilename = options.argv[0];
+        outputFilename = outputFilename.append(".bc");
         if (options.outputfile != NULL)
         {
-            linker.writeCode(options.outputfile);
+            outputFilename = options.outputfile;
         }
-        else
-        {
-            std::string defaultName = options.argv[0];
-            linker.writeCode(defaultName.append(".bc"));
-        }
+
+        // Compile to file
+        module.compile(outputFilename);
+
     }
 
     return 0;

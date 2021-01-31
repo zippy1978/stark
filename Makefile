@@ -33,11 +33,11 @@ generate:
 
 stark: deps generate
 	mkdir -p $(OUT_DIR)
-	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(DEPS_DIR)/bdwgc/libgc.a $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/stark.cpp
+	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(DEPS_DIR)/bdwgc/libgc.a $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/compiler/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/stark.cpp
 
 starkc: generate
 	mkdir -p $(OUT_DIR)
-	$(CC) -g -O3 -o $(OUT_DIR)/starkc `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/starkc.cpp
+	$(CC) -g -O3 -o $(OUT_DIR)/starkc `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(SRC_DIR)/util/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/compiler/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/starkc.cpp
 
 runtime: deps
 	mkdir -p $(OUT_DIR)/libstark
