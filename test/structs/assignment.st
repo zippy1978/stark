@@ -9,12 +9,12 @@ extern assertTrue(actual: bool): void
 extern failure(): void
 
 // Struct with primary types
-struct prices {
+struct Prices {
     wine: int,
     beer: int
 }
 
-superMarketPrices: prices
+superMarketPrices: Prices
 superMarketPrices.wine = 10
 superMarketPrices.beer = 5
 
@@ -22,12 +22,12 @@ assertIntEquals(superMarketPrices.wine, 10)
 assertIntEquals(superMarketPrices.beer, 5)
 
 // Struct with nested complex types
-struct shop {
+struct Shop {
     name: string,
-    prices: prices
+    prices: Prices
 }
 
-superMarket: shop
+superMarket: Shop
 superMarket.name = "super discount"
 superMarket.prices = superMarketPrices
 

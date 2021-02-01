@@ -34,28 +34,6 @@ namespace stark
         value->print(rso);
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
-    }
-
-    static void printIdent(ASTIdentifier *ident)
-    {
-
-        cout << ident->name;
-        if (ident->index != NULL)
-        {
-            cout << "[expr]";
-        }
-
-        while (ident->member != NULL)
-        {
-            cout << "." << ident->member->name;
-            if (ident->member->index != NULL)
-            {
-                cout << "[expr]";
-            }
-            ident = ident->member;
-        }
-
-        cout << endl;
     }*/
 
     /**

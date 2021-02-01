@@ -1,4 +1,8 @@
-// Simple empty program
+/**
+ *  Compiler test : single main file. 
+ *  main.st
+ *  Hello world using a function.
+ */
 
 func printHello(): void {
     println("hello world")

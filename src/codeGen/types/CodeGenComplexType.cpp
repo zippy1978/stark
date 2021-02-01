@@ -31,6 +31,7 @@ namespace stark
             else
             {
                 memberTypes.push_back(m->type);
+                
             }
         }
 

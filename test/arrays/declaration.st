@@ -7,7 +7,7 @@ extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
 extern failure(): void
 
-struct shop {
+struct Shop {
     id: int,
     name: string
 }
@@ -16,5 +16,5 @@ struct shop {
 p: int[]
 
 // Array with complex types
-s: shop[]
+s: Shop[]
 

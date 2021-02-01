@@ -10,6 +10,7 @@ using namespace std;
 
 namespace stark
 {
+
     CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
         addMember("elements", typeName, context->getType(typeName)->getPointerTo());
@@ -27,7 +28,7 @@ namespace stark
 
          // Alloc inner array
         Type *innerArrayType = ArrayType::get(elementType, values.size());
-        Value* innerArrayAllocSize = Builder.CreateBinOp(Instruction::Mul, ConstantExpr::getSizeOf(innerArrayType->getPointerTo()), ConstantInt::get(Type::getInt64Ty(context->llvmContext), values.size(), true), "");
+        Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         // Initialize inner array with elements
         // TODO : there is probably a way to write the whole content in a single instruction !!!

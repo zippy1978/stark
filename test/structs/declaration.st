@@ -8,13 +8,13 @@ extern assertTrue(actual: bool): void
 extern failure(): void
 
 // Struct with primary types
-struct prices {
+struct Prices {
     wine: int,
     beer: int
 }
 
 // Struct with nested complex types
-struct shop {
+struct Shop {
     name: string,
-    prices: prices
+    prices: Prices
 }
