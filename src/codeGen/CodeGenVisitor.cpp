@@ -348,7 +348,7 @@ namespace stark
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
-
+        
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
 
         context->pushBlock(bblock);
@@ -454,7 +454,6 @@ namespace stark
     {
         context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->id.name));
 
-        // Does exactly the same as extern, but mangle name
         std::string moduleName = "main";
         std::string functionName = node->id.name;
 

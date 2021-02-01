@@ -7,6 +7,7 @@
 #include <strstream>
 
 #include "../codeGen/CodeGen.h"
+#include "../ast/AST.h"
 #include "../runtime/Runtime.h"
 #include "../parser/StarkParser.h"
 
@@ -14,38 +15,84 @@
 
 namespace stark
 {
+    void CompilerModule::extractDeclarations()
+    {
+        for (auto it = sourceASTs.begin(); it != sourceASTs.end(); it++)
+        {
+            ASTDeclarationExtractor extractor;
+
+            std::string sourceFilename = it->first;
+            ASTBlock *sourceBlock = it->second;
+
+            extractor.visit(sourceBlock);
+            declarationASTs[sourceFilename] = extractor.getDeclarationBlock();
+        }
+    }
+
+    std::vector<ASTBlock *> CompilerModule::getDeclarationsFor(std::string filename)
+    {
+        std::vector<ASTBlock *> result;
+
+        for (auto it = declarationASTs.begin(); it != declarationASTs.end(); it++)
+        {
+            std::string sourceFilename = it->first;
+            ASTBlock *sourceBlock = it->second;
+
+            if (filename.compare(sourceFilename) != 0)
+            {
+                result.push_back(sourceBlock);
+            }
+        }
+
+        return result;
+    }
+
+    void CompilerModule::addSourceFile(std::string filename)
+    {
+        // Read input file
+        std::ifstream input(filename);
+        if (!input)
+        {
+            logger.logError(format("Cannot open input file: %s", filename.c_str()));
+        }
+
+        // Parse source file and add to module source ASTs
+        StarkParser parser(filename);
+        sourceASTs[filename] = parser.parse(&input);
+    }
+
     void CompilerModule::compile(std::string filename)
     {
         CodeGenModuleLinker linker(this->name);
 
         // Load and parse runtime declarations
         StarkParser parser("runtime");
-        ASTBlock *declarations = parser.parse(Runtime::getDeclarations());
+        ASTBlock *runtimeDeclarations = parser.parse(Runtime::getDeclarations());
 
-        // TODO : get module header to inject it as well
+        // Extract module declarations
+        extractDeclarations();
 
-        for (auto it = sourceFiles.begin(); it != sourceFiles.end(); it++)
+        for (auto it = sourceASTs.begin(); it != sourceASTs.end(); it++)
         {
-            std::string filename = *it;
 
-            // Read input file
-            std::ifstream input(filename);
-            if (!input)
+            std::string sourceFilename = it->first;
+            ASTBlock *sourceBlock = it->second;
+
+            // Preprend other sources declarations
+            std::vector<ASTBlock *> declarations = getDeclarationsFor(sourceFilename);
+            for (auto it2 = declarations.begin(); it2 != declarations.end(); it2++)
             {
-                logger.logError(format("Cannot open input file: %s", filename.c_str()));
+                ASTBlock *block = *it2;
+                sourceBlock->preprend(block);
             }
 
-            // Parse sources
-            StarkParser parser(filename);
-            ASTBlock *program = parser.parse(&input);
-
             // Prepend runtime declarations
-            program->preprend(declarations);
+            sourceBlock->preprend(runtimeDeclarations);
 
             // Generate IR
-            CodeGenContext *context = new CodeGenContext(filename);
+            CodeGenContext *context = new CodeGenContext(sourceFilename);
             context->setDebugEnabled(debugEnabled);
-            context->generateCode(*program);
+            context->generateCode(*sourceBlock);
 
             // Add to linker
             linker.addContext(context);
@@ -53,6 +100,9 @@ namespace stark
 
         // Link generated code
         linker.link();
+
+        // Write code
+        linker.writeCode(filename);
     }
 
 } // namespace stark

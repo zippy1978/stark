@@ -118,11 +118,13 @@ int main(int argc, char *argv[])
     else
     {
         CompilerModule module("main");
+        module.setDebugEnabled(options.debug);
 
         // Add source files to the module
         for (int i = 0; i < options.argc; i++)
         {
             module.addSourceFile(options.argv[i]);
+
         }
 
         // Determine output filename
