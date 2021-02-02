@@ -12,11 +12,7 @@ Variables are used to store values during the program execution. They all have a
 
 The variable declaration syntax is:
 
-*name*: *type*
-
-It is also possible to assign a variable as it is declared with:
-
-*name*: *type* = *value*
+*name*: *type* [= *value*]
 
 Here are some examples :
 
@@ -200,7 +196,7 @@ Functions are callable code blocks taking values as input (parameters), and outp
 
 The function definition syntax is:
 
-func *name*(*paramname*: *type*, *paramname*: *type*, ...): *type* {...}
+**func** *name*(*paramname*: *type*, *paramname*: *type*, ...): *type* {...}
 
 A *return* statement is expected inside the function body, except if the return type is *void*:
 

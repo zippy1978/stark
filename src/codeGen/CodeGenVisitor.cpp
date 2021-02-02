@@ -748,6 +748,11 @@ namespace stark
     {
         context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->id.name));
 
+        if(context->getComplexType(node->id.name) != NULL) {
+            context->logger.logError(node->location, formatv("type {0} already declared", node->id.name));
+        }
+
+
         CodeGenComplexType *structType = new CodeGenComplexType(node->id.name, context);
         ASTVariableList::const_iterator it;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
@@ -759,7 +764,7 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTTypeConversion *node)
     {
-        context->logger.logDebug(node->location, formatv("creating type convertion tp type {0}", node->type.name));
+        context->logger.logDebug(node->location, formatv("creating type convertion to type {0}", node->type.name));
 
         // Evaluate expression
         CodeGenVisitor v(context);

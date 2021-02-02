@@ -42,7 +42,7 @@ void printUsage()
 
 void printVersion()
 {
-    std::cout << stark::format("stark compiler version %s", VERSION_NUMBER) << std::endl;
+    std::cout << stark::format("Stark compiler version %s", VERSION_NUMBER) << std::endl;
 }
 
 void parseOptions(int argc, char *argv[])
