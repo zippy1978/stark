@@ -7,7 +7,6 @@
 #include <strstream>
 
 #include "../codeGen/CodeGen.h"
-#include "../ast/AST.h"
 #include "../runtime/Runtime.h"
 #include "../parser/StarkParser.h"
 
@@ -61,7 +60,15 @@ namespace stark
         sourceASTs[filename] = parser.parse(&input);
     }
 
-    void CompilerModule::compile(std::string filename)
+    void CompilerModule::addSourceFiles(std::vector<std::string> filenames)
+    {
+        for (auto it = filenames.begin(); it != filenames.end(); it++)
+        {
+            addSourceFile(*it);
+        }
+    }
+
+    void CompilerModule::compile(std::string filename, bool singleMode)
     {
         CodeGenModuleLinker linker(this->name);
 
@@ -102,6 +109,7 @@ namespace stark
         linker.link();
 
         // Write code
+        // TODO : if not singleMode, handle module packaging !
         linker.writeCode(filename);
     }
 

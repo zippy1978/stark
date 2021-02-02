@@ -35,7 +35,7 @@ void printUsage()
               << "USAGE: starkc [options] filename" << std::endl;
     std::cout << std::endl
               << "OPTIONS:" << std::endl;
-    std::cout << "  -o      Output file name" << std::endl;
+    std::cout << "  -o      Output file name (if single module to build) or directory (if multiple modules to build)" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
 }
@@ -75,6 +75,14 @@ void parseOptions(int argc, char *argv[])
         default:
             abort();
         }
+
+    // Check mandatory options
+    if (options.outputfile == NULL)
+    {
+        std::cerr << "Option -o is mandatory" << std::endl;
+        printUsage();
+        options.error = true;
+    }
 
     // Get non option args
     options.argc = argc - optind;
@@ -117,27 +125,30 @@ int main(int argc, char *argv[])
     }
     else
     {
-        CompilerModule module("main");
-        module.setDebugEnabled(options.debug);
 
-        // Add source files to the module
+        // Source filenames vector
+        std::vector<std::string> sourceFilenames;
         for (int i = 0; i < options.argc; i++)
         {
-            module.addSourceFile(options.argv[i]);
-
+            sourceFilenames.push_back(options.argv[i]);
         }
 
-        // Determine output filename
-        std::string outputFilename = options.argv[0];
-        outputFilename = outputFilename.append(".bc");
-        if (options.outputfile != NULL)
+        // Map modules
+        CompilerModuleMapper mapper;
+        std::map<std::string, std::vector<std::string>> modulesMap = mapper.map(sourceFilenames);
+
+        // Build each module
+        for (auto it = modulesMap.begin(); it != modulesMap.end(); it++)
         {
-            outputFilename = options.outputfile;
+            std::string moduleName = it->first;
+            std::vector<std::string> moduleSourceFilenames = it->second;
+
+            CompilerModule module(moduleName);
+            module.setDebugEnabled(options.debug);
+            module.addSourceFiles(moduleSourceFilenames);
+
+            module.compile(options.outputfile, modulesMap.size() == 1);
         }
-
-        // Compile to file
-        module.compile(outputFilename);
-
     }
 
     return 0;

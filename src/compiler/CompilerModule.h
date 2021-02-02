@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../util/Util.h"
+#include "../ast/AST.h"
 
 namespace stark
 {
@@ -20,7 +21,7 @@ namespace stark
 
         
 
-        /* Display debug logs is enabled */
+        /** Display debug logs if enabled */
         bool debugEnabled = false;
 
         Logger logger;
@@ -31,11 +32,15 @@ namespace stark
 
     public:
         CompilerModule(std::string name) : name(name) {}
-        /* Add source file to the module */
+        /** Add source file to the module */
         void addSourceFile(std::string filename);
+        void addSourceFiles(std::vector<std::string> filenames);
         void setDebugEnabled(bool d) { debugEnabled = d; }
-        /* Compile module and output .bc to file */
-        void compile(std::string filename);
+        /** 
+         * Compile module and output result to file name (can be a directory).
+         * set singleMode to true to build .bc as a file name
+         */
+        void compile(std::string filename, bool singleMode);
     };
 
 } // namespace stark
