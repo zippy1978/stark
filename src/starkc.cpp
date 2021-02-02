@@ -76,14 +76,6 @@ void parseOptions(int argc, char *argv[])
             abort();
         }
 
-    // Check mandatory options
-    if (options.outputfile == NULL)
-    {
-        std::cerr << "Option -o is mandatory" << std::endl;
-        printUsage();
-        options.error = true;
-    }
-
     // Get non option args
     options.argc = argc - optind;
     char **otherArgv = (char **)malloc(sizeof(char *) * options.argc);
@@ -95,6 +87,23 @@ void parseOptions(int argc, char *argv[])
         i++;
     }
     options.argv = otherArgv;
+
+    // Check mandatory options
+    if (!options.version)
+    {
+        if (options.argc == 0)
+        {
+            std::cerr << "No input file" << std::endl;
+            printUsage();
+            options.error = true;
+        }
+        else if (options.outputfile == NULL)
+        {
+            std::cerr << "Option -o is mandatory" << std::endl;
+            printUsage();
+            options.error = true;
+        }
+    }
 }
 
 /**
