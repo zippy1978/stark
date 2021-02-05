@@ -342,7 +342,7 @@ namespace stark
 		{
 			stark::string_t s;
 			s.len = strlen(argv[i]);
-			s.data = (char *)malloc(sizeof(char) * s.len);
+			s.data = (char *)malloc(sizeof(char) * s.len + 1);
 			strcpy(s.data, argv[i]);
 			elements[i] = s;
 		}

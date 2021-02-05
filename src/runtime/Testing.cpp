@@ -31,11 +31,9 @@ extern "C" void assertStringEquals(stark::string_t actual, stark::string_t expec
 {
     char actualCString[actual.len + 1];
     strcpy(actualCString, actual.data);
-    actualCString[actual.len] = '\0';
 
     char expectedCString[expected.len + 1];
     strcpy(expectedCString, expected.data);
-    expectedCString[actual.len] = '\0';
 
     if (strcmp(actualCString, expectedCString) != 0)
     {
