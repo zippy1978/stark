@@ -45,13 +45,13 @@ namespace stark
     public:
         CodeGenComplexType(std::string name, CodeGenContext *context) : name(name), context(context)
         {
-            type = NULL;
+            type = nullptr;
             array = false;
         }
-        CodeGenComplexType(std::string name, CodeGenContext *context, bool array) : name(name), context(context), array(array) { type = NULL; }
+        CodeGenComplexType(std::string name, CodeGenContext *context, bool array) : name(name), context(context), array(array) { type = nullptr; }
         /* Generate declration code of the complex type inside the llvm::LLVMContext */
         void declare();
-        /* Returns the complex type llvm::StructType, returns NULL is complex type is not declared yet */
+        /* Returns the complex type llvm::StructType, returns nullptr is complex type is not declared yet */
         StructType *getType() { return type; }
         void addMember(std::string name, std::string typeName, Type *type, bool array) { members.push_back(new CodeGenComplexTypeMember(name, typeName, members.size(), type, array)); }
         void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false); }

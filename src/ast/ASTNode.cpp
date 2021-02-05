@@ -31,20 +31,20 @@ namespace stark
 
         // Build members from list
         ASTIdentifierList::const_iterator it;
-        ASTIdentifier *memberIdentifier = NULL;
-        ASTIdentifier *parentIdentifier = NULL;
-        if (members != NULL)
+        ASTIdentifier *memberIdentifier = nullptr;
+        ASTIdentifier *parentIdentifier = nullptr;
+        if (members != nullptr)
         {
             for (it = members->begin(); it != members->end(); it++)
             {
                 ASTIdentifier *currentIdentifier = *it;
 
-                if (memberIdentifier == NULL)
+                if (memberIdentifier == nullptr)
                 {
                     memberIdentifier = currentIdentifier;
                 }
 
-                if (parentIdentifier != NULL)
+                if (parentIdentifier != nullptr)
                 {
                     parentIdentifier->member = currentIdentifier;
                 }
@@ -61,7 +61,7 @@ namespace stark
         int result = 0;
 
         ASTIdentifier *ident = this;
-        while (ident->member != NULL)
+        while (ident->member != nullptr)
         {
             result++;
             ident = ident->member;
@@ -74,16 +74,16 @@ namespace stark
     {
         std::string result = this->name;
 
-        if (this->index != NULL)
+        if (this->index != nullptr)
         {
             result.append("[expr]");
         }
 
         ASTIdentifier *ident = this;
-        while (ident->member != NULL)
+        while (ident->member != nullptr)
         {
             result.append(".").append(ident->member->name);
-            if (ident->member->index != NULL)
+            if (ident->member->index != nullptr)
             {
                 result.append("[expr]");
             }

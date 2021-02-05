@@ -14,7 +14,7 @@ namespace stark
         // If value already exists
         // declaration was already done
         // exiting
-        if (value != NULL)
+        if (value != nullptr)
         {
             return;
         }

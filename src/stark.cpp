@@ -20,7 +20,7 @@ typedef struct
     bool debug = false;
     bool version = false;
     int argc = 0;
-    char **argv = NULL;
+    char **argv = nullptr;
     bool error = false;
 
 } CommandOptions;

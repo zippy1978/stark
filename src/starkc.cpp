@@ -21,9 +21,9 @@ typedef struct
     bool debug = false;
     bool version = false;
     int argc = 0;
-    char **argv = NULL;
+    char **argv = nullptr;
     bool error = false;
-    char *outputfile = NULL;
+    char *outputfile = nullptr;
 
 } CommandOptions;
 
@@ -97,7 +97,7 @@ void parseOptions(int argc, char *argv[])
             printUsage();
             options.error = true;
         }
-        else if (options.outputfile == NULL)
+        else if (options.outputfile == nullptr)
         {
             std::cerr << "Option -o is mandatory" << std::endl;
             printUsage();

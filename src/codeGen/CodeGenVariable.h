@@ -27,8 +27,8 @@ namespace stark
     public:
         CodeGenVariable(std::string name, std::string typeName, bool array, Type *type) : name(name), typeName(typeName), array(array), type(type)
         {
-            type = NULL;
-            value = NULL;
+            type = nullptr;
+            value = nullptr;
         }
         void declare(BasicBlock *block);
         std::string getName() { return name; }

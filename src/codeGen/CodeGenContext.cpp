@@ -18,17 +18,15 @@
 // This is the interpreter implementation
 #include <llvm/ExecutionEngine/MCJIT.h>
 
-#include "CodeGenContext.h"
 #include "CodeGenVisitor.h"
 #include "../runtime/Runtime.h"
 #include "../util/Util.h"
+#include "CodeGenConstants.h"
+
+#include "CodeGenContext.h"
 
 using namespace llvm;
 using namespace std;
-
-#define MAIN_FUNCTION_NAME "main"
-#define RUNTIME_FUNCTION_PREFIX "stark_runtime_"
-#define RUNTIME_PRIVATE_FUNCTION_PREFIX "stark_runtime_priv_"
 
 namespace stark
 {
@@ -69,20 +67,20 @@ namespace stark
 	{
 		// Primary types
 		CodeGenPrimaryType *primaryType = getPrimaryType(typeName);
-		if (primaryType != NULL)
+		if (primaryType != nullptr)
 		{
 			return primaryType->getType();
 		}
 
 		// Complex types
 		CodeGenComplexType *complexType = getComplexType(typeName);
-		if (complexType != NULL)
+		if (complexType != nullptr)
 		{
 			return complexType->getType();
 		}
 
 		// Not found
-		return NULL;
+		return nullptr;
 	}
 
 	std::string CodeGenContext::getTypeName(Type *type)
@@ -134,21 +132,21 @@ namespace stark
 			return complexTypes[typeName];
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	CodeGenArrayComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
 	{
 
 		// First : try to find the array type (if already declared)
-		CodeGenArrayComplexType *arrayComplexType = NULL;
+		CodeGenArrayComplexType *arrayComplexType = nullptr;
 		if (arrayComplexTypes.find(typeName) != arrayComplexTypes.end())
 		{
 			arrayComplexType = arrayComplexTypes[typeName];
 		}
 
 		// If not found : declare it
-		if (arrayComplexType == NULL)
+		if (arrayComplexType == nullptr)
 		{
 			CodeGenArrayComplexType *arrayType = new CodeGenArrayComplexType(typeName, this);
 			arrayType->declare();
@@ -166,7 +164,7 @@ namespace stark
 			return primaryTypes[typeName];
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	void CodeGenContext::declareLocal(CodeGenVariable *var)
@@ -184,7 +182,7 @@ namespace stark
 			return top->locals[name];
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	/* Push new block on the stack */
@@ -275,7 +273,7 @@ namespace stark
 			root.accept(&visitor);
 
 			// No return provided on main function, add a default return to the block (with 0 return)
-			if (this->getReturnValue() != NULL)
+			if (this->getReturnValue() != nullptr)
 			{
 				ReturnInst::Create(llvmContext, this->getReturnValue(), getCurrentBlock());
 			}
@@ -370,7 +368,7 @@ namespace stark
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
 		Function *function = this->getLLvmModule()->getFunction("stark_runtime_priv_mm_init");
-		if (function != NULL && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
+		if (function != nullptr && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
 		{
 
 			std::vector<Value *> args;
@@ -384,7 +382,7 @@ namespace stark
 	Value *CodeGenContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
 	{
 		Function *function = this->getLLvmModule()->getFunction("stark_runtime_priv_mm_alloc");
-		if (function == NULL)
+		if (function == nullptr)
 		{
 			this->logger.logError("cannot allocate memory: cannot find runtime function");
 		}
@@ -392,19 +390,6 @@ namespace stark
 		args.push_back(size);
 		Value *alloc = CallInst::Create(function, makeArrayRef(args), "alloc", insertAtEnd);
 		return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
-	}
-
-	void CodeGenContext::checkFunctionCallAccess(std::string name, FileLocation location)
-	{
-		if (name.compare(MAIN_FUNCTION_NAME) == 0)
-		{
-			logger.logError(location, "main function cannot be called");
-		}
-
-		if (name.rfind(RUNTIME_PRIVATE_FUNCTION_PREFIX, 0) == 0)
-		{
-			logger.logError(location, "calling private runtime functions is not allowed");
-		}
 	}
 
 	bool CodeGenContext::isRuntimeFunctionName(std::string functionName)

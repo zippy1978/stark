@@ -1,7 +1,7 @@
-struct test {
-    i: int
-}
+i: int
+s: string = ""
 
-struct test {
-    i: int
+func test(i: int): void {
+
 }
+test(s, s)

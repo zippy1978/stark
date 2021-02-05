@@ -14,7 +14,7 @@ namespace stark
     {
 
         /* Module name */
-        std::string name = NULL;
+        std::string name = nullptr;
 
         /* List of contexts to link */
         std::vector<CodeGenContext *> contexts;

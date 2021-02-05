@@ -47,7 +47,7 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Array case : must point to index element
-        if (identifier->index != NULL)
+        if (identifier->index != nullptr)
         {
 
             if (!complexType->isArray())
@@ -78,17 +78,17 @@ namespace stark
             // Remove index to be treated as normal complex type on next call
             ASTIdentifierList memberIds;
             memberIds.push_back(identifier->member);
-            ASTIdentifier newId(elementsMember->typeName, NULL, &memberIds);
+            ASTIdentifier newId(elementsMember->typeName, nullptr, &memberIds);
 
             // Recurse
             return getComplexTypeMemberValue(complexType, varValue, &newId, context);
         }
-        else if (identifier->member != NULL)
+        else if (identifier->member != nullptr)
         {
             context->logger.logDebug(identifier->location, formatv("resolving value for {0} in complex type {1}", identifier->member->name, complexType->getName()));
 
             CodeGenComplexTypeMember *complexTypeMember = complexType->getMember(identifier->member->name);
-            if (complexTypeMember == NULL)
+            if (complexTypeMember == nullptr)
             {
                 context->logger.logError(identifier->location, formatv("no member named {0} for type {1}", identifier->member->name, complexType->getName()));
             }
@@ -185,14 +185,10 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
-        context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->name));
-        if (node->member != NULL)
-        {
-            context->logger.logDebug(node->location, formatv("identifier reference {0} is a nested identifier", node->name));
-        }
+        context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->getFullName()));
 
         CodeGenVariable *var = context->getLocal(node->name);
-        if (var == NULL)
+        if (var == nullptr)
         {
             context->logger.logError(node->location, formatv("undeclared identifier {0}", node->name));
         }
@@ -212,7 +208,7 @@ namespace stark
     {
 
         ASTStatementList::const_iterator it;
-        Value *last = NULL;
+        Value *last = nullptr;
 
         context->logger.logDebug(node->location, "generating block");
 
@@ -231,27 +227,26 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating assignment for {0}", node->lhs.name));
 
+        // Check declaration
+        context->getChecker()->checkAllowedVariableDeclaration(&node->lhs);
+
+        // Get variable definition
         CodeGenVariable *var = context->getLocal(node->lhs.name);
-        if (var == NULL)
-        {
-            context->logger.logError(node->location, formatv("undeclared variable {0}", node->lhs.name));
-        }
+        
+        // Generate value
         CodeGenVisitor v(context);
         node->rhs.accept(&v);
 
         // Array case
         CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
 
+        // Retrieve variable
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), &node->lhs, context);
 
         // Check types
-        std::string valueTypeName = context->getTypeName(v.result->getType());
-        std::string varTypeName = context->getTypeName(varValue->getType()->getPointerElementType());
-        if (varTypeName.compare(valueTypeName) != 0)
-        {
-            context->logger.logError(node->location, formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, var->getName(), varTypeName));
-        }
-
+        context->getChecker()->checkVariableAssignment(&node->lhs, varValue, v.result);
+        
+        // Store value
         this->result = new StoreInst(v.result, varValue, false, context->getCurrentBlock());
     }
 
@@ -269,10 +264,8 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating variable declaration {0} {1}", node->type.name, node->id.name));
 
-        if (context->getLocal(node->id.name) != NULL)
-        {
-            context->logger.logError(node->location, formatv("variable {0} already declared", node->id.name));
-        }
+        // Check that variable name is available
+        context->getChecker()->checkAvailableLocalVariable(&node->id);
 
         // Type selection : based on the value of the declaration
         // Except if it is an array
@@ -282,7 +275,7 @@ namespace stark
             type = context->getArrayComplexType(node->type.name)->getType();
         }
 
-        if (type == NULL)
+        if (type == nullptr)
         {
             context->logger.logError(node->location, formatv("unknown type {0}", node->type.name));
         }
@@ -290,7 +283,7 @@ namespace stark
         CodeGenVariable *var = new CodeGenVariable(node->id.name, node->type.name, node->isArray, type);
         context->declareLocal(var);
 
-        if (node->assignmentExpr != NULL)
+        if (node->assignmentExpr != nullptr)
         {
             ASTAssignment assn(node->id, *(node->assignmentExpr));
             CodeGenVisitor v(context);
@@ -304,13 +297,12 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating function definition for {0}", node->id.name));
 
+        // Check declaration
+        context->getChecker()->checkAllowedFunctionDeclaration(&node->id);
+
         // Mangle name
         std::string functionName = context->getMangler()->mangleFunctionName(node->id.name, context->getModuleName());
 
-        if (context->getLLvmModule()->getFunction(functionName.c_str()) != NULL)
-        {
-            context->logger.logError(node->location, formatv("function {0} already declared", node->id.name));
-        }
 
         // Build parameters
         vector<Type *> argTypes;
@@ -356,7 +348,7 @@ namespace stark
 
         // Add return at the end.
         // If no return : add a default one
-        if (context->getReturnValue() != NULL)
+        if (context->getReturnValue() != nullptr)
         {
             ReturnInst::Create(context->llvmContext, context->getReturnValue(), context->getCurrentBlock());
         }
@@ -382,49 +374,42 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
+        context->logger.logDebug(node->location, formatv("creating function call {0}", node->id.name));
+
         // First try to find a runtime function
         Function *function = context->getLLvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->id.name).c_str());
         // Then look in stark functions
-        if (function == NULL)
+        if (function == nullptr)
         {
             function = context->getLLvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->id.name, context->getModuleName()).c_str());
         }
         // Finally : look for an unmangled function
-        if (function == NULL)
+        if (function == nullptr)
         {
             function = context->getLLvmModule()->getFunction(node->id.name.c_str());
         }
 
-        if (function == NULL)
+        if (function == nullptr)
         {
             context->logger.logError(node->location, formatv("undeclared function {0}", node->id.name));
         }
 
-        // Check that function can be called
-        context->checkFunctionCallAccess(node->id.name, node->location);
 
+        // Generate argument values
         std::vector<Value *> args;
         ASTExpressionList::const_iterator it;
-        int i = 0;
         for (it = node->arguments.begin(); it != node->arguments.end(); it++)
         {
             CodeGenVisitor v(context);
             (**it).accept(&v);
-
-            // Check arg type
-            std::string argTypeName = context->getTypeName(function->getArg(i)->getType());
-            std::string valueTypeName = context->getTypeName(v.result->getType());
-            if (argTypeName.compare(valueTypeName) != 0)
-            {
-                context->logger.logError(node->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", node->id.name, argTypeName, i, valueTypeName));
-            }
-
             args.push_back(v.result);
-            i++;
         }
 
+        // Check that function can be called
+        context->getChecker()->checkAllowedFunctionCall(&node->id, function, args);
+
+        // Create call
         CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());
-        context->logger.logDebug(node->location, formatv("creating method call {0}", node->id.name));
         this->result = call;
     }
 
@@ -450,7 +435,7 @@ namespace stark
 
         // Mangle
         std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
-        ASTIdentifier newId(mangledName, NULL, NULL);
+        ASTIdentifier newId(mangledName, nullptr, nullptr);
 
         // Generate new extern
         ASTExternDeclaration externDeclaration(node->type, newId, node->arguments);
@@ -490,7 +475,7 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("generating return code {0}", typeid(node->expression).name()));
 
-        if (context->getCurrentBlock()->getTerminator() != NULL)
+        if (context->getCurrentBlock()->getTerminator() != nullptr)
         {
             context->logger.logError(node->location, "cannot add more than one terminator on a block");
         }
@@ -570,7 +555,7 @@ namespace stark
         context->logger.logDebug(node->location, "creating if else statement");
 
         // Used to know if else block should be generated
-        bool generateElseBlock = (node->falseBlock != NULL && node->falseBlock->statements.size() > 0);
+        bool generateElseBlock = (node->falseBlock != nullptr && node->falseBlock->statements.size() > 0);
 
         if (node->trueBlock.statements.size() == 0 && !generateElseBlock)
         {
@@ -604,7 +589,7 @@ namespace stark
 
         // Add branch to merge block
         Builder.SetInsertPoint(context->getCurrentBlock());
-        if (context->getReturnValue() != NULL)
+        if (context->getReturnValue() != nullptr)
         {
             Builder.CreateRet(context->getReturnValue());
         }
@@ -631,7 +616,7 @@ namespace stark
 
             // Add branch to merge block
             Builder.SetInsertPoint(context->getCurrentBlock());
-            if (context->getReturnValue() != NULL)
+            if (context->getReturnValue() != nullptr)
             {
                 Builder.CreateRet(context->getReturnValue());
             }
@@ -655,12 +640,12 @@ namespace stark
         if (!currentFunction->getReturnType()->isVoidTy())
         {
             PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), 2, "iftmp");
-            if (node->trueBlock.statements.size() > 0 && vt.result != NULL && !vt.result->getType()->isVoidTy())
+            if (node->trueBlock.statements.size() > 0 && vt.result != nullptr && !vt.result->getType()->isVoidTy())
             {
                 PN->addIncoming(vt.result, ifBlock);
             }
 
-            if (generateElseBlock && vf.result != NULL && !vf.result->getType()->isVoidTy())
+            if (generateElseBlock && vf.result != nullptr && !vf.result->getType()->isVoidTy())
                 PN->addIncoming(vf.result, elseBlock);
             this->result = PN;
         }
@@ -719,7 +704,7 @@ namespace stark
 
         // Create branch to test block, or return
         Builder.SetInsertPoint(context->getCurrentBlock());
-        if (context->getReturnValue() != NULL)
+        if (context->getReturnValue() != nullptr)
         {
             Builder.CreateRet(context->getReturnValue());
         }
@@ -748,10 +733,7 @@ namespace stark
     {
         context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->id.name));
 
-        if(context->getComplexType(node->id.name) != NULL) {
-            context->logger.logError(node->location, formatv("type {0} already declared", node->id.name));
-        }
-
+        context->getChecker()->checkAllowedTypeDeclaration(&node->id);
 
         CodeGenComplexType *structType = new CodeGenComplexType(node->id.name, context);
         ASTVariableList::const_iterator it;

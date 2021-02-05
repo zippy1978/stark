@@ -42,7 +42,7 @@ namespace stark
         if (runtimeFunctionName.compare("none") != 0)
         {
             Function *function = context->getLLvmModule()->getFunction(runtimeFunctionName);
-            if (function == NULL)
+            if (function == nullptr)
             {
                 context->logger.logError("cannot find runtime function");
             }
@@ -53,7 +53,7 @@ namespace stark
         else
         {
             context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
-            return NULL;
+            return nullptr;
         }
     }
 

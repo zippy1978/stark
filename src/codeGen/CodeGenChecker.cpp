@@ -1,0 +1,100 @@
+#include "CodeGenContext.h"
+#include "CodeGenConstants.h"
+
+#include "CodeGenChecker.h"
+
+namespace stark
+{
+    void CodeGenChecker::checkNoMemberIdentifier(ASTIdentifier *variableId)
+    {
+        if (variableId->countNestedMembers() > 0)
+        {
+            context->logger.logError(variableId->location, formatv("invalid identifier {0}", variableId->getFullName()));
+        }
+    }
+
+    void CodeGenChecker::checkAllowedVariableDeclaration(ASTIdentifier *variableId)
+    {
+
+        if (context->getLocal(variableId->name) == nullptr)
+        {
+            context->logger.logError(variableId->location, formatv("undeclared variable {0}", variableId->getFullName()));
+        }
+    }
+
+    void CodeGenChecker::checkAvailableLocalVariable(ASTIdentifier *variableId)
+    {
+        checkNoMemberIdentifier(variableId);
+
+        if (context->getLocal(variableId->name) != nullptr)
+        {
+            context->logger.logError(variableId->location, formatv("variable {0} already declared", variableId->getFullName()));
+        }
+    }
+
+    void CodeGenChecker::checkVariableAssignment(ASTIdentifier *variableId, Value *variable, Value *value)
+    {
+        std::string valueTypeName = context->getTypeName(value->getType());
+        std::string varTypeName = context->getTypeName(variable->getType()->getPointerElementType());
+        if (varTypeName.compare(valueTypeName) != 0)
+        {
+            context->logger.logError(variableId->location, formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, variableId->getFullName(), varTypeName));
+        }
+    }
+
+    void CodeGenChecker::checkAllowedTypeDeclaration(ASTIdentifier *typeId)
+    {
+        checkNoMemberIdentifier(typeId);
+
+        if (context->getPrimaryType(typeId->name) != nullptr || context->getComplexType(typeId->name) != nullptr)
+        {
+            context->logger.logError(typeId->location, formatv("type {0} already declared", typeId->getFullName()));
+        }
+    }
+
+    void CodeGenChecker::checkAllowedFunctionDeclaration(ASTIdentifier *functionId)
+    {
+        // Mangle name
+        std::string functionName = context->getMangler()->mangleFunctionName(functionId->name, context->getModuleName());
+
+        if (context->getLLvmModule()->getFunction(functionName.c_str()) != nullptr)
+        {
+            context->logger.logError(functionId->location, formatv("function {0} already declared", functionId->name));
+        }
+    }
+
+    void CodeGenChecker::checkAllowedFunctionCall(ASTIdentifier *functionId, Function *function, std::vector<Value *> args)
+    {
+
+        if (functionId->name.compare(MAIN_FUNCTION_NAME) == 0)
+        {
+            context->logger.logError(functionId->location, "main function cannot be called");
+        }
+
+        if (functionId->name.rfind(RUNTIME_PRIVATE_FUNCTION_PREFIX, 0) == 0)
+        {
+            context->logger.logError(functionId->location, "calling private runtime functions is not allowed");
+        }
+
+        // Check args count
+        if (function->arg_size() != args.size())
+        {
+            context->logger.logError(functionId->location, formatv("function {0} is expecting {1} argument(s), not {2}", functionId->name, function->arg_size(), args.size()));
+        }
+
+        // Check args
+        int i = 0;
+        for (auto it = args.begin(); it != args.end(); it++)
+        {
+            Value *argValue = *it;
+            std::string argTypeName = context->getTypeName(function->getArg(i)->getType());
+            std::string valueTypeName = context->getTypeName(argValue->getType());
+            if (argTypeName.compare(valueTypeName) != 0)
+            {
+                context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->name, argTypeName, i, valueTypeName));
+            }
+            i++;
+        }
+    }
+
+} // namespace stark

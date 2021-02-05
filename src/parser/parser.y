@@ -113,7 +113,7 @@ while_stmt:
 if_else_stmt:
       IF expr block
       {
-            $$ = new stark::ASTIfElseStatement(*$2, *$3, NULL);
+            $$ = new stark::ASTIfElseStatement(*$2, *$3, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -138,7 +138,7 @@ block:
 var_decl: 
      ident COLON ident EMPTYBRACKETS
       { 
-            $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, NULL);
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -152,7 +152,7 @@ var_decl:
 | 
       ident COLON ident 
       { 
-            $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, NULL);
+            $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -258,7 +258,7 @@ struct_decl:
 ident: 
       IDENTIFIER 
       { 
-            $$ = new stark::ASTIdentifier(*$1, NULL, NULL);
+            $$ = new stark::ASTIdentifier(*$1, nullptr, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $1; 
@@ -266,7 +266,7 @@ ident:
 |
       IDENTIFIER DOT chained_ident
       {
-            $$ = new stark::ASTIdentifier(*$1, NULL, $3);
+            $$ = new stark::ASTIdentifier(*$1, nullptr, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $1;
@@ -274,7 +274,7 @@ ident:
 |
       IDENTIFIER LBRACKET expr RBRACKET
       {
-            $$ = new stark::ASTIdentifier(*$1, $3, NULL);
+            $$ = new stark::ASTIdentifier(*$1, $3, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $1; 

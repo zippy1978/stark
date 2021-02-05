@@ -13,7 +13,7 @@ namespace stark
         // If type already exists
         // declaration was already done
         // exiting
-        if (type != NULL)
+        if (type != nullptr)
         {
             return;
         }
@@ -50,23 +50,23 @@ namespace stark
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     Value *CodeGenComplexType::create(std::vector<Value *> values, FileLocation location)
     {
-        return NULL;
+        return nullptr;
     }
 
     Value *CodeGenComplexType::create(std::string string, FileLocation location)
     {
-        return NULL;
+        return nullptr;
     }
 
     Value *CodeGenComplexType::convert(Value *value, std::string typeName, FileLocation location)
     {
         context->logger.logError(location, formatv("cannot covert type {0} to type {1}", this->name, typeName));
-        return NULL;
+        return nullptr;
     }
 
 } // namespace stark

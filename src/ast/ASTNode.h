@@ -104,8 +104,8 @@ namespace stark
   {
   public:
     std::string name;
-    ASTIdentifier *member = NULL; // Nullable because not mandatory
-    ASTExpression *index = NULL;  // Index to handle varArray[index]
+    ASTIdentifier *member = nullptr; // Nullable because not mandatory
+    ASTExpression *index = nullptr;  // Index to handle varArray[index]
     bool array = false;           // Indicates it is an array in case of usage in a delcaration
     ASTIdentifier(std::string &name, ASTExpression *index, ASTIdentifierList *members);
     /* Return the count of nested members */

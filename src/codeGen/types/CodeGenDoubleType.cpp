@@ -18,7 +18,7 @@ namespace stark
         if (typeName.compare("string") == 0)
         {
             Function *function = context->getLLvmModule()->getFunction("stark_runtime_priv_conv_double_string");
-            if (function == NULL)
+            if (function == nullptr)
             {
                 context->logger.logError("cannot find runtime function");
             }
@@ -29,7 +29,7 @@ namespace stark
         else
         {
             context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
-            return NULL;
+            return nullptr;
         }
     }
 

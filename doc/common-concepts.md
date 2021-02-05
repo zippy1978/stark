@@ -239,4 +239,44 @@ i: int = 10
 
 ## Control flow
 
-TBD
+### Conditions
+
+Conditions are expressed with if / else blocks, using the syntax:
+
+*if*(*condition*) {*...*} [*else* {*...*}]
+
+Here are a few example:
+
+```stark
+i: int = 5
+
+// If / else block
+if (i > 4) {
+  println("i is greater than 4")
+} else {
+  println("i is lower than or equals 4")
+}
+
+// Single if
+if (i == 5) {
+    println("i equals 5")
+}
+```
+
+### Loops
+
+In Stark loops are defined using a *while* statement:
+
+*while*(*condition*) {*...*}
+
+The *while* statement will loop on the block until the condition returns false:
+
+```stark
+i: int = 0
+
+// Count from 0 to 9
+while (i < 10) {
+    println(i as string)
+    i = i + 1
+}
+```
