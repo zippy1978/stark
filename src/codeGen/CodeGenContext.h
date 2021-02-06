@@ -33,7 +33,7 @@ namespace stark
   public:
     BasicBlock *block;
     /* Holds local variables declared into the block */
-    std::map<std::string, CodeGenVariable *> locals;
+    std::map<std::string, std::shared_ptr<CodeGenVariable>> locals;
     /**
      * Indicates if the block is a merge block.
      * A merge block is the last block delcared in a control flow instruction.
@@ -65,13 +65,13 @@ namespace stark
     Function *mainFunction = nullptr;
 
     /* Holds language complex types (built-in and custom) */
-    std::map<std::string, CodeGenComplexType *> complexTypes;
+    std::map<std::string, std::unique_ptr<CodeGenComplexType>> complexTypes;
 
     /* Holds array types (by type) */
-    std::map<std::string, CodeGenArrayComplexType *> arrayComplexTypes;
+    std::map<std::string, std::unique_ptr<CodeGenArrayComplexType>> arrayComplexTypes;
 
     /* Holds primary types */
-    std::map<std::string, CodeGenPrimaryType *> primaryTypes;
+    std::map<std::string, std::unique_ptr<CodeGenPrimaryType>> primaryTypes;
 
     /* Run code generation in debug mode if enabled */
     bool debugEnabled = false;
@@ -83,10 +83,10 @@ namespace stark
     bool gcInitialized = false;
 
     /* Mangler */
-    CodeGenMangler *mangler;
+    std::unique_ptr<CodeGenMangler> mangler;
 
     /* Checker */
-    CodeGenChecker *checker;
+    std::unique_ptr<CodeGenChecker> checker;
 
   private:
     /* Declare built-in complex types into the LLVMContext */
@@ -101,20 +101,12 @@ namespace stark
 
     CodeGenContext(std::string filename) : filename(filename)
     {
-      mangler = new CodeGenMangler();
-      checker = new CodeGenChecker(this);
+      mangler = std::make_unique<CodeGenMangler>();
+      checker = std::make_unique<CodeGenChecker>(this);
     }
 
-    ~CodeGenContext()
-    {
-      if (mangler)
-        delete mangler;
-      if (checker)
-        delete checker;
-    }
-
-    CodeGenMangler *getMangler() { return mangler; }
-    CodeGenChecker *getChecker() { return checker; }
+    CodeGenMangler *getMangler() { return mangler.get(); }
+    CodeGenChecker *getChecker() { return checker.get(); }
 
     /* Generate llvm program code */
     void generateCode(ASTBlock &root);

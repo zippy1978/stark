@@ -36,7 +36,7 @@ namespace stark
     class CodeGenComplexType
     {
     protected:
-        std::vector<CodeGenComplexTypeMember *> members;
+        std::vector<std::unique_ptr<CodeGenComplexTypeMember>> members;
         CodeGenContext *context;
         StructType *type;
         std::string name;
@@ -53,14 +53,14 @@ namespace stark
         void declare();
         /* Returns the complex type llvm::StructType, returns nullptr is complex type is not declared yet */
         StructType *getType() { return type; }
-        void addMember(std::string name, std::string typeName, Type *type, bool array) { members.push_back(new CodeGenComplexTypeMember(name, typeName, members.size(), type, array)); }
+        void addMember(std::string name, std::string typeName, Type *type, bool array) { members.push_back(std::make_unique<CodeGenComplexTypeMember>(name, typeName, members.size(), type, array)); }
         void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false); }
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
         bool isArray() { return array; }
         virtual Value *create(std::vector<Value *> values, FileLocation location);
         virtual Value *create(std::string string, FileLocation location);
-        virtual Value* convert(Value* value, std::string typeName, FileLocation location);
+        virtual Value *convert(Value *value, std::string typeName, FileLocation location);
     };
 
     /**
@@ -80,7 +80,7 @@ namespace stark
     {
     public:
         CodeGenStringComplexType(CodeGenContext *context);
-        Value* convert(Value* value, std::string typeName, FileLocation location);
+        Value *convert(Value *value, std::string typeName, FileLocation location);
         Value *create(std::string string, FileLocation location);
     };
 

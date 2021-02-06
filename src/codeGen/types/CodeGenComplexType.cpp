@@ -22,7 +22,7 @@ namespace stark
         vector<Type *> memberTypes;
         for (auto it = std::begin(members); it != std::end(members); ++it)
         {
-            CodeGenComplexTypeMember *m = *it;
+            CodeGenComplexTypeMember *m = it->get();
             if (m->array)
             {
                 // Array case : must use the matching array complex type
@@ -43,7 +43,7 @@ namespace stark
     {
         for (auto it = std::begin(members); it != std::end(members); ++it)
         {
-            CodeGenComplexTypeMember *m = *it;
+            CodeGenComplexTypeMember *m = it->get();
             if (m->name.compare(name) == 0)
             {
                 return m;

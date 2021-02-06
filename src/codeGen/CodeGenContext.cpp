@@ -44,23 +44,23 @@ namespace stark
 
 		// int
 		CodeGenIntType *intType = new CodeGenIntType(this);
-		primaryTypes[intType->getName()] = intType;
+		primaryTypes[intType->getName()] = std::unique_ptr<CodeGenPrimaryType>(intType);
 
 		// double
 		CodeGenDoubleType *doubleType = new CodeGenDoubleType(this);
-		primaryTypes[doubleType->getName()] = doubleType;
+		primaryTypes[doubleType->getName()] = std::unique_ptr<CodeGenPrimaryType>(doubleType);
 
 		// bool
 		CodeGenBoolType *boolType = new CodeGenBoolType(this);
-		primaryTypes[boolType->getName()] = boolType;
+		primaryTypes[boolType->getName()] = std::unique_ptr<CodeGenPrimaryType>(boolType);
 
 		// void
 		CodeGenVoidType *voidType = new CodeGenVoidType(this);
-		primaryTypes[voidType->getName()] = voidType;
+		primaryTypes[voidType->getName()] = std::unique_ptr<CodeGenPrimaryType>(voidType);
 
 		// any
 		CodeGenAnyType *anyType = new CodeGenAnyType(this);
-		primaryTypes[anyType->getName()] = anyType;
+		primaryTypes[anyType->getName()] = std::unique_ptr<CodeGenPrimaryType>(anyType);
 	}
 
 	Type *CodeGenContext::getType(std::string typeName)
@@ -107,7 +107,7 @@ namespace stark
 		for (auto it = primaryTypes.begin(); it != primaryTypes.end(); it++)
 		{
 
-			CodeGenPrimaryType *primaryType = it->second;
+			CodeGenPrimaryType *primaryType = it->second.get();
 			if (primaryType->getLLvmTypeName().compare(llvmTypeName) == 0)
 			{
 				return primaryType->getName();
@@ -122,14 +122,14 @@ namespace stark
 	{
 
 		complexType->declare();
-		complexTypes[complexType->getName()] = complexType;
+		complexTypes[complexType->getName()] = std::unique_ptr<CodeGenComplexType>(complexType);
 	}
 
 	CodeGenComplexType *CodeGenContext::getComplexType(std::string typeName)
 	{
 		if (complexTypes.find(typeName) != complexTypes.end())
 		{
-			return complexTypes[typeName];
+			return complexTypes[typeName].get();
 		}
 
 		return nullptr;
@@ -142,7 +142,7 @@ namespace stark
 		CodeGenArrayComplexType *arrayComplexType = nullptr;
 		if (arrayComplexTypes.find(typeName) != arrayComplexTypes.end())
 		{
-			arrayComplexType = arrayComplexTypes[typeName];
+			arrayComplexType = arrayComplexTypes[typeName].get();
 		}
 
 		// If not found : declare it
@@ -151,7 +151,7 @@ namespace stark
 			CodeGenArrayComplexType *arrayType = new CodeGenArrayComplexType(typeName, this);
 			arrayType->declare();
 			arrayComplexType = arrayType;
-			arrayComplexTypes[typeName] = arrayType;
+			arrayComplexTypes[typeName] = std::unique_ptr<CodeGenArrayComplexType>(arrayType);
 		}
 
 		return arrayComplexType;
@@ -161,7 +161,7 @@ namespace stark
 	{
 		if (primaryTypes.find(typeName) != primaryTypes.end())
 		{
-			return primaryTypes[typeName];
+			return primaryTypes[typeName].get();
 		}
 
 		return nullptr;
@@ -171,7 +171,7 @@ namespace stark
 	{
 		CodeGenBlock *top = blocks.top();
 		var->declare(top->block);
-		top->locals[var->getName()] = var;
+		top->locals[var->getName()] = std::unique_ptr<CodeGenVariable>(var);
 	}
 
 	CodeGenVariable *CodeGenContext::getLocal(std::string name)
@@ -179,7 +179,7 @@ namespace stark
 		CodeGenBlock *top = blocks.top();
 		if (top->locals.find(name) != top->locals.end())
 		{
-			return top->locals[name];
+			return top->locals[name].get();
 		}
 
 		return nullptr;
@@ -188,21 +188,35 @@ namespace stark
 	/* Push new block on the stack */
 	void CodeGenContext::pushBlock(BasicBlock *block)
 	{
-		blocks.push(new CodeGenBlock());
-		blocks.top()->isMergeBlock = false;
-		blocks.top()->block = block;
-
-		logger.logDebug(formatv(">> pushing block {0}.{1}", block->getParent()->getName(), block->getName()));
+		pushBlock(block, false);
 	}
 
 	/* Push new block on the stack, with ability to copy local variables of the curretn block to the new block */
 	void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals)
 	{
-		CodeGenBlock *top = blocks.top();
+		CodeGenBlock *top = nullptr;
 
-		std::map<std::string, CodeGenVariable *> &l = top->locals;
-		this->pushBlock(block);
-		blocks.top()->locals = l;
+		if (!blocks.empty())
+		{
+			top = blocks.top();
+		}
+
+		blocks.push(new CodeGenBlock());
+		blocks.top()->isMergeBlock = false;
+		blocks.top()->block = block;
+		logger.logDebug(formatv(">> pushing block {0}.{1}", block->getParent()->getName(), block->getName()));
+
+		// Copy local variables to the new block
+		if (inheritLocals && top)
+		{
+			std::map<std::string, std::shared_ptr<CodeGenVariable>> &l = top->locals;
+			for (auto it = l.begin(); it != l.end(); it++)
+			{
+				std::string name = it->first;
+				std::shared_ptr<CodeGenVariable> var = it->second;
+				blocks.top()->locals[name] = var;
+			}
+		}
 	}
 
 	/* Pop block from the stack */
@@ -351,6 +365,14 @@ namespace stark
 		// Call main function
 		int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
 		int retValue = main_func(args);
+
+		for (int i = 0; i < argc; i++)
+		{
+			free(elements[i].data);
+		}
+		free(elements);
+
+		delete ee;
 
 		logger.logDebug(formatv("code was run, return code is {0}", retValue));
 		return retValue;
