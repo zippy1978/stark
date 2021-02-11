@@ -27,7 +27,7 @@ namespace stark
     ASTIdentifier::ASTIdentifier(std::string name, ASTExpression *index, ASTIdentifierList *members)
     {
         this->name = name;
-        this->index = index;
+        this->index = std::unique_ptr<ASTExpression>(index);
 
         // Build members from list
         ASTIdentifierList::const_iterator it;
@@ -46,15 +46,14 @@ namespace stark
 
                 if (parentIdentifier != nullptr)
                 {
-                    parentIdentifier->member = currentIdentifier;
+                    parentIdentifier->member = std::unique_ptr<ASTIdentifier>(currentIdentifier);
                 }
 
                 parentIdentifier = currentIdentifier;
             }
         }
 
-        this->member = memberIdentifier;
-
+        this->member = std::unique_ptr<ASTIdentifier>(memberIdentifier);
     }
 
     int ASTIdentifier::countNestedMembers()
@@ -65,7 +64,7 @@ namespace stark
         while (ident->member != nullptr)
         {
             result++;
-            ident = ident->member;
+            ident = ident->getMember();
         }
 
         return result;
@@ -88,7 +87,7 @@ namespace stark
             {
                 result.append("[expr]");
             }
-            ident = ident->member;
+            ident = ident->getMember();
         }
 
         return result;

@@ -19,7 +19,7 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTVariableDeclaration *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionDefinition *node)
     {
-        if (node->id.name.compare("main") != 0)
+        if (node->id.getName().compare("main") != 0)
         {
             ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->type, node->id, node->arguments);
             declarationBlock->statements.push_back(fd);

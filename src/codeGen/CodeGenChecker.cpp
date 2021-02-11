@@ -16,7 +16,7 @@ namespace stark
     void CodeGenChecker::checkAllowedVariableDeclaration(ASTIdentifier *variableId)
     {
 
-        if (context->getLocal(variableId->name) == nullptr)
+        if (context->getLocal(variableId->getName()) == nullptr)
         {
             context->logger.logError(variableId->location, formatv("undeclared variable {0}", variableId->getFullName()));
         }
@@ -26,7 +26,7 @@ namespace stark
     {
         checkNoMemberIdentifier(variableId);
 
-        if (context->getLocal(variableId->name) != nullptr)
+        if (context->getLocal(variableId->getName()) != nullptr)
         {
             context->logger.logError(variableId->location, formatv("variable {0} already declared", variableId->getFullName()));
         }
@@ -46,7 +46,7 @@ namespace stark
     {
         checkNoMemberIdentifier(typeId);
 
-        if (context->getPrimaryType(typeId->name) != nullptr || context->getComplexType(typeId->name) != nullptr)
+        if (context->getPrimaryType(typeId->getName()) != nullptr || context->getComplexType(typeId->getName()) != nullptr)
         {
             context->logger.logError(typeId->location, formatv("type {0} already declared", typeId->getFullName()));
         }
@@ -55,23 +55,23 @@ namespace stark
     void CodeGenChecker::checkAllowedFunctionDeclaration(ASTIdentifier *functionId)
     {
         // Mangle name
-        std::string functionName = context->getMangler()->mangleFunctionName(functionId->name, context->getModuleName());
+        std::string functionName = context->getMangler()->mangleFunctionName(functionId->getName(), context->getModuleName());
 
         if (context->getLLvmModule()->getFunction(functionName.c_str()) != nullptr)
         {
-            context->logger.logError(functionId->location, formatv("function {0} already declared", functionId->name));
+            context->logger.logError(functionId->location, formatv("function {0} already declared", functionId->getName()));
         }
     }
 
     void CodeGenChecker::checkAllowedFunctionCall(ASTIdentifier *functionId, Function *function, std::vector<Value *> args)
     {
 
-        if (functionId->name.compare(MAIN_FUNCTION_NAME) == 0)
+        if (functionId->getName().compare(MAIN_FUNCTION_NAME) == 0)
         {
             context->logger.logError(functionId->location, "main function cannot be called");
         }
 
-        if (functionId->name.rfind(RUNTIME_PRIVATE_FUNCTION_PREFIX, 0) == 0)
+        if (functionId->getName().rfind(RUNTIME_PRIVATE_FUNCTION_PREFIX, 0) == 0)
         {
             context->logger.logError(functionId->location, "calling private runtime functions is not allowed");
         }
@@ -79,7 +79,7 @@ namespace stark
         // Check args count
         if (function->arg_size() != args.size())
         {
-            context->logger.logError(functionId->location, formatv("function {0} is expecting {1} argument(s), not {2}", functionId->name, function->arg_size(), args.size()));
+            context->logger.logError(functionId->location, formatv("function {0} is expecting {1} argument(s), not {2}", functionId->getName(), function->arg_size(), args.size()));
         }
 
         // Check args
@@ -91,7 +91,7 @@ namespace stark
             std::string valueTypeName = context->getTypeName(argValue->getType());
             if (argTypeName.compare(valueTypeName) != 0)
             {
-                context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->name, argTypeName, i, valueTypeName));
+                context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->getName(), argTypeName, i, valueTypeName));
             }
             i++;
         }
