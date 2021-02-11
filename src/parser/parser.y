@@ -1,6 +1,8 @@
 %language "c++"
 %locations
 
+//%parse-param { stark::ASTBlock *programBlock }
+
 %code top {
       #include "../ast/AST.h"
       stark::ASTBlock *programBlock;
@@ -139,6 +141,8 @@ var_decl:
      ident COLON ident EMPTYBRACKETS
       { 
             $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, nullptr);
+            //delete $1;
+            //delete $3;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -146,6 +150,8 @@ var_decl:
       ident COLON ident EMPTYBRACKETS EQUAL expr 
       { 
             $$ = new stark::ASTVariableDeclaration(*$3, *$1, true, $6);
+            //delete $1;
+            //delete $3;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -153,6 +159,8 @@ var_decl:
       ident COLON ident 
       { 
             $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, nullptr);
+            //delete $1;
+            //delete $3;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -160,6 +168,8 @@ var_decl:
       ident COLON ident EQUAL expr 
       { 
             $$ = new stark::ASTVariableDeclaration(*$3, *$1, false, $5);
+            //delete $1;
+            //delete $3;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -167,6 +177,8 @@ var_decl:
       RETURN expr 
       { 
             $$ = new stark::ASTReturnStatement(*$2);
+            // Should be ok when const set on value !
+            //delete $2;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -183,7 +195,10 @@ extern_decl:
       EXTERN ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS
       { 
             $7->array = true;
-            $$ = new stark::ASTExternDeclaration(*$7, *$2, *$4); delete $4;
+            $$ = new stark::ASTExternDeclaration(*$7, *$2, *$4); 
+            delete $4;
+            delete $7;
+            delete $2;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }

@@ -78,10 +78,10 @@ namespace stark
             // Remove index to be treated as normal complex type on next call
             ASTIdentifierList memberIds;
             memberIds.push_back(identifier->member);
-            ASTIdentifier newId(elementsMember->typeName, nullptr, &memberIds);
+            ASTIdentifier* newId = new ASTIdentifier(elementsMember->typeName, nullptr, &memberIds);
 
             // Recurse
-            return getComplexTypeMemberValue(complexType, varValue, &newId, context);
+            return getComplexTypeMemberValue(complexType, varValue, newId, context);
         }
         else if (identifier->member != nullptr)
         {

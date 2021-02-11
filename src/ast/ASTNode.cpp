@@ -24,7 +24,7 @@ namespace stark
     void ASTTypeConversion::accept(ASTVisitor *visitor) { visitor->visit(this); }
     void ASTFunctionDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
 
-    ASTIdentifier::ASTIdentifier(std::string &name, ASTExpression *index, ASTIdentifierList *members)
+    ASTIdentifier::ASTIdentifier(std::string name, ASTExpression *index, ASTIdentifierList *members)
     {
         this->name = name;
         this->index = index;
@@ -54,6 +54,7 @@ namespace stark
         }
 
         this->member = memberIdentifier;
+
     }
 
     int ASTIdentifier::countNestedMembers()

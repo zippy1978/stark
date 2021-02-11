@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
         context.setDebugEnabled(options.debug);
         context.setInterpreterMode(true);
         context.generateCode(*program);
+        delete program;
         return context.runCode(options.argc, options.argv);
     }
 

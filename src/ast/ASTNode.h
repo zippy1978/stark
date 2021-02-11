@@ -65,6 +65,10 @@ namespace stark
   public:
     long long value;
     ASTInteger(long long value) : value(value) {}
+    ~ASTInteger()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTInteger " << std::endl;
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -97,6 +101,11 @@ namespace stark
   public:
     ASTExpressionList arguments;
     ASTArray(ASTExpressionList &arguments) : arguments(arguments) {}
+    ~ASTArray()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTArray " << std::endl;
+      arguments.clear();
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -106,8 +115,16 @@ namespace stark
     std::string name;
     ASTIdentifier *member = nullptr; // Nullable because not mandatory
     ASTExpression *index = nullptr;  // Index to handle varArray[index]
-    bool array = false;           // Indicates it is an array in case of usage in a delcaration
-    ASTIdentifier(std::string &name, ASTExpression *index, ASTIdentifierList *members);
+    bool array = false;              // Indicates it is an array in case of usage in a delcaration
+    ASTIdentifier(std::string name, ASTExpression *index, ASTIdentifierList *members);
+    ~ASTIdentifier()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTIdentifier " << std::endl;
+      if (member)
+        delete member;
+      if (index)
+        delete index;
+    }
     /* Return the count of nested members */
     int countNestedMembers();
     /* Get the identifier fullname, for example id.member.submember... */
@@ -120,6 +137,15 @@ namespace stark
   public:
     ASTStatementList statements;
     ASTBlock() {}
+    ~ASTBlock()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTBlock " << std::endl;
+      for (int i = 0; i < statements.size(); i++)
+      {
+        std::cout << " - " << typeid(statements[i]).name() << std::endl;
+        delete statements[i];
+      }
+    }
     /* Prepend statements of a block to the current block */
     void preprend(ASTBlock *block)
     {
@@ -150,9 +176,15 @@ namespace stark
   public:
     ASTIdentifier &type;
     ASTIdentifier &id;
-    ASTExpression *assignmentExpr; // Pointer, because nullable
+    ASTExpression *assignmentExpr = nullptr; // Pointer, because nullable
     bool isArray;
     ASTVariableDeclaration(ASTIdentifier &type, ASTIdentifier &id, bool isArray, ASTExpression *assignmentExpr) : type(type), id(id), isArray(isArray), assignmentExpr(assignmentExpr) {}
+    ~ASTVariableDeclaration()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTVariableDeclaration " << id.name << std::endl;
+      if (assignmentExpr)
+        delete assignmentExpr;
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -164,6 +196,14 @@ namespace stark
     ASTVariableList arguments;
     ASTBlock &block;
     ASTFunctionDefinition(ASTIdentifier &type, ASTIdentifier &id, ASTVariableList &arguments, ASTBlock &block) : type(type), id(id), arguments(arguments), block(block) {}
+    ~ASTFunctionDefinition()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTFunctionDefinition " << std::endl;
+      for (int i = 0; i < arguments.size(); i++)
+      {
+        delete arguments[i];
+      }
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -174,6 +214,15 @@ namespace stark
     ASTExpressionList arguments;
     ASTFunctionCall(ASTIdentifier &id, ASTExpressionList &arguments) : id(id), arguments(arguments) {}
     ASTFunctionCall(ASTIdentifier &id) : id(id) {}
+    ~ASTFunctionCall()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTFunctionCall " << std::endl;
+      for (int i = 0; i < arguments.size(); i++)
+      {
+        delete arguments[i];
+      }
+
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -184,6 +233,14 @@ namespace stark
     ASTIdentifier &id;
     ASTVariableList arguments;
     ASTExternDeclaration(ASTIdentifier &type, ASTIdentifier &id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
+    ~ASTExternDeclaration()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTExternDeclaration " << std::endl;
+      for (int i = 0; i < arguments.size(); i++)
+      {
+        delete arguments[i];
+      }
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -194,6 +251,14 @@ namespace stark
     ASTIdentifier &id;
     ASTVariableList arguments;
     ASTFunctionDeclaration(ASTIdentifier &type, ASTIdentifier &id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
+    ~ASTFunctionDeclaration()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTFunctionDeclaration " << std::endl;
+      for (int i = 0; i < arguments.size(); i++)
+      {
+        delete arguments[i];
+      }
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -202,6 +267,9 @@ namespace stark
   public:
     ASTExpression &expression;
     ASTReturnStatement(ASTExpression &expression) : expression(expression) {}
+    ~ASTReturnStatement() {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTReturnStatement " << std::endl;
+    }
     void accept(ASTVisitor *visitor);
   };
 
@@ -250,6 +318,14 @@ namespace stark
     ASTIdentifier &id;
     ASTVariableList arguments;
     ASTStructDeclaration(ASTIdentifier &id, const ASTVariableList &arguments) : id(id), arguments(arguments) {}
+    ~ASTStructDeclaration()
+    {
+      std::cout << ">>>>>>>>>>>>> CLEAR ASTStructDeclaration " << std::endl;
+      for (int i = 0; i < arguments.size(); i++)
+      {
+        delete arguments[i];
+      }
+    }
     void accept(ASTVisitor *visitor);
   };
 
