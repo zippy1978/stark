@@ -14,6 +14,12 @@ namespace stark
   {
     CodeGenContext *context;
 
+  private:
+    /**
+     * Generic external function declaration.
+     */
+    Function* createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
+
   public:
     CodeGenVisitor(CodeGenContext *context) : context(context) {}
     Value *result;

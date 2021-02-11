@@ -122,6 +122,30 @@ namespace stark
 
     // Code generation
 
+    Function* CodeGenVisitor::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
+    {
+        vector<Type *> argTypes;
+        ASTVariableList::const_iterator it;
+
+        for (it = arguments.begin(); it != arguments.end(); it++)
+        {
+            argTypes.push_back(typeOf(*((**it).getType()), context));
+        }
+
+        Type *returnType = type->isArray() ? context->getArrayComplexType(type->getName())->getType() : typeOf(*type, context);
+        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
+
+        // If in interpreter mode : try to init the memory manager
+        // as soon as the required runtime function is declared
+        if (context->isInterpreterMode())
+        {
+            context->initMemoryManager();
+        }
+
+        return function;
+    }
+
     void CodeGenVisitor::visit(ASTInteger *node)
     {
 
@@ -435,12 +459,11 @@ namespace stark
 
         // Mangle
         std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
-        ASTIdentifier newId(mangledName, nullptr, nullptr);
 
-        // Generate new extern
-        ASTExternDeclaration externDeclaration(&node->type, &newId, node->arguments);
-        CodeGenVisitor v(context);
-        externDeclaration.accept(&v);
+
+        // Create external 
+        this->result = createExternalDeclaration(mangledName, node->arguments, &node->type);
+        
     }
 
     void CodeGenVisitor::visit(ASTExternDeclaration *node)
@@ -449,27 +472,11 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getType()->getName()));
 
         std::string functionName = node->getId()->getName();
-
-        vector<Type *> argTypes;
         ASTVariableList arguments = node->getArguments();
-        ASTVariableList::const_iterator it;
 
-        for (it = arguments.begin(); it != arguments.end(); it++)
-        {
-            argTypes.push_back(typeOf(*((**it).getType()), context));
-        }
+        // Create external 
+        this->result = createExternalDeclaration(functionName, arguments, node->getType());
 
-        Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getName())->getType() : typeOf(*node->getType(), context);
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
-        this->result = function;
-
-        // If in interpreter mode : try to init the memory manager
-        // as soon as the required runtime function is declared
-        if (context->isInterpreterMode())
-        {
-            context->initMemoryManager();
-        }
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)
