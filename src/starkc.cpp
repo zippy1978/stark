@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <strstream>
+#include <stdbool.h>
 
 #include "ast/AST.h"
 #include "parser/StarkParser.h"

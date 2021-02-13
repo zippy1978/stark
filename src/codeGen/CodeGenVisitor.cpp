@@ -78,7 +78,6 @@ namespace stark
             // Remove index to be treated as normal complex type on next call
             identifier->setIndex(nullptr);
 
-
             // Recurse
             return getComplexTypeMemberValue(complexType, varValue, identifier, context);
         }
@@ -121,7 +120,7 @@ namespace stark
 
     // Code generation
 
-    Function* CodeGenVisitor::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
+    Function *CodeGenVisitor::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
     {
         vector<Type *> argTypes;
         ASTVariableList::const_iterator it;
@@ -279,7 +278,8 @@ namespace stark
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
     {
 
-        context->logger.logDebug(node->location, formatv("generating code for {0}", typeid(*node->getExpression()).name()));
+        auto &r = *node->getExpression();
+        context->logger.logDebug(node->location, formatv("generating code for {0}", typeid(r).name()));
         CodeGenVisitor v(context);
         node->getExpression()->accept(&v);
         this->result = v.result;
@@ -329,7 +329,6 @@ namespace stark
         // Mangle name
         std::string functionName = context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName());
 
-
         ASTVariableList arguments = node->getArguments();
 
         // Build parameters
@@ -341,7 +340,7 @@ namespace stark
         }
 
         // Create function
-        
+
         Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getName())->getType() : typeOf(*node->getType(), context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
@@ -465,11 +464,9 @@ namespace stark
         // Mangle
         std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
 
-
-        // Create external 
+        // Create external
         // TODO : get rid of this : create and evaluate ASTExternDeclaration nde instead
         this->result = createExternalDeclaration(mangledName, node->getArguments(), node->getType());
-        
     }
 
     void CodeGenVisitor::visit(ASTExternDeclaration *node)
@@ -480,9 +477,8 @@ namespace stark
         std::string functionName = node->getId()->getName();
         ASTVariableList arguments = node->getArguments();
 
-        // Create external 
+        // Create external
         this->result = createExternalDeclaration(functionName, arguments, node->getType());
-
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)
@@ -589,7 +585,8 @@ namespace stark
         // Create blocks (and insert if block)
         BasicBlock *ifBlock = BasicBlock::Create(context->llvmContext, "if", currentFunction);
         BasicBlock *elseBlock = nullptr;
-        if (generateElseBlock) elseBlock = BasicBlock::Create(context->llvmContext, "else");
+        if (generateElseBlock)
+            elseBlock = BasicBlock::Create(context->llvmContext, "else");
         BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "ifcont");
 
         // Create condition
