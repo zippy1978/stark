@@ -9,7 +9,8 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTString *node) {}
     void ASTDeclarationExtractor::visit(ASTBlock *node)
     {
-        for (auto it = node->statements.begin(); it != node->statements.end(); it++)
+        ASTStatementList statements = node->getStatements();
+        for (auto it = statements.begin(); it != statements.end(); it++)
         {
             (**it).accept(this);
         }
@@ -19,10 +20,18 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTVariableDeclaration *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionDefinition *node)
     {
-        if (node->id.getName().compare("main") != 0)
+        if (node->getId()->getName().compare("main") != 0)
         {
-            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->type, node->id, node->arguments);
-            declarationBlock->statements.push_back(fd);
+            ASTVariableList arguments = node->getArguments();
+            ASTVariableList clonedArguments;
+            for (auto it = arguments.begin(); it != arguments.end(); it++)
+            {
+                ASTVariableDeclaration *s = *it;
+                clonedArguments.push_back(s->clone());
+            }
+
+            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->getType()->clone(), node->getId()->clone(), clonedArguments);
+            declarationBlock->addStatement(fd);
         }
     }
     void ASTDeclarationExtractor::visit(ASTFunctionCall *node) {}
@@ -35,7 +44,7 @@ namespace stark
 
     void ASTDeclarationExtractor::visit(ASTStructDeclaration *node)
     {
-        declarationBlock->statements.push_back(node);
+        declarationBlock->addStatement(node->clone());
     }
 
     void ASTDeclarationExtractor::visit(ASTArray *node) {}

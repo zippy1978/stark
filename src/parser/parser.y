@@ -72,12 +72,12 @@ stmts:
       stmt 
       { 
             $$ = new stark::ASTBlock(); 
-            $$->statements.push_back($<stmt>1); 
+            $$->addStatement($<stmt>1); 
       }
 | 
       stmts stmt 
       { 
-            $1->statements.push_back($<stmt>2); 
+            $1->addStatement($<stmt>2); 
       }
 ;
 
@@ -107,7 +107,7 @@ stmt:
 while_stmt:
       WHILE expr block
       {
-            $$ = new stark::ASTWhileStatement(*$2, *$3);
+            $$ = new stark::ASTWhileStatement($2, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -115,14 +115,14 @@ while_stmt:
 if_else_stmt:
       IF expr block
       {
-            $$ = new stark::ASTIfElseStatement(*$2, *$3, nullptr);
+            $$ = new stark::ASTIfElseStatement($2, $3, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |
       IF expr block ELSE block
       {
-            $$ = new stark::ASTIfElseStatement(*$2, *$3, $5);
+            $$ = new stark::ASTIfElseStatement($2, $3, $5);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -196,7 +196,7 @@ extern_decl:
 func_decl:
       DECLARE ident LPAREN decl_args RPAREN COLON ident
       { 
-            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4);
+            $$ = new stark::ASTFunctionDeclaration($7, $2, *$4);
             delete $4;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
@@ -205,7 +205,7 @@ func_decl:
       DECLARE ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS
       { 
             $7->setArray(true);
-            $$ = new stark::ASTFunctionDeclaration(*$7, *$2, *$4);
+            $$ = new stark::ASTFunctionDeclaration($7, $2, *$4);
             delete $4;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
@@ -215,7 +215,7 @@ func_decl:
 func_def: 
       FUNC ident LPAREN decl_args RPAREN COLON ident block
       { 
-            $$ = new stark::ASTFunctionDefinition(*$7, *$2, *$4, *$8);
+            $$ = new stark::ASTFunctionDefinition($7, $2, *$4, $8);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 
@@ -224,7 +224,7 @@ func_def:
       FUNC ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS block
       { 
             $7->setArray(true);
-            $$ = new stark::ASTFunctionDefinition(*$7, *$2, *$4, *$9);
+            $$ = new stark::ASTFunctionDefinition($7, $2, *$4, $9);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 
@@ -274,6 +274,7 @@ ident:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $1;
+            delete $3;
       }
 |
       IDENTIFIER LBRACKET expr RBRACKET
@@ -290,6 +291,7 @@ ident:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $1; 
+            delete $6;
       }
 
 ;
@@ -386,7 +388,7 @@ numeric:
 type_conversion:
       expr AS ident
       {
-            $$ = new stark::ASTTypeConversion(*$1, *$3);
+            $$ = new stark::ASTTypeConversion($1, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -394,42 +396,42 @@ type_conversion:
 comparison:
       expr COMP_EQ expr 
       { 
-            $$ = new stark::ASTComparison(*$1, stark::EQ, *$3);
+            $$ = new stark::ASTComparison($1, stark::EQ, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |     
       expr COMP_NE expr 
       { 
-            $$ = new stark::ASTComparison(*$1, stark::NE, *$3);
+            $$ = new stark::ASTComparison($1, stark::NE, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |
       expr COMP_LT expr 
       { 
-            $$ = new stark::ASTComparison(*$1, stark::LT, *$3);
+            $$ = new stark::ASTComparison($1, stark::LT, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |
       expr COMP_LE expr 
       { 
-            $$ = new stark::ASTComparison(*$1, stark::LE, *$3);
+            $$ = new stark::ASTComparison($1, stark::LE, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |
       expr COMP_GT expr 
       { 
-            $$ = new stark::ASTComparison(*$1, stark::GT, *$3);
+            $$ = new stark::ASTComparison($1, stark::GT, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |
       expr COMP_GE expr 
       { 
-            $$ = new stark::ASTComparison(*$1, stark::GE, *$3);
+            $$ = new stark::ASTComparison($1, stark::GE, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -438,7 +440,7 @@ comparison:
 expr: 
       ident EQUAL expr 
       { 
-            $$ = new stark::ASTAssignment(*$<ident>1, *$3); 
+            $$ = new stark::ASTAssignment($<ident>1, $3); 
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -468,42 +470,42 @@ expr:
 |     
       expr MUL expr 
       { 
-            $$ = new stark::ASTBinaryOperation(*$1, stark::MUL, *$3);
+            $$ = new stark::ASTBinaryOperation($1, stark::MUL, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 | 
       expr DIV expr 
       { 
-            $$ = new stark::ASTBinaryOperation(*$1, stark::DIV, *$3);
+            $$ = new stark::ASTBinaryOperation($1, stark::DIV, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |     
       expr PLUS expr 
       { 
-            $$ = new stark::ASTBinaryOperation(*$1, stark::ADD, *$3);
+            $$ = new stark::ASTBinaryOperation($1, stark::ADD, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 | 
       expr MINUS expr 
       { 
-            $$ = new stark::ASTBinaryOperation(*$1, stark::SUB, *$3);
+            $$ = new stark::ASTBinaryOperation($1, stark::SUB, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |    
       expr AND expr 
       { 
-            $$ = new stark::ASTBinaryOperation(*$1, stark::AND, *$3);
+            $$ = new stark::ASTBinaryOperation($1, stark::AND, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |    
       expr OR expr 
       { 
-            $$ = new stark::ASTBinaryOperation(*$1, stark::OR, *$3);
+            $$ = new stark::ASTBinaryOperation($1, stark::OR, $3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
