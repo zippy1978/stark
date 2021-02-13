@@ -132,7 +132,7 @@ namespace stark
     std::string getName() { return name; }
     ASTIdentifier *getMember() { return member.get(); }
     ASTExpression *getIndex() { return index.get(); }
-    void setIndex(ASTExpression *i) { if (index.get()) index.release(); index = std::unique_ptr<ASTExpression>(i); }
+    void setIndex(ASTExpression *i) { index = std::unique_ptr<ASTExpression>(i); }
     bool isArray() { return array; }
     void setArray(bool a) { array = a; }
     /** Returns the count of nested members */

@@ -18,13 +18,16 @@ namespace stark
 
         for (auto it = std::begin(contexts); it != std::end(contexts); ++it)
         {
-            CodeGenContext *c = *it;
-            Linker::linkModules(*module, std::unique_ptr<Module>(c->getLLvmModule()) /*, Linker::Flags::OverrideFromSrc*/);
+            CodeGenContext *c = it->get();
+            Linker::linkModules(*llvmModule, std::unique_ptr<Module>(c->getLLvmModule()) /*, Linker::Flags::OverrideFromSrc*/);
         }
 
-        std::cout << "Code is linked .\n";
-        std::cout << "----------- DUMP -------------\n";
-        module->print(llvm::errs(), nullptr);
+        if (debugEnabled)
+        {
+            std::cout << "Code is linked .\n";
+            std::cout << "----------- DUMP -------------\n";
+            llvmModule->print(llvm::errs(), nullptr);
+        }
     }
     void CodeGenModuleLinker::writeCode(std::string filename)
     {
@@ -32,7 +35,7 @@ namespace stark
         std::error_code errorCode;
         //raw_ostream output = outs();
         raw_fd_ostream output(filename, errorCode);
-        WriteBitcodeToFile(*module, output);
+        WriteBitcodeToFile(*llvmModule, output);
     }
 
 } // namespace stark

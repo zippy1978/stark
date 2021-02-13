@@ -239,7 +239,7 @@ namespace stark
 	}
 
 	/* Generate code from AST root */
-	void CodeGenContext::generateCode(ASTBlock &root)
+	void CodeGenContext::generateCode(ASTBlock *root)
 	{
 		// Create module
 		llvmModule = new Module(filename, llvmContext);
@@ -284,7 +284,7 @@ namespace stark
 
 			// Start visitor on root
 			logger.logDebug(formatv("root type = {0}", typeid(root).name()));
-			root.accept(&visitor);
+			root->accept(&visitor);
 
 			// No return provided on main function, add a default return to the block (with 0 return)
 			if (this->getReturnValue() != nullptr)
@@ -306,7 +306,7 @@ namespace stark
 
 			// Start visitor on root
 			logger.logDebug(formatv("root type = {0}", typeid(root).name()));
-			root.accept(&visitor);
+			root->accept(&visitor);
 		}
 
 		/* Print the IR in a human-readable format to see if our program compiled properly */

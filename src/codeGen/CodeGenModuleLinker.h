@@ -17,16 +17,20 @@ namespace stark
         std::string name = nullptr;
 
         /* List of contexts to link */
-        std::vector<CodeGenContext *> contexts;
+        std::vector<std::unique_ptr<CodeGenContext>> contexts;
 
         /* Destination llvm module */
-        Module *module;
+        Module *llvmModule;
 
         LLVMContext llvmContext;
 
+        /** Display debug logs if enabled */
+        bool debugEnabled = false;
+
     public:
-        CodeGenModuleLinker(std::string name) : name(name) {module = new Module(name, llvmContext);}
-        void addContext(CodeGenContext *context) { contexts.push_back(context); }
+        CodeGenModuleLinker(std::string name) : name(name) { llvmModule = new Module(name, llvmContext); }
+        void addContext(CodeGenContext *context) { contexts.push_back(std::unique_ptr<CodeGenContext>(context)); }
+        void setDebugEnabled(bool d) { debugEnabled = d; }
         void link();
         void writeCode(std::string filename);
     };

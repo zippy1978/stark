@@ -71,6 +71,7 @@ namespace stark
     void CompilerModule::compile(std::string filename, bool singleMode)
     {
         CodeGenModuleLinker linker(this->name);
+        linker.setDebugEnabled(debugEnabled);
 
         // Load and parse runtime declarations
         StarkParser parser("runtime");
@@ -99,11 +100,13 @@ namespace stark
             // Generate IR
             CodeGenContext *context = new CodeGenContext(sourceFilename);
             context->setDebugEnabled(debugEnabled);
-            context->generateCode(*sourceBlock);
+            context->generateCode(sourceBlock);
 
             // Add to linker
             linker.addContext(context);
         }
+
+        delete runtimeDeclarations;
 
         // Link generated code
         linker.link();

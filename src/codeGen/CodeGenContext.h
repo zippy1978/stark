@@ -109,7 +109,7 @@ namespace stark
     CodeGenChecker *getChecker() { return checker.get(); }
 
     /* Generate llvm program code */
-    void generateCode(ASTBlock &root);
+    void generateCode(ASTBlock *root);
 
     /* Execute generated program code */
     int runCode(int argc, char *argv[]);
