@@ -12,10 +12,10 @@ namespace stark
    */
   class ASTDeclarationExtractor : public ASTVisitor
   {
-    ASTBlock *declarationBlock;
+    std::unique_ptr<ASTBlock> declarationBlock;
 
   public:
-    ASTDeclarationExtractor() { declarationBlock = new ASTBlock(); }
+    ASTDeclarationExtractor() { declarationBlock = std::make_unique<ASTBlock>(); }
     void visit(ASTInteger *node);
     void visit(ASTBoolean *node);
     void visit(ASTDouble *node);
@@ -37,7 +37,7 @@ namespace stark
     void visit(ASTArray *node);
     void visit(ASTTypeConversion *node);
     void visit(ASTFunctionDeclaration *node);
-    ASTBlock *getDeclarationBlock() { return declarationBlock; }
+    ASTBlock *getDeclarationBlock() { return declarationBlock.get(); }
   };
 
 } // namespace stark

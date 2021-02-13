@@ -21,10 +21,10 @@ namespace stark
             ASTDeclarationExtractor extractor;
 
             std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second;
+            ASTBlock *sourceBlock = it->second.get();
 
             extractor.visit(sourceBlock);
-            declarationASTs[sourceFilename] = extractor.getDeclarationBlock();
+            declarationASTs[sourceFilename] = std::unique_ptr<ASTBlock>(extractor.getDeclarationBlock()->clone());
         }
     }
 
@@ -35,7 +35,7 @@ namespace stark
         for (auto it = declarationASTs.begin(); it != declarationASTs.end(); it++)
         {
             std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second;
+            ASTBlock *sourceBlock = it->second.get();
 
             if (filename.compare(sourceFilename) != 0)
             {
@@ -57,7 +57,7 @@ namespace stark
 
         // Parse source file and add to module source ASTs
         StarkParser parser(filename);
-        sourceASTs[filename] = parser.parse(&input);
+        sourceASTs[filename] = std::unique_ptr<ASTBlock>(parser.parse(&input));
     }
 
     void CompilerModule::addSourceFiles(std::vector<std::string> filenames)
@@ -83,7 +83,7 @@ namespace stark
         {
 
             std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second;
+            ASTBlock *sourceBlock = it->second.get();
 
             // Preprend other sources declarations
             std::vector<ASTBlock *> declarations = getDeclarationsFor(sourceFilename);

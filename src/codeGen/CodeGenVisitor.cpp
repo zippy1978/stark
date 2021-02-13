@@ -570,7 +570,7 @@ namespace stark
         context->logger.logDebug(node->location, "creating if else statement");
 
         // Used to know if else block should be generated
-        bool generateElseBlock = (node->getFalseBlock() && node->getFalseBlock()->getStatements().size() > 0);
+        bool generateElseBlock = (node->getFalseBlock() != nullptr && node->getFalseBlock()->getStatements().size() > 0);
 
         if (node->getTrueBlock()->getStatements().size() == 0 && !generateElseBlock)
         {
@@ -588,7 +588,8 @@ namespace stark
 
         // Create blocks (and insert if block)
         BasicBlock *ifBlock = BasicBlock::Create(context->llvmContext, "if", currentFunction);
-        BasicBlock *elseBlock = BasicBlock::Create(context->llvmContext, "else");
+        BasicBlock *elseBlock = nullptr;
+        if (generateElseBlock) elseBlock = BasicBlock::Create(context->llvmContext, "else");
         BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "ifcont");
 
         // Create condition

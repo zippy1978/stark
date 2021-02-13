@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
 
         // ... And preprend it to the source AST
         program->preprend(declarations);
+        delete declarations;
 
         // Generate and run code
         CodeGenContext context(filename);

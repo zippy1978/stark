@@ -16,10 +16,8 @@ namespace stark
     class CompilerModule
     {
         std::string name;
-        std::map<std::string, ASTBlock *> sourceASTs;
-        std::map<std::string, ASTBlock *> declarationASTs;
-
-        
+        std::map<std::string, std::unique_ptr<ASTBlock>> sourceASTs;
+        std::map<std::string, std::unique_ptr<ASTBlock>> declarationASTs;
 
         /** Display debug logs if enabled */
         bool debugEnabled = false;

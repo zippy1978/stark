@@ -2,6 +2,7 @@
 %locations
 
 //%parse-param { stark::ASTBlock *programBlock }
+//%lex-param { stark::ASTBlock *programBlock }
 
 %code top {
       #include "../ast/AST.h"

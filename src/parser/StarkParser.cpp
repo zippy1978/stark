@@ -43,25 +43,33 @@ namespace stark
 {
     ASTBlock *StarkParser::parse(std::istream *input)
     {
+        //ASTBlock *programBlock;
+
         parserLogger.setFilename(filename);
         lexer = new yyFlexLexer(input);
-        yy::parser parser;
+        yy::parser parser/*(programBlock)*/;
         parser.parse();
         delete lexer;
 
-        return programBlock;
+        ASTBlock *result = programBlock->clone();
+        delete programBlock;
+        return result;
     }
 
     ASTBlock *StarkParser::parse(std::string input)
     {
+        //ASTBlock *programBlock;
+
         parserLogger.setFilename(filename);
         std::istrstream istr(input.c_str());
         lexer = new yyFlexLexer(&istr);
-        yy::parser parser;
+        yy::parser parser/*(programBlock)*/;
         parser.parse();
         delete lexer;
 
-        return programBlock;
+        ASTBlock *result = programBlock->clone();
+        delete programBlock;
+        return result;
     }
 
     

@@ -12,7 +12,8 @@ namespace stark
         ASTStatementList statements = node->getStatements();
         for (auto it = statements.begin(); it != statements.end(); it++)
         {
-            (**it).accept(this);
+            ASTStatement *s = *it;
+            s->accept(this);
         }
     }
     void ASTDeclarationExtractor::visit(ASTAssignment *node) {}

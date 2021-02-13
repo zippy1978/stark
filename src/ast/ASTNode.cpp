@@ -176,8 +176,8 @@ namespace stark
 
     ASTIdentifier *ASTIdentifier::clone()
     {
-        ASTIdentifier *clone = new ASTIdentifier(this->getName(), this->getIndex() ? this->getIndex() : nullptr, nullptr);
-        if (this->getMember())
+        ASTIdentifier *clone = new ASTIdentifier(this->getName(), this->getIndex() != nullptr ? this->getIndex()->clone() : nullptr, nullptr);
+        if (this->getMember() != nullptr)
             clone->member = std::unique_ptr<ASTIdentifier>(this->getMember()->clone());
         return clone;
     }
@@ -191,7 +191,9 @@ namespace stark
 
     void ASTBlock::preprend(ASTBlock *block)
     {
-        statements.insert(statements.begin(), block->statements.begin(), block->statements.end());
+        // Insert a clone of each statement of the new block
+        ASTStatementList clonedSts = cloneList(block->statements);
+        statements.insert(statements.begin(), clonedSts.begin(), clonedSts.end());
     }
 
     void ASTBlock::accept(ASTVisitor *visitor) { visitor->visit(this); }
@@ -227,7 +229,7 @@ namespace stark
 
     ASTVariableDeclaration *ASTVariableDeclaration::clone()
     {
-        return new ASTVariableDeclaration(this->getType()->clone(), this->getId()->clone(), this->isArray(), this->getAssignmentExpr() ? this->getAssignmentExpr()->clone() : nullptr);
+        return new ASTVariableDeclaration(this->getType()->clone(), this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
     }
 
     // ASTFunctionDefinition
@@ -303,7 +305,7 @@ namespace stark
 
     ASTIfElseStatement *ASTIfElseStatement::clone()
     {
-        return new ASTIfElseStatement(this->getCondition()->clone(), this->getTrueBlock()->clone(), this->getFalseBlock() ? this->getFalseBlock() : nullptr);
+        return new ASTIfElseStatement(this->getCondition()->clone(), this->getTrueBlock()->clone(), this->getFalseBlock() != nullptr ? this->getFalseBlock()->clone() : nullptr);
     }
 
     // ASTWhileStatement
