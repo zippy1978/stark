@@ -22,7 +22,7 @@ namespace stark
         /** Holds each source file context of the module
          * They must be retained until their bitcode has been linked
          * */
-        std::vector<std::unique_ptr<CodeGenContext>> contexts;
+        std::vector<std::unique_ptr<CodeGenFileContext>> contexts;
 
         /** Display debug logs if enabled */
         bool debugEnabled = false;

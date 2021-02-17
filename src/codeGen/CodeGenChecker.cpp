@@ -1,4 +1,4 @@
-#include "CodeGenContext.h"
+#include "CodeGenFileContext.h"
 #include "CodeGenConstants.h"
 
 #include "CodeGenChecker.h"
@@ -57,7 +57,7 @@ namespace stark
         // Mangle name
         std::string functionName = context->getMangler()->mangleFunctionName(functionId->getName(), context->getModuleName());
 
-        if (context->getLLvmModule()->getFunction(functionName.c_str()) != nullptr)
+        if (context->getLlvmModule()->getFunction(functionName.c_str()) != nullptr)
         {
             context->logger.logError(functionId->location, formatv("function {0} already declared", functionId->getName()));
         }

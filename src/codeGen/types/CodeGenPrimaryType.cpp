@@ -2,13 +2,13 @@
 #include <llvm/IR/IRBuilder.h>
 
 #include "CodeGenPrimaryType.h"
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 
 namespace stark
 {
 
-    CodeGenVoidType::CodeGenVoidType(CodeGenContext *context) : CodeGenPrimaryType("void", context, Type::getVoidTy(context->llvmContext), "void") {}
-    CodeGenAnyType::CodeGenAnyType(CodeGenContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->llvmContext), "i8*") {}
+    CodeGenVoidType::CodeGenVoidType(CodeGenFileContext *context) : CodeGenPrimaryType("void", context, Type::getVoidTy(context->llvmContext), "void") {}
+    CodeGenAnyType::CodeGenAnyType(CodeGenFileContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->llvmContext), "i8*") {}
 
     Value *CodeGenPrimaryType::convert(Value *value, std::string typeName, FileLocation location)
     {

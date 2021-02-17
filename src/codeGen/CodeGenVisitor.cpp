@@ -40,7 +40,7 @@ namespace stark
      * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
      */
-    static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
+    static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenFileContext *context)
     {
 
         IRBuilder<> Builder(context->llvmContext);
@@ -113,7 +113,7 @@ namespace stark
      * Then look for complex types.
      * If no type found, returns void type.
      */
-    static Type *typeOf(ASTIdentifier &type, CodeGenContext *context)
+    static Type *typeOf(ASTIdentifier &type, CodeGenFileContext *context)
     {
         return context->getType(type.getName());
     }
@@ -132,7 +132,7 @@ namespace stark
 
         Type *returnType = type->isArray() ? context->getArrayComplexType(type->getName())->getType() : typeOf(*type, context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
         // If in interpreter mode : try to init the memory manager
         // as soon as the required runtime function is declared
@@ -366,7 +366,7 @@ namespace stark
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
         BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
 
@@ -426,16 +426,16 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getName()));
 
         // First try to find a runtime function
-        Function *function = context->getLLvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
+        Function *function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
         // Then look in stark functions
         if (function == nullptr)
         {
-            function = context->getLLvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName()).c_str());
+            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName()).c_str());
         }
         // Finally : look for an unmangled function
         if (function == nullptr)
         {
-            function = context->getLLvmModule()->getFunction(node->getId()->getName().c_str());
+            function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
         }
 
         if (function == nullptr)

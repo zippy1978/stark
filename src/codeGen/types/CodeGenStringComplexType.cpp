@@ -2,7 +2,7 @@
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/IRBuilder.h>
 
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 #include "CodeGenComplexType.h"
 
 using namespace llvm;
@@ -10,7 +10,7 @@ using namespace std;
 
 namespace stark
 {
-    CodeGenStringComplexType::CodeGenStringComplexType(CodeGenContext *context) : CodeGenComplexType("string", context)
+    CodeGenStringComplexType::CodeGenStringComplexType(CodeGenFileContext *context) : CodeGenComplexType("string", context)
     {
         addMember("data", "-", Type::getInt8PtrTy(context->llvmContext));
         addMember("len", "int", context->getPrimaryType("int")->getType());
@@ -41,7 +41,7 @@ namespace stark
 
         if (runtimeFunctionName.compare("none") != 0)
         {
-            Function *function = context->getLLvmModule()->getFunction(runtimeFunctionName);
+            Function *function = context->getLlvmModule()->getFunction(runtimeFunctionName);
             if (function == nullptr)
             {
                 context->logger.logError("cannot find runtime function");

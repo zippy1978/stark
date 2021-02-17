@@ -1,7 +1,7 @@
 #ifndef CODEGEN_CODEGENVISITOR_H
 #define CODEGEN_CODEGENVISITOR_H
 
-#include "CodeGenContext.h"
+#include "CodeGenFileContext.h"
 
 namespace stark
 {
@@ -12,7 +12,7 @@ namespace stark
    */
   class CodeGenVisitor : public ASTVisitor
   {
-    CodeGenContext *context;
+    CodeGenFileContext *context;
 
   private:
     /**
@@ -21,7 +21,7 @@ namespace stark
     Function* createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
 
   public:
-    CodeGenVisitor(CodeGenContext *context) : context(context) {}
+    CodeGenVisitor(CodeGenFileContext *context) : context(context) {}
     Value *result;
     void visit(ASTInteger *node);
     void visit(ASTBoolean *node);

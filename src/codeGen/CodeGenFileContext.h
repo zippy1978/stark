@@ -1,5 +1,5 @@
-#ifndef CODEGEN_CODEGENCONTEXT_H
-#define CODEGEN_CODEGENCONTEXT_H
+#ifndef CODEGEN_CODEGENFILECONTEXT_H
+#define CODEGEN_CODEGENFILECONTEXT_H
 
 #include <stack>
 #include <typeinfo>
@@ -45,9 +45,9 @@ namespace stark
 
   /**
    * Code generation context.
-   * Is in charge of generating llvm program code from AST.
+   * Is in charge of generating  code from AST for a single source file.
    */
-  class CodeGenContext
+  class CodeGenFileContext
   {
 
     /* Name of the file being processed */
@@ -100,7 +100,7 @@ namespace stark
     LLVMContext llvmContext;
     stark::Logger logger;
 
-    CodeGenContext(std::string filename) : filename(filename)
+    CodeGenFileContext(std::string filename) : filename(filename)
     {
       mangler = std::make_unique<CodeGenMangler>();
       checker = std::make_unique<CodeGenChecker>(this);
@@ -167,7 +167,7 @@ namespace stark
     /** Returns llvm module of the context.
      * Be careful : it is only available during code generation
      * */
-    Module *getLLvmModule() { return llvmModule; }
+    Module *getLlvmModule() { return llvmModule; }
   };
 
 } // namespace stark

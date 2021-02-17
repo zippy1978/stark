@@ -12,7 +12,7 @@ using namespace llvm;
 
 namespace stark
 {
-    class CodeGenContext;
+    class CodeGenFileContext;
 
     /**
      * Represents a complex type member.
@@ -37,18 +37,18 @@ namespace stark
     {
     protected:
         std::vector<std::unique_ptr<CodeGenComplexTypeMember>> members;
-        CodeGenContext *context;
+        CodeGenFileContext *context;
         StructType *type;
         std::string name;
         bool array;
 
     public:
-        CodeGenComplexType(std::string name, CodeGenContext *context) : name(name), context(context)
+        CodeGenComplexType(std::string name, CodeGenFileContext *context) : name(name), context(context)
         {
             type = nullptr;
             array = false;
         }
-        CodeGenComplexType(std::string name, CodeGenContext *context, bool array) : name(name), context(context), array(array) { type = nullptr; }
+        CodeGenComplexType(std::string name, CodeGenFileContext *context, bool array) : name(name), context(context), array(array) { type = nullptr; }
         /* Generate declration code of the complex type inside the llvm::LLVMContext */
         void declare();
         /* Returns the complex type llvm::StructType, returns nullptr is complex type is not declared yet */
@@ -69,7 +69,7 @@ namespace stark
     class CodeGenArrayComplexType : public CodeGenComplexType
     {
     public:
-        CodeGenArrayComplexType(std::string typeName, CodeGenContext *context);
+        CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context);
         Value *create(std::vector<Value *> values, FileLocation location);
     };
 
@@ -79,7 +79,7 @@ namespace stark
     class CodeGenStringComplexType : public CodeGenComplexType
     {
     public:
-        CodeGenStringComplexType(CodeGenContext *context);
+        CodeGenStringComplexType(CodeGenFileContext *context);
         Value *convert(Value *value, std::string typeName, FileLocation location);
         Value *create(std::string string, FileLocation location);
     };

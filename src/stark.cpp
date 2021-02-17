@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
         delete declarations;
 
         // Generate code
-        CodeGenContext context(filename);
+        CodeGenFileContext context(filename);
         context.setDebugEnabled(options.debug);
         context.setInterpreterMode(true);
         CodeGenBitcode *code = context.generateCode(program);

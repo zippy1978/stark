@@ -2,7 +2,7 @@
 #define CODEGEN_CODEGENBITCODELINKER_H
 
 #include "CodeGenBitcode.h"
-#include "CodeGenContext.h"
+#include "CodeGenFileContext.h"
 
 using namespace llvm;
 

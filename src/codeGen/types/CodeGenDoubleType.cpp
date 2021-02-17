@@ -2,11 +2,11 @@
 #include <llvm/IR/IRBuilder.h>
 
 #include "CodeGenPrimaryType.h"
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 
 namespace stark
 {
-    CodeGenDoubleType::CodeGenDoubleType(CodeGenContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->llvmContext), "double") {}
+    CodeGenDoubleType::CodeGenDoubleType(CodeGenFileContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->llvmContext), "double") {}
 
     Value *CodeGenDoubleType::convert(Value *value, std::string typeName, FileLocation location)
     {
@@ -17,7 +17,7 @@ namespace stark
         // string
         if (typeName.compare("string") == 0)
         {
-            Function *function = context->getLLvmModule()->getFunction("stark_runtime_priv_conv_double_string");
+            Function *function = context->getLlvmModule()->getFunction("stark_runtime_priv_conv_double_string");
             if (function == nullptr)
             {
                 context->logger.logError("cannot find runtime function");

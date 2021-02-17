@@ -2,7 +2,7 @@
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/IRBuilder.h>
 
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 #include "CodeGenComplexType.h"
 
 using namespace llvm;
@@ -11,7 +11,7 @@ using namespace std;
 namespace stark
 {
 
-    CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
+    CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
         addMember("elements", typeName, context->getType(typeName)->getPointerTo());
         addMember("len", "int", context->getPrimaryType("int")->getType());

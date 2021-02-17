@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 #include "CodeGenComplexType.h"
 
 using namespace llvm;

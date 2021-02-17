@@ -104,12 +104,14 @@ namespace stark
             sourceBlock->sort();
 
             // Generate bitcode
-            CodeGenContext *context = new CodeGenContext(sourceFilename);
+            CodeGenFileContext *context = new CodeGenFileContext(sourceFilename);
             context->setDebugEnabled(debugEnabled);
             CodeGenBitcode *code = context->generateCode(sourceBlock);
 
-            // Maintain context until module is complied
-            contexts.push_back(std::unique_ptr<CodeGenContext>(context));
+            // Maintain context until module is compiled
+            // TODO : maybe maintain the context (LLVMContext) in an object above CogeGenContext
+            // Then, it will be not necessary to maintain file contexts anymore
+            contexts.push_back(std::unique_ptr<CodeGenFileContext>(context));
 
             // Add to linker
             linker.addBitcode(std::unique_ptr<CodeGenBitcode>(code));

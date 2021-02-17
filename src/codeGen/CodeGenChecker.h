@@ -5,7 +5,7 @@
 
 namespace stark
 {
-    class CodeGenContext;
+    class CodeGenFileContext;
 
     /**
      * Code checker.
@@ -14,10 +14,10 @@ namespace stark
      */
     class CodeGenChecker
     {
-        CodeGenContext *context;    
+        CodeGenFileContext *context;    
 
     public:
-        CodeGenChecker(CodeGenContext *context): context(context) {}
+        CodeGenChecker(CodeGenFileContext *context): context(context) {}
         void checkNoMemberIdentifier(ASTIdentifier *variableId);
         void checkAllowedVariableDeclaration(ASTIdentifier *variableId);
         void checkAvailableLocalVariable(ASTIdentifier *variableId);
