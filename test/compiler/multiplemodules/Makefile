@@ -7,7 +7,7 @@ LIB_PATH = ../../../bin
 
 compile:
 	mkdir -p $(OUT_DIR)
-	# Build main with main and functions
+	# Build main with main and modules
 	$(STARKC) -d -o ./$(OUT_DIR)/main.bc company/functions.st company/types.st main.st
 	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/main.bc
 	# Link code with runtime and create binary

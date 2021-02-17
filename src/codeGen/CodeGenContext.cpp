@@ -239,7 +239,7 @@ namespace stark
 	}
 
 	/* Generate code from AST root */
-	void CodeGenContext::generateCode(ASTBlock *root)
+	CodeGenBitcode *CodeGenContext::generateCode(ASTBlock *root)
 	{
 		// Create module
 		llvmModule = new Module(filename, llvmContext);
@@ -317,65 +317,8 @@ namespace stark
 			std::cout << "----------- DUMP -------------\n";
 			llvmModule->print(llvm::errs(), nullptr);
 		}
-	}
 
-	void CodeGenContext::writeCode(std::string filename)
-	{
-		// TODO : hande error
-		std::error_code errorCode;
-		//raw_ostream output = outs();
-		raw_fd_ostream output(filename, errorCode);
-		WriteBitcodeToFile(*llvmModule, output);
-	}
-
-	/* Executes the AST by running the main function */
-	int CodeGenContext::runCode(int argc, char *argv[])
-	{
-
-		logger.logDebug("running code...");
-		std::string err;
-
-		LLVMInitializeNativeTarget();
-		LLVMInitializeNativeAsmPrinter();
-		LLVMInitializeNativeAsmParser();
-		ExecutionEngine *ee = EngineBuilder(unique_ptr<Module>(llvmModule)).setErrorStr(&err).create();
-		if (!ee)
-		{
-			logger.logError(formatv("JIT error: {0}", err));
-		}
-
-		// TODO: pass manager here !
-
-		ee->finalizeObject();
-
-		// Build stark string array to pass to main function
-		stark::array_t args;
-		args.len = argc;
-		stark::string_t *elements = (stark::string_t *)malloc(sizeof(stark::string_t) * argc);
-		for (int i = 0; i < argc; i++)
-		{
-			stark::string_t s;
-			s.len = strlen(argv[i]);
-			s.data = (char *)malloc(sizeof(char) * s.len + 1);
-			strcpy(s.data, argv[i]);
-			elements[i] = s;
-		}
-		args.elements = elements;
-
-		// Call main function
-		int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
-		int retValue = main_func(args);
-
-		for (int i = 0; i < argc; i++)
-		{
-			free(elements[i].data);
-		}
-		free(elements);
-
-		delete ee;
-
-		logger.logDebug(formatv("code was run, return code is {0}", retValue));
-		return retValue;
+		return new CodeGenBitcode(llvmModule);;
 	}
 
 	void CodeGenContext::initMemoryManager()

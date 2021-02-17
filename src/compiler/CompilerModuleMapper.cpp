@@ -46,7 +46,7 @@ namespace stark
             delete block;
         }
 
-        logger.logDebug(format("%d modules found", result.size()));
+        logger.logDebug(format("%d module(s) found", result.size()));
 
         return result;
     }

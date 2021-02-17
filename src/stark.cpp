@@ -134,13 +134,18 @@ int main(int argc, char *argv[])
         program->preprend(declarations);
         delete declarations;
 
-        // Generate and run code
+        // Generate code
         CodeGenContext context(filename);
         context.setDebugEnabled(options.debug);
         context.setInterpreterMode(true);
-        context.generateCode(program);
+        CodeGenBitcode *code = context.generateCode(program);
         delete program;
-        return context.runCode(options.argc, options.argv);
+
+        // Run code
+        CodeGenInterpreter interpreter;
+        int result = interpreter.run(code, options.argc, options.argv);
+        delete code;
+        return result;
     }
 
     return 0;

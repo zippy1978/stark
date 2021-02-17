@@ -19,6 +19,11 @@ namespace stark
         std::map<std::string, std::unique_ptr<ASTBlock>> sourceASTs;
         std::map<std::string, std::unique_ptr<ASTBlock>> declarationASTs;
 
+        /** Holds each source file context of the module
+         * They must be retained until their bitcode has been linked
+         * */
+        std::vector<std::unique_ptr<CodeGenContext>> contexts;
+
         /** Display debug logs if enabled */
         bool debugEnabled = false;
 
@@ -33,7 +38,11 @@ namespace stark
         /** Add source file to the module */
         void addSourceFile(std::string filename);
         void addSourceFiles(std::vector<std::string> filenames);
-        void setDebugEnabled(bool d) { debugEnabled = d; }
+        void setDebugEnabled(bool d)
+        {
+            debugEnabled = d;
+            logger.setDebugEnabled(d);
+        }
         /** 
          * Compile module and output result to file name (can be a directory).
          * set singleMode to true to build .bc as a file name

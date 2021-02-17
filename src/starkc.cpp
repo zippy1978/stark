@@ -158,6 +158,12 @@ int main(int argc, char *argv[])
             module.setDebugEnabled(options.debug);
             module.addSourceFiles(moduleSourceFilenames);
 
+            // TODO if multiple modules but includes main module : link all modules in a single .bc !
+            // If no main : output separated .bc in folder for each module
+            
+            // TODO : compile should not write to file !
+            // multi module linking and write to file should be handled later !
+            // final module linking should be done by a link(vector CompilerModule)
             module.compile(options.outputfile, modulesMap.size() == 1);
         }
     }

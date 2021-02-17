@@ -73,7 +73,7 @@ namespace stark
 
         logger.logDebug(format("Compiling module %s", name.c_str()));
 
-        CodeGenModuleLinker linker(this->name);
+        CodeGenBitcodeLinker linker(this->name);
         linker.setDebugEnabled(debugEnabled);
 
         // Load and parse runtime declarations
@@ -100,27 +100,32 @@ namespace stark
             // Prepend runtime declarations
             sourceBlock->preprend(runtimeDeclarations);
 
-            // Sort root block to have declarations (types, then external functions, then the rest)
+            // Sort root block to have declarations first (types, then external functions, then the rest)
             sourceBlock->sort();
 
-            // Generate IR
+            // Generate bitcode
             CodeGenContext *context = new CodeGenContext(sourceFilename);
             context->setDebugEnabled(debugEnabled);
-            context->generateCode(sourceBlock);
+            CodeGenBitcode *code = context->generateCode(sourceBlock);
+
+            // Maintain context until module is complied
+            contexts.push_back(std::unique_ptr<CodeGenContext>(context));
 
             // Add to linker
-            linker.addContext(context);
+            linker.addBitcode(std::unique_ptr<CodeGenBitcode>(code));
         }
 
         delete runtimeDeclarations;
 
         // Link generated code
         logger.logDebug(format("Linking module %s", name.c_str()));
-        linker.link();
+        CodeGenBitcode *moduleCode = linker.link();
 
         // Write code
         // TODO : if not singleMode, handle module packaging !
-        linker.writeCode(filename);
+        moduleCode->write(filename);
+
+        delete moduleCode;
     }
 
 } // namespace stark

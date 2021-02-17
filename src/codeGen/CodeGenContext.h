@@ -16,6 +16,7 @@
 #include "types/CodeGenPrimaryType.h"
 #include "CodeGenVariable.h"
 #include "CodeGenMangler.h"
+#include "CodeGenBitcode.h"
 #include "CodeGenChecker.h"
 
 using namespace llvm;
@@ -109,13 +110,7 @@ namespace stark
     CodeGenChecker *getChecker() { return checker.get(); }
 
     /* Generate llvm program code */
-    void generateCode(ASTBlock *root);
-
-    /* Execute generated program code */
-    int runCode(int argc, char *argv[]);
-
-    /* Write generated code to file */
-    void writeCode(std::string filename);
+    CodeGenBitcode *generateCode(ASTBlock *root);
 
     /* Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
@@ -169,6 +164,9 @@ namespace stark
     std::string getModuleName() { return moduleName; }
     void setModuleName(std::string name) { moduleName = name; }
 
+    /** Returns llvm module of the context.
+     * Be careful : it is only available during code generation
+     * */
     Module *getLLvmModule() { return llvmModule; }
   };
 
