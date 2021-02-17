@@ -25,6 +25,7 @@ namespace stark
         void checkAllowedFunctionDeclaration(ASTIdentifier *functionId);
         void checkAllowedFunctionCall(ASTIdentifier *functionId, Function *function, std::vector<Value *> args);
         void checkVariableAssignment(ASTIdentifier *variableId, Value *variable, Value *value);
+        void checkAllowedModuleDeclaration(ASTIdentifier *moduleId);
     };
 
 } // namespace stark

@@ -2,6 +2,11 @@
 
 namespace stark
 {
+    static bool compareStatements(ASTStatement *first, ASTStatement *second)
+    {
+        return first->getPriority() < second->getPriority();
+    }
+
     /** Creates a deep copy of a ASTStatementList */
     static ASTStatementList cloneList(ASTStatementList list)
     {
@@ -191,9 +196,19 @@ namespace stark
 
     void ASTBlock::preprend(ASTBlock *block)
     {
+
+        int offset = 0;
+        if (this->statements.size() > 0)
+        {
+            if (dynamic_cast<ASTModuleDeclaration *>(this->statements[0]))
+            {
+                offset = 1;
+            }
+        }
+
         // Insert a clone of each statement of the new block
         ASTStatementList clonedSts = cloneList(block->statements);
-        statements.insert(statements.begin(), clonedSts.begin(), clonedSts.end());
+        statements.insert(statements.begin() + offset, clonedSts.begin(), clonedSts.end());
     }
 
     void ASTBlock::accept(ASTVisitor *visitor) { visitor->visit(this); }
@@ -203,6 +218,11 @@ namespace stark
         ASTBlock *clone = new ASTBlock();
         clone->statements = cloneList(this->statements);
         return clone;
+    }
+
+    void ASTBlock::sort()
+    {
+        std::sort (statements.begin(), statements.end(), compareStatements);
     }
 
     // ASTAssignment
@@ -369,6 +389,14 @@ namespace stark
     {
         ASTVariableList arguments = cloneList(this->getArguments());
         return new ASTFunctionDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+    }
+
+    // ASTModuleDeclaration
+    void ASTModuleDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTModuleDeclaration *ASTModuleDeclaration::clone()
+    {
+        return new ASTModuleDeclaration(this->getId()->clone());
     }
 
 } // namespace stark

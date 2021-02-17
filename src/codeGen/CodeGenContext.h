@@ -141,7 +141,7 @@ namespace stark
     void declareLocal(CodeGenVariable *var);
     CodeGenVariable *getLocal(std::string name);
 
-    BasicBlock *getCurrentBlock() { return blocks.top()->block; }
+    BasicBlock *getCurrentBlock() { return blocks.size() > 0 ? blocks.top()->block : nullptr; }
     void pushBlock(BasicBlock *block);
     void pushBlock(BasicBlock *block, bool inheritLocals);
     void popBlock();
@@ -167,6 +167,7 @@ namespace stark
     bool isRuntimeFunctionName(std::string functionName);
 
     std::string getModuleName() { return moduleName; }
+    void setModuleName(std::string name) { moduleName = name; }
 
     Module *getLLvmModule() { return llvmModule; }
   };

@@ -44,6 +44,7 @@ namespace stark
     void visit(ASTArray *node);
     void visit(ASTTypeConversion *node);
     void visit(ASTFunctionDeclaration *node);
+    void visit(ASTModuleDeclaration *node);
 
   };
 

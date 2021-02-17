@@ -97,4 +97,12 @@ namespace stark
         }
     }
 
+    void CodeGenChecker::checkAllowedModuleDeclaration(ASTIdentifier *moduleId)
+    {
+        if (moduleId->countNestedMembers() > 0)
+        {
+            context->logger.logError(moduleId->location, formatv("invalid module identifier {0}", moduleId->getFullName()));
+        }
+    }
+
 } // namespace stark

@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
 
         // Map modules
         CompilerModuleMapper mapper;
+        mapper.setDebugEnabled(options.debug);
         std::map<std::string, std::vector<std::string>> modulesMap = mapper.map(sourceFilenames);
 
         // Build each module

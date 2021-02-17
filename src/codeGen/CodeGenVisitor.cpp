@@ -235,7 +235,28 @@ namespace stark
 
         context->logger.logDebug(node->location, "generating block");
 
+        bool isOnRoot = context->getCurrentBlock() == nullptr;
+
         ASTStatementList statements = node->getStatements();
+
+        // Look for module declaration on first statement of the root block
+        // Also : modules are not supported in interpreter mode
+        if (isOnRoot && statements.size() > 0 && !context->isInterpreterMode())
+        {
+            if (dynamic_cast<ASTModuleDeclaration *>(node->getStatements()[0]))
+            {
+                ASTModuleDeclaration *d = static_cast<ASTModuleDeclaration *>(node->getStatements()[0]);
+
+                context->getChecker()->checkAllowedModuleDeclaration(d->getId());
+
+                context->logger.logDebug(node->location, formatv("declaring module {0}", d->getId()->getFullName()));
+                context->setModuleName(d->getId()->getFullName());
+
+                // Remove from statements to process
+                statements.erase(statements.begin());
+            }
+        }
+
         for (it = statements.begin(); it != statements.end(); it++)
         {
             ASTStatement *s = *it;
@@ -472,7 +493,7 @@ namespace stark
     void CodeGenVisitor::visit(ASTExternDeclaration *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getType()->getName()));
+        context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
 
         std::string functionName = node->getId()->getName();
         ASTVariableList arguments = node->getArguments();
@@ -777,6 +798,12 @@ namespace stark
         {
             this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getName(), node->location);
         }
+    }
+
+    void CodeGenVisitor::visit(ASTModuleDeclaration *node)
+    {
+        // Module declaration must be delcared as first statement of a file : it should be never directly visited !
+        context->logger.logError(node->location, "module declaration is only supported as first statement of a file");
     }
 
 } // namespace stark

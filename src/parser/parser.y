@@ -45,12 +45,13 @@
 %token IF ELSE
 %token WHILE
 %token AS
+%token MODULE
 
 %type <ident> ident
 %type <identvec> chained_ident
 %type <expr> numeric expr str comparison array type_conversion
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl
+%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl
 %type <varvec> decl_args
 %type <exprvec> expr_args
 
@@ -84,6 +85,8 @@ stmts:
 
 stmt: 
       var_decl
+|
+      module_decl
 | 
       func_def
 |
@@ -193,6 +196,14 @@ extern_decl:
             $$->location.column = @1.begin.column;
       }
 ;
+
+module_decl:
+      MODULE ident
+      { 
+            $$ = new stark::ASTModuleDeclaration($2); 
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
 
 func_decl:
       DECLARE ident LPAREN decl_args RPAREN COLON ident

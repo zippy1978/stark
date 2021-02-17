@@ -33,6 +33,7 @@ if                      return parser::token::IF;
 else                    return parser::token::ELSE;
 while                   return parser::token::WHILE;
 as                      return parser::token::AS;
+module                  return parser::token::MODULE;
 
 [a-zA-Z_][a-zA-Z0-9_]*  return parser::token::IDENTIFIER;
 

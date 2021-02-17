@@ -32,6 +32,7 @@ namespace stark
 
     /* Set filename of the file being processed */
     void setFilename(std::string f) { filename = f; }
+    void setDebugEnabled(bool d) {debugEnabled = d;}
   };
 
 } // namespace stark

@@ -70,6 +70,9 @@ namespace stark
 
     void CompilerModule::compile(std::string filename, bool singleMode)
     {
+
+        logger.logDebug(format("Compiling module %s", name.c_str()));
+
         CodeGenModuleLinker linker(this->name);
         linker.setDebugEnabled(debugEnabled);
 
@@ -97,6 +100,9 @@ namespace stark
             // Prepend runtime declarations
             sourceBlock->preprend(runtimeDeclarations);
 
+            // Sort root block to have declarations (types, then external functions, then the rest)
+            sourceBlock->sort();
+
             // Generate IR
             CodeGenContext *context = new CodeGenContext(sourceFilename);
             context->setDebugEnabled(debugEnabled);
@@ -109,6 +115,7 @@ namespace stark
         delete runtimeDeclarations;
 
         // Link generated code
+        logger.logDebug(format("Linking module %s", name.c_str()));
         linker.link();
 
         // Write code

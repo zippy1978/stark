@@ -89,6 +89,7 @@ test_interpreter: stark
 test_compiler: starkc runtime
 	@cd $(ROOT_DIR)/test/compiler/singlefile && make
 	@cd $(ROOT_DIR)/test/compiler/multiplefiles && make
+	@cd $(ROOT_DIR)/test/compiler/multiplemodules && make
 
 test: test_lang test_interpreter test_compiler
 

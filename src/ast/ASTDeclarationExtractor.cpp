@@ -51,5 +51,6 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTArray *node) {}
     void ASTDeclarationExtractor::visit(ASTTypeConversion *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionDeclaration *node) {}
+    void ASTDeclarationExtractor::visit(ASTModuleDeclaration *node) {}
 
 } // namespace stark
