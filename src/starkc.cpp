@@ -21,6 +21,7 @@ typedef struct
 {
     bool debug = false;
     bool version = false;
+    bool moduleMode = false;
     int argc = 0;
     char **argv = nullptr;
     bool error = false;
@@ -36,7 +37,7 @@ void printUsage()
               << "USAGE: starkc [options] filename" << std::endl;
     std::cout << std::endl
               << "OPTIONS:" << std::endl;
-    std::cout << "  -o      Output file name (if single module to build) or directory (if multiple modules to build)" << std::endl;
+    std::cout << "  -o      Output file name or directory name (for modules)" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
 }
@@ -148,6 +149,16 @@ int main(int argc, char *argv[])
         mapper.setDebugEnabled(options.debug);
         std::map<std::string, std::vector<std::string>> modulesMap = mapper.map(sourceFilenames);
 
+        // Do sources contain a main module ?
+        bool containsMainModule = (modulesMap.find("main") != modulesMap.end());
+
+        if (containsMainModule && modulesMap.size() > 1) 
+        {
+            std::cerr << "Cannot compile main executable and modules at the same time" << std::endl;
+            exit(1);
+        }
+        
+
         // Build each module
         for (auto it = modulesMap.begin(); it != modulesMap.end(); it++)
         {
@@ -158,13 +169,7 @@ int main(int argc, char *argv[])
             module.setDebugEnabled(options.debug);
             module.addSourceFiles(moduleSourceFilenames);
 
-            // TODO if multiple modules but includes main module : link all modules in a single .bc !
-            // If no main : output separated .bc in folder for each module
-            
-            // TODO : compile should not write to file !
-            // multi module linking and write to file should be handled later !
-            // final module linking should be done by a link(vector CompilerModule)
-            module.compile(options.outputfile, modulesMap.size() == 1);
+            module.compile(options.outputfile);
         }
     }
 

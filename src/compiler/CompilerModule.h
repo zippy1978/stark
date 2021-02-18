@@ -47,7 +47,7 @@ namespace stark
          * Compile module and output result to file name (can be a directory).
          * set singleMode to true to build .bc as a file name
          */
-        void compile(std::string filename, bool singleMode);
+        void compile(std::string filename);
     };
 
 } // namespace stark

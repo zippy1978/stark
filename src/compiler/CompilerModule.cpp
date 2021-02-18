@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <strstream>
+#include <sys/stat.h>
 
 #include "../codeGen/CodeGen.h"
 #include "../runtime/Runtime.h"
@@ -68,7 +69,7 @@ namespace stark
         }
     }
 
-    void CompilerModule::compile(std::string filename, bool singleMode)
+    void CompilerModule::compile(std::string filename)
     {
 
         logger.logDebug(format("Compiling module %s", name.c_str()));
@@ -122,8 +123,24 @@ namespace stark
         CodeGenBitcode *moduleCode = linker.link();
 
         // Write code
-        // TODO : if not singleMode, handle module packaging !
-        moduleCode->write(filename);
+
+        // Main module
+        if (name.compare("main") == 0)
+        {
+            moduleCode->write(filename);
+        }
+        // Other module : create directory layout
+        else
+        {
+            std::string moduleDir = filename.append("/").append(name);
+            if (mkdir(moduleDir.c_str(), 0700) == -1) logger.logError(format("Cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
+            
+            // Write bitcode
+            moduleCode->write(moduleDir.append("/").append(name).append(".bc"));
+
+            // Write sth header 
+            // TODO
+        }
 
         delete moduleCode;
     }
