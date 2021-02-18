@@ -43,7 +43,7 @@ namespace stark
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenFileContext *context)
     {
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Array case : must point to index element
@@ -60,7 +60,7 @@ namespace stark
             // Evaluate index expression
             CodeGenVisitor vi(context);
             identifier->getIndex()->accept(&vi);
-            Value *indexExprAsInt32 = Builder.CreateIntCast(vi.result, Type::getInt32Ty(context->llvmContext), false);
+            Value *indexExprAsInt32 = Builder.CreateIntCast(vi.result, Type::getInt32Ty(context->getLlvmContext()), false);
 
             // Get elements member
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
@@ -174,10 +174,10 @@ namespace stark
     {
         context->logger.logDebug(node->location, formatv("creating array of {0} elements", node->getArguments().size()));
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-        Type *elementType = Type::getVoidTy(context->llvmContext);
+        Type *elementType = Type::getVoidTy(context->getLlvmContext());
 
         // Generate elements and determine type
         std::vector<Value *> elementValues;
@@ -216,7 +216,7 @@ namespace stark
             context->logger.logError(node->location, formatv("undeclared identifier {0}", node->getName()));
         }
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Retrieve variable complex type
@@ -368,7 +368,7 @@ namespace stark
         // See https://llvm.org/docs/LangRef.html
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
-        BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
+        BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
 
         context->pushBlock(bblock);
 
@@ -399,7 +399,7 @@ namespace stark
         // If no return : add a default one
         if (context->getReturnValue() != nullptr)
         {
-            ReturnInst::Create(context->llvmContext, context->getReturnValue(), context->getCurrentBlock());
+            ReturnInst::Create(context->getLlvmContext(), context->getReturnValue(), context->getCurrentBlock());
         }
         else
         {
@@ -407,12 +407,12 @@ namespace stark
             {
                 // Add return to void function
                 context->logger.logDebug(node->location, formatv("adding void return in {0}.{1}", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->llvmContext, context->getCurrentBlock());
+                ReturnInst::Create(context->getLlvmContext(), context->getCurrentBlock());
             }
             else
             {
                 context->logger.logDebug(node->location, formatv("missing return in {0}.{1}, adding one with block value", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->llvmContext, v.result, context->getCurrentBlock());
+                ReturnInst::Create(context->getLlvmContext(), v.result, context->getCurrentBlock());
             }
         }
 
@@ -556,7 +556,7 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating comparison {0}", node->getOp()));
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
 
         CodeGenVisitor vl(context);
         node->getLhs()->accept(&vl);
@@ -594,7 +594,7 @@ namespace stark
             return;
         }
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
 
         // Generate condition code
         CodeGenVisitor vc(context);
@@ -604,11 +604,11 @@ namespace stark
         Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
-        BasicBlock *ifBlock = BasicBlock::Create(context->llvmContext, "if", currentFunction);
+        BasicBlock *ifBlock = BasicBlock::Create(context->getLlvmContext(), "if", currentFunction);
         BasicBlock *elseBlock = nullptr;
         if (generateElseBlock)
-            elseBlock = BasicBlock::Create(context->llvmContext, "else");
-        BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "ifcont");
+            elseBlock = BasicBlock::Create(context->getLlvmContext(), "else");
+        BasicBlock *mergeBlock = BasicBlock::Create(context->getLlvmContext(), "ifcont");
 
         // Create condition
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -700,15 +700,15 @@ namespace stark
             return;
         }
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
 
         // Get the function of the current block fon instertion
         Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
-        BasicBlock *whileTestBlock = BasicBlock::Create(context->llvmContext, "whiletest", currentFunction);
-        BasicBlock *whileBlock = BasicBlock::Create(context->llvmContext, "while");
-        BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "whilecont");
+        BasicBlock *whileTestBlock = BasicBlock::Create(context->getLlvmContext(), "whiletest", currentFunction);
+        BasicBlock *whileBlock = BasicBlock::Create(context->getLlvmContext(), "while");
+        BasicBlock *mergeBlock = BasicBlock::Create(context->getLlvmContext(), "whilecont");
 
         // Branch to test block
         Builder.SetInsertPoint(context->getCurrentBlock());

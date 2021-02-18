@@ -7,8 +7,8 @@
 namespace stark
 {
 
-    CodeGenVoidType::CodeGenVoidType(CodeGenFileContext *context) : CodeGenPrimaryType("void", context, Type::getVoidTy(context->llvmContext), "void") {}
-    CodeGenAnyType::CodeGenAnyType(CodeGenFileContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->llvmContext), "i8*") {}
+    CodeGenVoidType::CodeGenVoidType(CodeGenFileContext *context) : CodeGenPrimaryType("void", context, Type::getVoidTy(context->getLlvmContext()), "void") {}
+    CodeGenAnyType::CodeGenAnyType(CodeGenFileContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->getLlvmContext()), "i8*") {}
 
     Value *CodeGenPrimaryType::convert(Value *value, std::string typeName, FileLocation location)
     {

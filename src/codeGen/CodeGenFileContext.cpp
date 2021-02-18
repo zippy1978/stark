@@ -242,7 +242,7 @@ namespace stark
 	CodeGenBitcode *CodeGenFileContext::generateCode(ASTBlock *root)
 	{
 		// Create module
-		llvmModule = new Module(filename, llvmContext);
+		llvmModule = new Module(filename, getLlvmContext());
 
 		// Configure logger
 		logger.debugEnabled = this->debugEnabled;
@@ -264,9 +264,9 @@ namespace stark
 			// Create the top level interpreter function to call as entry
 			vector<Type *> argTypes;
 			argTypes.push_back(getArrayComplexType("string")->getType());
-			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
+			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(getLlvmContext()), makeArrayRef(argTypes), false);
 			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
-			BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
+			BasicBlock *bblock = BasicBlock::Create(getLlvmContext(), "entry", mainFunction, 0);
 
 			// Push a new variable/block context
 			pushBlock(bblock);
@@ -274,7 +274,7 @@ namespace stark
 			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
 			declareLocal(argsVar);
 
-			IRBuilder<> Builder(llvmContext);
+			IRBuilder<> Builder(getLlvmContext());
 			Builder.SetInsertPoint(getCurrentBlock());
 
 			// Get argc and argv values
@@ -289,13 +289,13 @@ namespace stark
 			// No return provided on main function, add a default return to the block (with 0 return)
 			if (this->getReturnValue() != nullptr)
 			{
-				ReturnInst::Create(llvmContext, this->getReturnValue(), getCurrentBlock());
+				ReturnInst::Create(getLlvmContext(), this->getReturnValue(), getCurrentBlock());
 			}
 			else
 			{
 				// If no return : return 0
 				logger.logDebug(formatv("not return on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
-				ReturnInst::Create(llvmContext, ConstantInt::get(Type::getInt32Ty(llvmContext), 0, true), getCurrentBlock());
+				ReturnInst::Create(getLlvmContext(), ConstantInt::get(Type::getInt32Ty(getLlvmContext()), 0, true), getCurrentBlock());
 			}
 
 			popBlock();

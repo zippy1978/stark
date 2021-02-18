@@ -36,7 +36,7 @@ namespace stark
         }
 
         // Build and store struct type
-        type = StructType::create(context->llvmContext, memberTypes, name, false);
+        type = StructType::create(context->getLlvmContext(), memberTypes, name, false);
     }
 
     CodeGenComplexTypeMember *CodeGenComplexType::getMember(std::string name)

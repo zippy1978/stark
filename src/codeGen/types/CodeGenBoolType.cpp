@@ -7,7 +7,7 @@
 namespace stark
 {
 
-    CodeGenBoolType::CodeGenBoolType(CodeGenFileContext *context) : CodeGenPrimaryType("bool", context, Type::getInt1Ty(context->llvmContext), "i1") {}
+    CodeGenBoolType::CodeGenBoolType(CodeGenFileContext *context) : CodeGenPrimaryType("bool", context, Type::getInt1Ty(context->getLlvmContext()), "i1") {}
 
     Value *CodeGenBoolType::convert(Value *value, std::string typeName, FileLocation location)
     {
@@ -58,7 +58,7 @@ namespace stark
 
     Value *CodeGenBoolType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;
@@ -80,7 +80,7 @@ namespace stark
 
     Value *CodeGenBoolType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;

@@ -6,7 +6,7 @@
 
 namespace stark
 {
-    CodeGenDoubleType::CodeGenDoubleType(CodeGenFileContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->llvmContext), "double") {}
+    CodeGenDoubleType::CodeGenDoubleType(CodeGenFileContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->getLlvmContext()), "double") {}
 
     Value *CodeGenDoubleType::convert(Value *value, std::string typeName, FileLocation location)
     {
@@ -41,7 +41,7 @@ namespace stark
 
     Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;
@@ -72,7 +72,7 @@ namespace stark
 
     Value *CodeGenDoubleType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;

@@ -109,8 +109,6 @@ namespace stark
             CodeGenBitcode *code = context->generateCode(sourceBlock);
 
             // Maintain context until module is compiled
-            // TODO : maybe maintain the context (LLVMContext) in an object above CogeGenContext
-            // Then, it will be not necessary to maintain file contexts anymore
             contexts.push_back(std::unique_ptr<CodeGenFileContext>(context));
 
             // Add to linker

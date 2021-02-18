@@ -23,7 +23,7 @@ namespace stark
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
          // Alloc inner array
@@ -36,8 +36,8 @@ namespace stark
         for (auto it = values.begin(); it != values.end(); it++)
         {
             std::vector<llvm::Value *> indices;
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, index, true)));
+            indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, 0, true)));
+            indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, index, true)));
             Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;
