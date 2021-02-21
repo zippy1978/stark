@@ -21,7 +21,6 @@ typedef struct
 {
     bool debug = false;
     bool version = false;
-    bool moduleMode = false;
     int argc = 0;
     char **argv = nullptr;
     bool error = false;
@@ -152,12 +151,11 @@ int main(int argc, char *argv[])
         // Do sources contain a main module ?
         bool containsMainModule = (modulesMap.find("main") != modulesMap.end());
 
-        if (containsMainModule && modulesMap.size() > 1) 
+        if (containsMainModule && modulesMap.size() > 1)
         {
             std::cerr << "Cannot compile main executable and modules at the same time" << std::endl;
             exit(1);
         }
-        
 
         // Build each module
         for (auto it = modulesMap.begin(); it != modulesMap.end(); it++)
@@ -165,11 +163,13 @@ int main(int argc, char *argv[])
             std::string moduleName = it->first;
             std::vector<std::string> moduleSourceFilenames = it->second;
 
-            CompilerModule module(moduleName);
-            module.setDebugEnabled(options.debug);
-            module.addSourceFiles(moduleSourceFilenames);
+            CompilerModuleBuilder moduleBuilder(moduleName);
+            moduleBuilder.setDebugEnabled(options.debug);
+            moduleBuilder.addSourceFiles(moduleSourceFilenames);
 
-            module.compile(options.outputfile);
+            CompilerModule *module = moduleBuilder.build();
+            module->write(options.outputfile);
+            delete module;
         }
     }
 
