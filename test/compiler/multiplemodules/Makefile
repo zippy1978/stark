@@ -7,6 +7,7 @@ LIB_PATH = ../../../bin
 
 
 modules:
+	rm -rf $(OUT_DIR)/modules
 	mkdir -p $(OUT_DIR)/modules
 	$(STARKC) -d -o ./$(OUT_DIR)/modules company/functions.st company/types.st
 

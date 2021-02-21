@@ -133,13 +133,37 @@ namespace stark
         else
         {
             std::string moduleDir = filename.append("/").append(name);
-            if (mkdir(moduleDir.c_str(), 0700) == -1) logger.logError(format("Cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
-            
-            // Write bitcode
-            moduleCode->write(moduleDir.append("/").append(name).append(".bc"));
+            if (mkdir(moduleDir.c_str(), 0700) == -1)
+                logger.logError(format("Cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
 
-            // Write sth header 
-            // TODO
+            // Write bitcode
+            std::string bitcodeFilename = moduleDir;
+            bitcodeFilename.append("/").append(name).append(".bc");
+            moduleCode->write(bitcodeFilename);
+
+            // Merge declarations
+            ASTBlock moduleDelcarations;
+            for (auto it = declarationASTs.begin(); it != declarationASTs.end(); it++)
+            {
+                ASTBlock *d = it->second.get();
+                moduleDelcarations.preprend(d);
+            }
+            moduleDelcarations.sort();
+
+            // Write .sth header
+            ASTWriter writer;
+            writer.visit(&moduleDelcarations);
+            std::string sthSource = writer.getSourceCode();
+            logger.logDebug(format("Generated sth : \n%s", sthSource.c_str()));
+            std::string sthFilename = moduleDir;
+            sthFilename.append("/").append(name).append(".sth");
+            std::ofstream out(sthFilename);
+            if (!out.is_open())
+            {
+                logger.logError(format("Failed to create file %s", sthFilename.c_str()));
+            }
+            out << sthSource;
+            out.close();
         }
 
         delete moduleCode;

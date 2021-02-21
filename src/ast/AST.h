@@ -3,5 +3,6 @@
 
 #include "ASTNode.h"
 #include "ASTDeclarationExtractor.h"
+#include "ASTWriter.h"
 
 #endif
