@@ -395,6 +395,18 @@ namespace stark
     int getPriority() { return 0; }
   };
 
+  class ASTImportDeclaration : public ASTStatement
+  {
+    std::unique_ptr<ASTIdentifier> id;
+
+  public:
+    ASTImportDeclaration(ASTIdentifier *id) : id(id) {}
+    ASTIdentifier *getId() { return id.get(); }
+    void accept(ASTVisitor *visitor);
+    ASTImportDeclaration *clone();
+    int getPriority() { return 0; }
+  };
+
   /*
  * Virtual class to visit the AST.
  */
@@ -423,6 +435,7 @@ namespace stark
     virtual void visit(ASTTypeConversion *node) = 0;
     virtual void visit(ASTFunctionDeclaration *node) = 0;
     virtual void visit(ASTModuleDeclaration *node) = 0;
+    virtual void visit(ASTImportDeclaration *node) = 0;
   };
 
 } // namespace stark

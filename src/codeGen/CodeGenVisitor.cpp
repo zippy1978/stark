@@ -807,4 +807,9 @@ namespace stark
         context->logger.logError(node->location, "module declaration is only supported as first statement of a file");
     }
 
+    void CodeGenVisitor::visit(ASTImportDeclaration *node)
+    {
+        // Does not generate any code
+    }
+
 } // namespace stark

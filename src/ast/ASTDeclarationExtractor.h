@@ -38,6 +38,7 @@ namespace stark
     void visit(ASTTypeConversion *node);
     void visit(ASTFunctionDeclaration *node);
     void visit(ASTModuleDeclaration *node);
+    void visit(ASTImportDeclaration *node);
     ASTBlock *getDeclarationBlock() { return declarationBlock.get(); }
   };
 

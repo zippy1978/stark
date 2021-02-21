@@ -101,6 +101,9 @@ namespace stark
             // Prepend runtime declarations
             sourceBlock->preprend(runtimeDeclarations);
 
+            // Prempned imported modules declaration
+            // TODO
+
             // Sort root block to have declarations first (types, then external functions, then the rest)
             sourceBlock->sort();
 

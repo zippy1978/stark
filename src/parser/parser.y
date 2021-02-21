@@ -45,13 +45,13 @@
 %token IF ELSE
 %token WHILE
 %token AS
-%token MODULE
+%token MODULE IMPORT
 
 %type <ident> ident
 %type <identvec> chained_ident
 %type <expr> numeric expr str comparison array type_conversion
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl
+%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl module_import
 %type <varvec> decl_args
 %type <exprvec> expr_args
 
@@ -87,6 +87,8 @@ stmt:
       var_decl
 |
       module_decl
+|
+      module_import
 | 
       func_def
 |
@@ -115,6 +117,7 @@ while_stmt:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
+;
 
 if_else_stmt:
       IF expr block
@@ -197,6 +200,15 @@ extern_decl:
       }
 ;
 
+module_import:
+      IMPORT ident
+      {
+            $$ = new stark::ASTImportDeclaration($2); 
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+;
+
 module_decl:
       MODULE ident
       { 
@@ -204,6 +216,7 @@ module_decl:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
+;
 
 func_decl:
       DECLARE ident LPAREN decl_args RPAREN COLON ident
@@ -404,6 +417,7 @@ type_conversion:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
+;
 
 comparison:
       expr COMP_EQ expr 

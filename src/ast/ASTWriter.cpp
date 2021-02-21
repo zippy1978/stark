@@ -6,14 +6,17 @@ namespace stark
     {
         output << node->getValue();
     }
+
     void ASTWriter::visit(ASTBoolean *node)
     {
         node->getValue() ? output << "true" : output << "false";
     }
+
     void ASTWriter::visit(ASTDouble *node)
     {
         output << node->getValue();
     }
+
     void ASTWriter::visit(ASTIdentifier *node)
     {
 
@@ -32,11 +35,13 @@ namespace stark
             node->getMember()->accept(this);
         }
     }
+
     void ASTWriter::visit(ASTString *node)
     {
 
         output << "\"" << node->getValue() << "\"";
     }
+
     void ASTWriter::visit(ASTBlock *node)
     {
         ASTStatementList sts = node->getStatements();
@@ -47,16 +52,19 @@ namespace stark
             output << std::endl;
         }
     }
+
     void ASTWriter::visit(ASTAssignment *node)
     {
         node->getLhs()->accept(this);
         output << " = ";
         node->getRhs()->accept(this);
     }
+
     void ASTWriter::visit(ASTExpressionStatement *node)
     {
         node->getExpression()->accept(this);
     }
+
     void ASTWriter::visit(ASTVariableDeclaration *node)
     {
         node->getId()->accept(this);
@@ -68,6 +76,7 @@ namespace stark
             node->getAssignmentExpr()->accept(this);
         }
     }
+
     void ASTWriter::visit(ASTFunctionDefinition *node)
     {
         output << "func ";
@@ -92,6 +101,7 @@ namespace stark
         node->getBlock()->accept(this);
         output << "}";
     }
+
     void ASTWriter::visit(ASTFunctionCall *node)
     {
         node->getId()->accept(this);
@@ -109,6 +119,7 @@ namespace stark
             i++;
         }
     }
+
     void ASTWriter::visit(ASTExternDeclaration *node)
     {
 
@@ -131,12 +142,14 @@ namespace stark
         output << "): ";
         node->getType()->accept(this);
     }
+
     void ASTWriter::visit(ASTReturnStatement *node)
     {
 
         output << "return ";
         node->getExpression()->accept(this);
     }
+
     void ASTWriter::visit(ASTBinaryOperation *node)
     {
         node->getLhs()->accept(this);
@@ -166,6 +179,7 @@ namespace stark
         }
         node->getRhs()->accept(this);
     }
+
     void ASTWriter::visit(ASTComparison *node)
     {
         node->getLhs()->accept(this);
@@ -195,6 +209,7 @@ namespace stark
         }
         node->getRhs()->accept(this);
     }
+
     void ASTWriter::visit(ASTIfElseStatement *node)
     {
         output << "if (";
@@ -208,6 +223,7 @@ namespace stark
         }
         output << "}";
     }
+
     void ASTWriter::visit(ASTWhileStatement *node)
     {
         output << "while (";
@@ -216,6 +232,7 @@ namespace stark
         node->getBlock()->accept(this);
         output << "}";
     }
+
     void ASTWriter::visit(ASTStructDeclaration *node)
     {
         output << "struct ";
@@ -235,6 +252,7 @@ namespace stark
         }
         output << "}";
     }
+
     void ASTWriter::visit(ASTArray *node)
     {
         output << "[";
@@ -252,12 +270,14 @@ namespace stark
         }
         output << "]";
     }
+
     void ASTWriter::visit(ASTTypeConversion *node)
     {
         node->getExpression()->accept(this);
         output << " as ";
         node->getType()->accept(this);
     }
+
     void ASTWriter::visit(ASTFunctionDeclaration *node)
     {
         output << "declare ";
@@ -279,9 +299,16 @@ namespace stark
         output << "): ";
         node->getType()->accept(this);
     }
+
     void ASTWriter::visit(ASTModuleDeclaration *node)
     {
         output << "module ";
+        node->getId()->accept(this);
+    }
+
+    void ASTWriter::visit(ASTImportDeclaration *node)
+    {
+        output << "import ";
         node->getId()->accept(this);
     }
 

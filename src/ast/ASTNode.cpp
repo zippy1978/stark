@@ -441,4 +441,14 @@ namespace stark
         return clone;
     }
 
+    // ASTImportDeclaration
+    void ASTImportDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTImportDeclaration *ASTImportDeclaration::clone()
+    {
+        ASTImportDeclaration *clone = new ASTImportDeclaration(this->getId()->clone());
+        clone->location = this->location;
+        return clone;
+    }
+
 } // namespace stark
