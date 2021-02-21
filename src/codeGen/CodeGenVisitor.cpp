@@ -208,6 +208,7 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
+
         context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->getFullName()));
 
         CodeGenVariable *var = context->getLocal(node->getName());

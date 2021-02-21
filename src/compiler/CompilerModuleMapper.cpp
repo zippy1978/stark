@@ -9,7 +9,7 @@ namespace stark
 {
     std::map<std::string, std::vector<std::string>> CompilerModuleMapper::map(std::vector<std::string> sourceFilenames)
     {
-        logger.logDebug("Analyzing modules");
+        logger.logDebug("analyzing modules");
 
         std::map<std::string, std::vector<std::string>> result;
 
@@ -20,7 +20,7 @@ namespace stark
             std::ifstream input(sourceFilename);
             if (!input)
             {
-                logger.logError(format("Cannot open input file: %s", sourceFilename.c_str()));
+                logger.logError(format("cannot open input file: %s", sourceFilename.c_str()));
             }
 
             StarkParser parser(sourceFilename);

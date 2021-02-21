@@ -53,7 +53,7 @@ namespace stark
         std::ifstream input(filename);
         if (!input)
         {
-            logger.logError(format("Cannot open input file: %s", filename.c_str()));
+            logger.logError(format("cannot open input file: %s", filename.c_str()));
         }
 
         // Parse source file and add to module source ASTs
@@ -72,7 +72,7 @@ namespace stark
     void CompilerModule::compile(std::string filename)
     {
 
-        logger.logDebug(format("Compiling module %s", name.c_str()));
+        logger.logDebug(format("compiling module %s", name.c_str()));
 
         CodeGenBitcodeLinker linker(this->name);
         linker.setDebugEnabled(debugEnabled);
@@ -119,7 +119,7 @@ namespace stark
         delete runtimeDeclarations;
 
         // Link generated code
-        logger.logDebug(format("Linking module %s", name.c_str()));
+        logger.logDebug(format("linking module %s", name.c_str()));
         CodeGenBitcode *moduleCode = linker.link();
 
         // Write code
@@ -134,7 +134,7 @@ namespace stark
         {
             std::string moduleDir = filename.append("/").append(name);
             if (mkdir(moduleDir.c_str(), 0700) == -1)
-                logger.logError(format("Cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
+                logger.logError(format("cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
 
             // Write bitcode
             std::string bitcodeFilename = moduleDir;
@@ -154,13 +154,13 @@ namespace stark
             ASTWriter writer;
             writer.visit(&moduleDelcarations);
             std::string sthSource = writer.getSourceCode();
-            logger.logDebug(format("Generated sth : \n%s", sthSource.c_str()));
+            logger.logDebug(format("generated .sth : \n%s", sthSource.c_str()));
             std::string sthFilename = moduleDir;
             sthFilename.append("/").append(name).append(".sth");
             std::ofstream out(sthFilename);
             if (!out.is_open())
             {
-                logger.logError(format("Failed to create file %s", sthFilename.c_str()));
+                logger.logError(format("failed to create file %s", sthFilename.c_str()));
             }
             out << sthSource;
             out.close();
