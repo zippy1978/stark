@@ -9,6 +9,7 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/FormatVariadic.h>
 
+#include "CodeGenConstants.h"
 #include "CodeGenVisitor.h"
 
 using namespace std;
@@ -810,6 +811,26 @@ namespace stark
     void CodeGenVisitor::visit(ASTImportDeclaration *node)
     {
         // Does not generate any code
+        // Import declaration is only allowed on root
+
+        // Compiler mode
+        if (!context->isInterpreterMode())
+        {
+            bool isOnRoot = context->getCurrentBlock() == nullptr;
+            if (!isOnRoot)
+            {
+                context->logger.logError(node->location, "import declaration is not allowed inside a block");
+            }
+        }
+        // Interpreter mode
+        else
+        {
+            bool isInMain = context->getCurrentBlock()->getParent()->getName().compare(MAIN_FUNCTION_NAME) == 0;
+            if (!isInMain)
+            {
+                context->logger.logError(node->location, "import declaration is not allowed inside a block");
+            }
+        }
     }
 
 } // namespace stark
