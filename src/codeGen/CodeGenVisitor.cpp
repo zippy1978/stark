@@ -813,6 +813,10 @@ namespace stark
         // Does not generate any code
         // Import declaration is only allowed on root
 
+        // TODO: make sure that the imported module was not already imported !
+        // And that identifier format is ok
+        // >> add a check
+
         // Compiler mode
         if (!context->isInterpreterMode())
         {

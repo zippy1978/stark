@@ -1,10 +1,12 @@
 all: test
 
+.EXPORT_ALL_VARIABLES:
+
 PROGRAM_NAME= multiplemodules
 OUT_DIR = ../../../bin/test/$(PROGRAM_NAME)
 STARKC = ../../../bin/starkc
 LIB_PATH = ../../../bin
-
+STARK_MODULE_PATH=$(OUT_DIR)/modules
 
 modules:
 	rm -rf $(OUT_DIR)/modules

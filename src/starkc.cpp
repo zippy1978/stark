@@ -157,13 +157,20 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
+        // Get module search paths
+        std::vector<std::string> searchPaths;
+        if (const char *modulePath = std::getenv("STARK_MODULE_PATH")) {
+            searchPaths = split(modulePath, ':');
+        }
+            
+
         // Build each module
         for (auto it = modulesMap.begin(); it != modulesMap.end(); it++)
         {
             std::string moduleName = it->first;
             std::vector<std::string> moduleSourceFilenames = it->second;
 
-            CompilerModuleBuilder moduleBuilder(moduleName);
+            CompilerModuleBuilder moduleBuilder(moduleName, new CompilerModuleResolver(searchPaths));
             moduleBuilder.setDebugEnabled(options.debug);
             moduleBuilder.addSourceFiles(moduleSourceFilenames);
 

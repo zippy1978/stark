@@ -19,11 +19,11 @@ namespace stark
             std::string moduleDir = filename.append("/").append(name);
 
             if (mkdir(moduleDir.c_str(), 0700) == -1)
-                throw format("cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno));
+                logger.logError(format("cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
 
             // Write bitcode
             std::string bitcodeFilename = moduleDir;
-            bitcodeFilename.append("/").append(name).append(".bc"); 
+            bitcodeFilename.append("/").append(name).append(".bc");
             bitcode.get()->write(bitcodeFilename);
 
             // Write .sth header
@@ -32,7 +32,7 @@ namespace stark
             std::ofstream out(sthFilename);
             if (!out.is_open())
             {
-                throw format("failed to create file %s", sthFilename.c_str());
+                logger.logError(format("failed to create file %s", sthFilename.c_str()));
             }
             out << headerCode;
             out.close();
@@ -41,6 +41,39 @@ namespace stark
         else
         {
             bitcode.get()->write(filename);
+        }
+    }
+
+    void CompilerModule::load(std::string filename)
+    {
+        struct stat buf;
+        stat(filename.c_str(), &buf);
+        bool isDirectory = S_ISDIR(buf.st_mode);
+
+        // TODO
+        // If filename is a file
+        if (!isDirectory)
+        {
+            // Load bitcode
+            bitcode = std::make_unique<CodeGenBitcode>(nullptr);
+            bitcode.get()->load(filename);
+        }
+        // If filename is a directory
+        else
+        {
+            // Load bitcode
+            bitcode = std::make_unique<CodeGenBitcode>(nullptr);
+            std::string bitcodePath = filename;
+            bitcodePath.append("/").append(name).append(".bc");
+            bitcode.get()->load(bitcodePath);
+
+            // Load header code
+            std::string headerPath = filename;
+            headerPath.append("/").append(name).append(".sth");
+            std::ifstream t(headerPath);
+            std::string str((std::istreambuf_iterator<char>(t)),
+            std::istreambuf_iterator<char>());
+            headerCode = str;
         }
     }
 }

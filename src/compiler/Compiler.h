@@ -4,5 +4,6 @@
 #include "CompilerModuleBuilder.h"
 #include "CompilerModule.h"
 #include "CompilerModuleMapper.h"
+#include "CompilerModuleResolver.h"
 
 #endif

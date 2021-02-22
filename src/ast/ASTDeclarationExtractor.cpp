@@ -31,6 +31,7 @@ namespace stark
                 clonedArguments.push_back(s->clone());
             }
 
+            // TODO : declare with mdule name !!!
             ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->getType()->clone(), node->getId()->clone(), clonedArguments);
             declarationBlock->addStatement(fd);
         }

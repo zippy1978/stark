@@ -24,12 +24,19 @@ namespace stark
         /** Module header declarations of the module as stark source code */
         std::string headerCode = "";
 
+        Logger logger;
+
     public:
         CompilerModule(std::string name) : name(name) {}
         CompilerModule(std::string name, CodeGenBitcode *bitcode, std::string headerCode) : name(name), bitcode(bitcode), headerCode(headerCode) {}
+        std::string getHeaderCode() { return headerCode; }
+        CodeGenBitcode *getBitcode() { return bitcode.get(); }
 
         /** Write module to the given file name (or directory name if it has a header). */
         void write(std::string filename);
+
+        /** Load module from a file name or directory name. */
+        void load(std::string filename);
     };
 
 } // namespace stark

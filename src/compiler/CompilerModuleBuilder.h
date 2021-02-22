@@ -9,6 +9,7 @@
 #include "../ast/AST.h"
 
 #include "CompilerModule.h"
+#include "CompilerModuleResolver.h"
 
 namespace stark
 {
@@ -19,13 +20,44 @@ namespace stark
     class CompilerModuleBuilder
     {
         std::string name;
+
+        /** 
+         * Map holding parsed sources AST.
+         * Key is the source file name.
+         * */
         std::map<std::string, std::unique_ptr<ASTBlock>> sourceASTs;
+
+        /**
+         * Map holding declarations AST (to export).
+         * Key is the source file name.
+         * */
         std::map<std::string, std::unique_ptr<ASTBlock>> declarationASTs;
 
-        /** Holds each source file context of the module
+        /**
+         * Map holding imported external modules for this module.
+         * Key is the module name.
+         * */
+        std::map<std::string, std::unique_ptr<CompilerModule>> externalModules;
+
+        /**
+         * Map holding external modules declarations AST.
+         * Key is the module name.
+         * */
+        std::map<std::string, std::unique_ptr<ASTBlock>> externalModulesDeclarationASTs;
+
+        /**
+         * Map holding imported external modules for each source file of this module.
+         * Key is the module name.
+         * */
+        std::map<std::string, std::vector<std::string>> externalModulesMap;
+
+        /** 
+         * Holds each source file context of the module
          * They must be retained until their bitcode has been linked
          * */
         std::vector<std::unique_ptr<CodeGenFileContext>> contexts;
+
+        std::unique_ptr<CompilerModuleResolver> resolver;
 
         /** Display debug logs if enabled */
         bool debugEnabled = false;
@@ -36,10 +68,15 @@ namespace stark
 
     private:
         void extractDeclarations();
+        void extractExternalModules();
         std::vector<ASTBlock *> getDeclarationsFor(std::string filename);
+        std::vector<ASTBlock *> getExternalModulesDeclarationsFor(std::string filename);
 
     public:
-        CompilerModuleBuilder(std::string name) : name(name) { linker = std::make_unique<CodeGenBitcodeLinker>(name); }
+        CompilerModuleBuilder(std::string name, CompilerModuleResolver *resolver) : name(name), resolver(resolver)
+        {
+            linker = std::make_unique<CodeGenBitcodeLinker>(name);
+        }
         /** Add source file to the module */
         void addSourceFile(std::string filename);
         void addSourceFiles(std::vector<std::string> filenames);
