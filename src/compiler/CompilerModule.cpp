@@ -50,7 +50,6 @@ namespace stark
         stat(filename.c_str(), &buf);
         bool isDirectory = S_ISDIR(buf.st_mode);
 
-        // TODO
         // If filename is a file
         if (!isDirectory)
         {

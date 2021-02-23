@@ -29,6 +29,40 @@ namespace stark
         }
     }
 
+    std::vector<std::string> CompilerModuleBuilder::extractModules(ASTBlock *block)
+    {
+        // Look for imports
+        ASTStatementList sts = block->getStatements();
+        std::vector<std::string> moduleNames;
+        for (auto it = sts.begin(); it != sts.end(); it++)
+        {
+            if (dynamic_cast<ASTImportDeclaration *>(*it))
+            {
+                ASTImportDeclaration *i = static_cast<ASTImportDeclaration *>(*it);
+                std::string moduleName = i->getId()->getFullName();
+
+                // Resolve module
+                CompilerModule *module = resolver.get()->resolve(moduleName);
+
+                if (module == nullptr)
+                {
+                    logger.logError(format("cannot find module %s", moduleName.c_str()));
+                }
+
+                // Add loaded module to externalModules map
+                if (externalModules[moduleName].get() == nullptr)
+                {
+                    externalModules[moduleName] = std::unique_ptr<CompilerModule>(module);
+                }
+
+                // Add module name to result vector
+                moduleNames.push_back(moduleName);
+            }
+        }
+
+        return moduleNames;
+    }
+
     void CompilerModuleBuilder::extractExternalModules()
     {
 
@@ -39,34 +73,7 @@ namespace stark
 
             std::vector<std::string> sourceExternalModules;
 
-            // Look for imports
-            ASTStatementList sts = sourceBlock->getStatements();
-            for (auto it = sts.begin(); it != sts.end(); it++)
-            {
-                if (dynamic_cast<ASTImportDeclaration *>(*it))
-                {
-                    ASTImportDeclaration *i = static_cast<ASTImportDeclaration *>(*it);
-                    std::string moduleName = i->getId()->getFullName();
-
-                    // Resolve module
-                    CompilerModule *module = resolver.get()->resolve(moduleName);
-
-                    if (module == nullptr)
-                    {
-                        logger.logError(format("cannot find module %s", moduleName.c_str()));
-                    }
-
-                    // Add loaded module to externalModules map
-                    if (externalModules[moduleName].get() == nullptr)
-                    {
-                        externalModules[moduleName] = std::unique_ptr<CompilerModule>(module);
-                    }
-
-                    sourceExternalModules.push_back(moduleName);
-                }
-            }
-
-            externalModulesMap[sourceFilename] = sourceExternalModules;
+            externalModulesMap[sourceFilename] = extractModules(sourceBlock);
         }
     }
 
@@ -170,6 +177,10 @@ namespace stark
             for (auto it2 = externalModulesDeclarations.begin(); it2 != externalModulesDeclarations.end(); it2++)
             {
                 ASTBlock *block = *it2;
+
+                // Extract transitive modules
+                extractModules(block);
+
                 sourceBlock->preprend(block);
             }
 
@@ -195,18 +206,26 @@ namespace stark
 
         // Link generated code
         logger.logDebug(format("linking module %s", name.c_str()));
-        CodeGenBitcode *moduleCode = linker.get()->link();
 
         // Main module
         if (name.compare("main") == 0)
         {
             // TODO : link modules bitcode to main module !!!!!!!
 
+            // Link main module with all external modules required
+            for (auto it = externalModules.begin(); it != externalModules.end(); it++)
+            {
+                CompilerModule *m = it->second.get();
+                linker.get()->addBitcode(m->getBitcode());
+            }
+
+            CodeGenBitcode *moduleCode = linker.get()->link();
             return new CompilerModule(name, moduleCode, "");
         }
         // Other module : create directory layout
         else
         {
+            CodeGenBitcode *moduleCode = linker.get()->link();
 
             // Merge declarations
             ASTBlock moduleDelcarations;

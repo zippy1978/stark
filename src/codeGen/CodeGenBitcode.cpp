@@ -11,7 +11,6 @@ namespace stark
 
     void CodeGenBitcode::load(std::string filename)
     {
-        LLVMContext context;
         SMDiagnostic error;
         llvmModule = parseIRFile(filename, error, context).release();
     }

@@ -12,6 +12,8 @@ namespace stark
     {
         Module *llvmModule;
 
+        LLVMContext context;
+
     public:
         CodeGenBitcode(Module *llvmModule) : llvmModule(llvmModule) {}
         /** Loads bitcode from file. */

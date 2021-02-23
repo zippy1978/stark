@@ -8,12 +8,19 @@ STARKC = ../../../bin/starkc
 LIB_PATH = ../../../bin
 STARK_MODULE_PATH=$(OUT_DIR)/modules
 
-modules:
+clean:
 	rm -rf $(OUT_DIR)/modules
+
+product_module: clean
+	mkdir -p $(OUT_DIR)/modules
+	$(STARKC) -d -o ./$(OUT_DIR)/modules product/functions.st product/types.st
+
+
+company_module: product_module
 	mkdir -p $(OUT_DIR)/modules
 	$(STARKC) -d -o ./$(OUT_DIR)/modules company/functions.st company/types.st
 
-main: modules
+main: company_module
 	$(STARKC) -d -o ./$(OUT_DIR)/main.bc main.st
 	/usr/local/opt/llvm/bin/llc -filetype=obj ./$(OUT_DIR)/main.bc
 	# Link code with runtime and create binary

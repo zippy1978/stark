@@ -69,6 +69,7 @@ namespace stark
     private:
         void extractDeclarations();
         void extractExternalModules();
+        std::vector<std::string> extractModules(ASTBlock *block);
         std::vector<ASTBlock *> getDeclarationsFor(std::string filename);
         std::vector<ASTBlock *> getExternalModulesDeclarationsFor(std::string filename);
 
