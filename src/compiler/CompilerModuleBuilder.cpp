@@ -49,6 +49,12 @@ namespace stark
                     logger.logError(format("cannot find module %s", moduleName.c_str()));
                 }
 
+                // Parse module header and do recursive call
+                StarkParser parser(module->getName().append(".sth"));
+                ASTBlock* headerAST = parser.parse(module->getHeaderCode());
+                extractModules(headerAST);
+                delete headerAST;
+
                 // Add loaded module to externalModules map
                 if (externalModules[moduleName].get() == nullptr)
                 {
@@ -177,9 +183,6 @@ namespace stark
             for (auto it2 = externalModulesDeclarations.begin(); it2 != externalModulesDeclarations.end(); it2++)
             {
                 ASTBlock *block = *it2;
-
-                // Extract transitive modules
-                extractModules(block);
 
                 sourceBlock->preprend(block);
             }

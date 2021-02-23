@@ -31,6 +31,7 @@ namespace stark
         CompilerModule(std::string name, CodeGenBitcode *bitcode, std::string headerCode) : name(name), bitcode(bitcode), headerCode(headerCode) {}
         std::string getHeaderCode() { return headerCode; }
         std::unique_ptr<CodeGenBitcode> getBitcode() { return std::move(bitcode); }
+        std::string getName() { return name; }
 
         /** Write module to the given file name (or directory name if it has a header). */
         void write(std::string filename);

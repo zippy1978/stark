@@ -134,6 +134,8 @@ int main(int argc, char *argv[])
         program->preprend(declarations);
         delete declarations;
 
+        // TODO : resolve imports and link them !!!
+
         // Generate code
         CodeGenFileContext context(filename);
         context.setDebugEnabled(options.debug);
