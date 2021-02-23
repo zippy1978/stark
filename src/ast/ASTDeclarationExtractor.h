@@ -13,6 +13,7 @@ namespace stark
   class ASTDeclarationExtractor : public ASTVisitor
   {
     std::unique_ptr<ASTBlock> declarationBlock;
+    std::string moduleName = "main";
 
   public:
     ASTDeclarationExtractor() { declarationBlock = std::make_unique<ASTBlock>(); }

@@ -8,8 +8,7 @@
 #include "../util/Util.h"
 #include "../ast/AST.h"
 
-#include "CompilerModule.h"
-#include "CompilerModuleResolver.h"
+#include "CompilerModuleLoader.h"
 
 namespace stark
 {
@@ -34,12 +33,6 @@ namespace stark
         std::map<std::string, std::unique_ptr<ASTBlock>> declarationASTs;
 
         /**
-         * Map holding imported external modules for this module.
-         * Key is the module name.
-         * */
-        std::map<std::string, std::unique_ptr<CompilerModule>> externalModules;
-
-        /**
          * Map holding external modules declarations AST.
          * Key is the module name.
          * */
@@ -57,7 +50,7 @@ namespace stark
          * */
         std::vector<std::unique_ptr<CodeGenFileContext>> contexts;
 
-        std::unique_ptr<CompilerModuleResolver> resolver;
+        std::unique_ptr<CompilerModuleLoader> moduleLoader;
 
         /** Display debug logs if enabled */
         bool debugEnabled = false;
@@ -69,12 +62,11 @@ namespace stark
     private:
         void extractDeclarations();
         void extractExternalModules();
-        std::vector<std::string> extractModules(ASTBlock *block);
         std::vector<ASTBlock *> getDeclarationsFor(std::string filename);
         std::vector<ASTBlock *> getExternalModulesDeclarationsFor(std::string filename);
 
     public:
-        CompilerModuleBuilder(std::string name, CompilerModuleResolver *resolver) : name(name), resolver(resolver)
+        CompilerModuleBuilder(std::string name, CompilerModuleLoader *moduleLoader) : name(name), moduleLoader(moduleLoader)
         {
             linker = std::make_unique<CodeGenBitcodeLinker>(name);
         }

@@ -1,7 +1,7 @@
 #ifndef PARSER_STARKPARSER_H
 #define PARSER_STARKPARSER_H
 
-#include "parser.hpp"
+#include "../ast/AST.h"
 
 namespace stark
 {

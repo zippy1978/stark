@@ -3,6 +3,7 @@
 #include <FlexLexer.h>
 #include "../ast/AST.h"
 #include "../util/Util.h"
+#include "parser.hpp"
 
 #include "StarkParser.h"
 

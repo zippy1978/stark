@@ -29,46 +29,6 @@ namespace stark
         }
     }
 
-    std::vector<std::string> CompilerModuleBuilder::extractModules(ASTBlock *block)
-    {
-        // Look for imports
-        ASTStatementList sts = block->getStatements();
-        std::vector<std::string> moduleNames;
-        for (auto it = sts.begin(); it != sts.end(); it++)
-        {
-            if (dynamic_cast<ASTImportDeclaration *>(*it))
-            {
-                ASTImportDeclaration *i = static_cast<ASTImportDeclaration *>(*it);
-                std::string moduleName = i->getId()->getFullName();
-
-                // Resolve module
-                CompilerModule *module = resolver.get()->resolve(moduleName);
-
-                if (module == nullptr)
-                {
-                    logger.logError(format("cannot find module %s", moduleName.c_str()));
-                }
-
-                // Parse module header and do recursive call
-                StarkParser parser(module->getName().append(".sth"));
-                ASTBlock* headerAST = parser.parse(module->getHeaderCode());
-                extractModules(headerAST);
-                delete headerAST;
-
-                // Add loaded module to externalModules map
-                if (externalModules[moduleName].get() == nullptr)
-                {
-                    externalModules[moduleName] = std::unique_ptr<CompilerModule>(module);
-                }
-
-                // Add module name to result vector
-                moduleNames.push_back(moduleName);
-            }
-        }
-
-        return moduleNames;
-    }
-
     void CompilerModuleBuilder::extractExternalModules()
     {
 
@@ -79,7 +39,7 @@ namespace stark
 
             std::vector<std::string> sourceExternalModules;
 
-            externalModulesMap[sourceFilename] = extractModules(sourceBlock);
+            externalModulesMap[sourceFilename] = moduleLoader.get()->extractModules(sourceBlock);
         }
     }
 
@@ -114,7 +74,7 @@ namespace stark
             if (moduleDeclarationASTs == nullptr)
             {
                 // If AST not available yet : parse file and add it to map for next time
-                CompilerModule *module = externalModules[moduleName].get();
+                CompilerModule *module = moduleLoader.get()->getModule(moduleName);
                 StarkParser parser(filename);
                 moduleDeclarationASTs = parser.parse(module->getHeaderCode());
                 externalModulesDeclarationASTs[moduleName] = std::unique_ptr<ASTBlock>(moduleDeclarationASTs);
@@ -216,9 +176,10 @@ namespace stark
             // TODO : link modules bitcode to main module !!!!!!!
 
             // Link main module with all external modules required
+            std::vector<CompilerModule *> externalModules = moduleLoader.get()->getModules();
             for (auto it = externalModules.begin(); it != externalModules.end(); it++)
             {
-                CompilerModule *m = it->second.get();
+                CompilerModule *m = *it;
                 linker.get()->addBitcode(m->getBitcode());
             }
 

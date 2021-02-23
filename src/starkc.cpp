@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
             std::string moduleName = it->first;
             std::vector<std::string> moduleSourceFilenames = it->second;
 
-            CompilerModuleBuilder moduleBuilder(moduleName, new CompilerModuleResolver(searchPaths));
+            CompilerModuleBuilder moduleBuilder(moduleName, new CompilerModuleLoader(new CompilerModuleResolver(searchPaths)));
             moduleBuilder.setDebugEnabled(options.debug);
             moduleBuilder.addSourceFiles(moduleSourceFilenames);
 

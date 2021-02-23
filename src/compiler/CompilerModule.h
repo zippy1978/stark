@@ -12,7 +12,7 @@
 namespace stark
 {
     /**
-     * Represents a strak module.
+     * Represents a stark module.
      */
     class CompilerModule
     {
