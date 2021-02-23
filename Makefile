@@ -80,11 +80,16 @@ test_lang: stark
 	./$(OUT_DIR)/stark -d test/structs/declaration.st
 	./$(OUT_DIR)/stark -d test/structs/assignment.st
 	./$(OUT_DIR)/stark -d test/arrays/declaration.st
-	./$(OUT_DIR)/stark -d test/arrays/assignment.st
-	./$(OUT_DIR)/stark -d test/interpreter/args.st arg1 arg2
+	./$(OUT_DIR)/stark -d test/arrays/assignment.st	
 
-test_interpreter: stark
+test_interpreter: starkc stark
+	# Build test module
+	rm -rf $(OUT_DIR)/modules
+	mkdir -p $(OUT_DIR)/modules
+	./$(OUT_DIR)/starkc -o $(OUT_DIR)/modules test/interpreter/module.st
 	@./$(OUT_DIR)/stark -d test/interpreter/return.st && exit 1 || echo "expected return failure"
+	./$(OUT_DIR)/stark -d test/interpreter/args.st arg1 arg2
+	export STARK_MODULE_PATH=$(OUT_DIR)/modules && ./$(OUT_DIR)/stark -d test/interpreter/import.st
 
 test_compiler: starkc runtime
 	@cd $(ROOT_DIR)/test/compiler/singlefile && make

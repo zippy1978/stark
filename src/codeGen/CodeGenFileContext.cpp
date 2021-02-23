@@ -265,7 +265,7 @@ namespace stark
 			vector<Type *> argTypes;
 			argTypes.push_back(getArrayComplexType("string")->getType());
 			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(getLlvmContext()), makeArrayRef(argTypes), false);
-			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
+			mainFunction = Function::Create(ftype, GlobalValue::ExternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
 			BasicBlock *bblock = BasicBlock::Create(getLlvmContext(), "entry", mainFunction, 0);
 
 			// Push a new variable/block context

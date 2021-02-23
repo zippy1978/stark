@@ -11,6 +11,7 @@
 #include "parser/StarkParser.h"
 #include "runtime/Runtime.h"
 #include "codeGen/CodeGen.h"
+#include "compiler/Compiler.h"
 #include "util/Util.h"
 #include "version.h"
 
@@ -122,9 +123,29 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
+        // Get module search paths
+        std::vector<std::string> searchPaths;
+        if (const char *modulePath = std::getenv("STARK_MODULE_PATH")) {
+            searchPaths = split(modulePath, ':');
+        }
+
         // Parse sources
         StarkParser parser(filename);
         ASTBlock *program = parser.parse(&input);
+
+        // Load imported modules
+        CompilerModuleLoader moduleLoader(new CompilerModuleResolver(searchPaths));
+        std::vector<std::string> importedModules = moduleLoader.extractModules(program);
+
+        // Prepend imported module headers to program
+        for(auto it = importedModules.begin(); it != importedModules.end(); it++)
+        {
+            CompilerModule *m = moduleLoader.getModule(*it);
+            StarkParser headerParser(m->getName());
+            ASTBlock *headerAST = headerParser.parse(m->getHeaderCode());
+            program->preprend(headerAST);
+            delete headerAST;
+        }
 
         // Load and parse runtime declarations
         StarkParser runtimeParser("runtime");
@@ -133,9 +154,7 @@ int main(int argc, char *argv[])
         // ... And preprend it to the source AST
         program->preprend(declarations);
         delete declarations;
-
-        // TODO : resolve imports and link them !!!
-
+        
         // Generate code
         CodeGenFileContext context(filename);
         context.setDebugEnabled(options.debug);
@@ -143,10 +162,22 @@ int main(int argc, char *argv[])
         CodeGenBitcode *code = context.generateCode(program);
         delete program;
 
+        // Link modules
+        CodeGenBitcodeLinker linker("main");
+        linker.setDebugEnabled(options.debug);
+        linker.addBitcode(std::unique_ptr<CodeGenBitcode>(code));
+        std::vector<CompilerModule *> modules = moduleLoader.getModules();
+        for(auto it = modules.begin(); it != modules.end(); it++)
+        {
+            CompilerModule *m = *it;
+            linker.addBitcode(m->getBitcode());
+        }
+        CodeGenBitcode *linkedCode = linker.link();
+        
         // Run code
         CodeGenInterpreter interpreter;
-        int result = interpreter.run(code, options.argc, options.argv);
-        delete code;
+        int result = interpreter.run(linkedCode, options.argc, options.argv);
+        delete linkedCode;
         return result;
     }
 

@@ -32,6 +32,7 @@ namespace stark
     int CodeGenInterpreter::run(CodeGenBitcode *code, int argc, char *argv[])
     {
         logger.logDebug("running code...");
+        
         std::string err;
 
         LLVMInitializeNativeTarget();
