@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "ASTNode.h"
 
 namespace stark

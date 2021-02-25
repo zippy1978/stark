@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 
 #include "StringUtil.h"
 
