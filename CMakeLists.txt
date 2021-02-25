@@ -62,14 +62,15 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
 endif()
 
 # Set required versions
-set(BISON_MIN_VERSION "3.7.0")
+set(BISON_MIN_VERSION "3.5.0")
 set(FLEX_MIN_VERSION "2.6.0")
 set(LLVM_MIN_VERSION "11.0.0")
 
 # Find required packages
 find_package(BISON ${BISON_MIN_VERSION} REQUIRED)
 find_package(FLEX ${FLEX_MIN_VERSION} REQUIRED)
-find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
+#find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
+find_package(LLVM REQUIRED CONFIG)
 
 # Plug conan dependencies
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
