@@ -30,7 +30,5 @@ func main(): int {
         i = i + 1
     }
 
-
-    // Return 0 to show test program has not crashed
-    return 2
+    return 0
 }

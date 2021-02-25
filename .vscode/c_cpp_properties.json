@@ -1,24 +1,37 @@
 {
     "env": {
-      "myDefaultIncludePath": ["${workspaceFolder}", "${workspaceFolder}/include"],
-      "myCompilerPath": "/usr/bin/llvm-g++"
+        "myDefaultIncludePath": [
+            "${workspaceFolder}",
+            "${workspaceFolder}/include"
+        ],
+        "myCompilerPath": "/usr/bin/llvm-g++"
     },
     "configurations": [
-      {
-        "name": "Mac",
-        "includePath": ["${myDefaultIncludePath}", "/usr/local/opt/llvm/include"],
-        "macFrameworkPath": ["/System/Library/Frameworks"],
-        "defines": ["FOO", "BAR=100"],
-        "compilerPath": "/usr/bin/clang",
-        "cStandard": "c11",
-        "cppStandard": "c++17",
-        "browse": {
-          "path": ["${workspaceFolder}"],
-          "limitSymbolsToIncludedHeaders": true,
-          "databaseFilename": ""
+        {
+            "name": "Mac",
+            "includePath": [
+                "${myDefaultIncludePath}",
+                "/usr/local/opt/llvm/include"
+            ],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks"
+            ],
+            "defines": [
+                "FOO",
+                "BAR=100"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
-      }
     ],
     "version": 4
-  }
-  
+}

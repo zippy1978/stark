@@ -24,6 +24,7 @@ typedef struct
     int argc = 0;
     char **argv = nullptr;
     bool error = false;
+    char *modulePath = nullptr;
 
 } CommandOptions;
 
@@ -37,6 +38,7 @@ void printUsage()
               << "OPTIONS:" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
+    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environement variable)" << std::endl;
 }
 
 void printVersion()
@@ -50,7 +52,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dv")) != -1)
+    while ((c = getopt(argc, argv, "dvm:")) != -1)
         switch (c)
         {
         case 'd':
@@ -59,8 +61,13 @@ void parseOptions(int argc, char *argv[])
         case 'v':
             options.version = true;
             break;
+        case 'm':
+            options.modulePath = optarg;
+            break;
         case '?':
-            if (isprint(optopt))
+            if (optopt == 'm')
+                std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
+            else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
             else
                 std::cerr << stark::format("Unknown option character `\\x%x'.", optopt) << std::endl;
@@ -125,8 +132,15 @@ int main(int argc, char *argv[])
 
         // Get module search paths
         std::vector<std::string> searchPaths;
-        if (const char *modulePath = std::getenv("STARK_MODULE_PATH")) {
+        if (const char *modulePath = std::getenv("STARK_MODULE_PATH"))
+        {
             searchPaths = split(modulePath, ':');
+        }
+        // -m parameter
+        if (options.modulePath != nullptr)
+        {
+            std::vector<std::string> commandSearchPaths = split(options.modulePath, ':');
+            searchPaths.insert(std::end(searchPaths), std::begin(commandSearchPaths), std::end(commandSearchPaths));
         }
 
         // Parse sources
@@ -138,7 +152,7 @@ int main(int argc, char *argv[])
         std::vector<std::string> importedModules = moduleLoader.extractModules(program);
 
         // Prepend imported module headers to program
-        for(auto it = importedModules.begin(); it != importedModules.end(); it++)
+        for (auto it = importedModules.begin(); it != importedModules.end(); it++)
         {
             CompilerModule *m = moduleLoader.getModule(*it);
             StarkParser headerParser(m->getName());
@@ -154,7 +168,7 @@ int main(int argc, char *argv[])
         // ... And preprend it to the source AST
         program->preprend(declarations);
         delete declarations;
-        
+
         // Generate code
         CodeGenFileContext context(filename);
         context.setDebugEnabled(options.debug);
@@ -167,13 +181,13 @@ int main(int argc, char *argv[])
         linker.setDebugEnabled(options.debug);
         linker.addBitcode(std::unique_ptr<CodeGenBitcode>(code));
         std::vector<CompilerModule *> modules = moduleLoader.getModules();
-        for(auto it = modules.begin(); it != modules.end(); it++)
+        for (auto it = modules.begin(); it != modules.end(); it++)
         {
             CompilerModule *m = *it;
             linker.addBitcode(m->getBitcode());
         }
         CodeGenBitcode *linkedCode = linker.link();
-        
+
         // Run code
         CodeGenInterpreter interpreter;
         int result = interpreter.run(linkedCode, options.argc, options.argv);

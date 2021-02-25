@@ -25,6 +25,7 @@ typedef struct
     char **argv = nullptr;
     bool error = false;
     char *outputfile = nullptr;
+    char *modulePath = nullptr;
 
 } CommandOptions;
 
@@ -39,6 +40,7 @@ void printUsage()
     std::cout << "  -o      Output file name or directory name (for modules)" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
+    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environement variable)" << std::endl;
 }
 
 void printVersion()
@@ -52,7 +54,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvo:")) != -1)
+    while ((c = getopt(argc, argv, "dvo:m:")) != -1)
         switch (c)
         {
         case 'd':
@@ -64,8 +66,11 @@ void parseOptions(int argc, char *argv[])
         case 'o':
             options.outputfile = optarg;
             break;
+        case 'm':
+            options.modulePath = optarg;
+            break;
         case '?':
-            if (optopt == 'o')
+            if (optopt == 'o' || optopt == 'm')
                 std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
             else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
@@ -159,10 +164,17 @@ int main(int argc, char *argv[])
 
         // Get module search paths
         std::vector<std::string> searchPaths;
-        if (const char *modulePath = std::getenv("STARK_MODULE_PATH")) {
+        // Environement variable
+        if (const char *modulePath = std::getenv("STARK_MODULE_PATH"))
+        {
             searchPaths = split(modulePath, ':');
         }
-            
+        // -m parameter
+        if (options.modulePath != nullptr)
+        {
+            std::vector<std::string> commandSearchPaths = split(options.modulePath, ':');
+            searchPaths.insert(std::end(searchPaths), std::begin(commandSearchPaths), std::end(commandSearchPaths));
+        }
 
         // Build each module
         for (auto it = modulesMap.begin(); it != modulesMap.end(); it++)

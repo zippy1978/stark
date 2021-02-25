@@ -8,7 +8,6 @@ func main(): int {
     e: Employee
     e.name = "Gillou"
     
-    // For successful test result : return 2
     println(e.name)
-    return 2
+    return 0
 }
