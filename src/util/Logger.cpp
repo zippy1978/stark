@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdarg.h>
+
 #include "StringUtil.h"
 
 #include "Logger.h"

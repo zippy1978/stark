@@ -1,5 +1,6 @@
 #include <string>
 #include <cassert>
+#include <vector>
 
 namespace stark
 {
