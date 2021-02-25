@@ -20,6 +20,11 @@ foreach(test_file ${LANG_TEST_FILES})
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
+# Delete test module
+add_test(NAME delete_test_module
+            COMMAND COMMAND rm -rf ${STARK_MODULE_PATH}/test
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 # Build test module for interpreter tests
 add_test(NAME build_interpreter_test_module
             COMMAND ${STARKC_BIN} -o ${STARK_MODULE_PATH} modules/module.st
@@ -34,6 +39,7 @@ foreach(test_file ${INTERPRETER_TEST_FILES})
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
+set_tests_properties(build_interpreter_test_module PROPERTIES DEPENDS delete_test_module)
 set_tests_properties(${INTERPRETER_TEST_FILES} PROPERTIES DEPENDS build_interpreter_test_module)
 set_tests_properties(${INTERPRETER_RETURN_TEST} PROPERTIES DEPENDS build_interpreter_test_module)
 set_tests_properties(${INTERPRETER_RETURN_TEST} PROPERTIES WILL_FAIL TRUE)

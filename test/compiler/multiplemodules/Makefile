@@ -27,7 +27,8 @@ LLC := /usr/local/opt/llvm/bin/llc
 endif
 
 clean:
-	rm -rf $(OUT_DIR)/modules
+	rm -rf $(OUT_DIR)/modules/product
+	rm -rf $(OUT_DIR)/modules/company
 
 product_module: clean
 	mkdir -p $(OUT_DIR)/modules

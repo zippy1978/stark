@@ -10,5 +10,5 @@ func printHello(): void {
 
 func main(): int {
     printHello()
-    return  2
+    return  0
 }

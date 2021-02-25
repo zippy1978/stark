@@ -32,7 +32,7 @@ compile:
 	gcc -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o $(LIB_PATH)/libstark.a
 
 test: compile
-	$(OUT_DIR)/$(PROGRAM_NAME) && exit 1 || echo "expected return failure"
+	$(OUT_DIR)/$(PROGRAM_NAME)
 
 
 
