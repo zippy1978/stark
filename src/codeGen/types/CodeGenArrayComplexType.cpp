@@ -13,7 +13,14 @@ namespace stark
 
     CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
-        addMember("elements", typeName, context->getType(typeName)->getPointerTo());
+        Type *t = context->getType(typeName);
+
+        if (t == nullptr)
+        {
+            context->logger.logError(formatv("unknown type {0}", typeName));
+        }
+
+        addMember("elements", typeName, t->getPointerTo());
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
