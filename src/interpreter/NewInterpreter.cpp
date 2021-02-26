@@ -23,7 +23,7 @@
 #include "../runtime/Memory.h"
 #include "../util/Util.h"
 
-#include "Interpreter.h"
+#include "NewInterpreter.h"
 
 //#include <gc.h>
 
@@ -33,7 +33,7 @@ using namespace llvm::orc;
 namespace stark
 {
 
-    int Interpreter::run(CodeGenBitcode *code, int argc, char *argv[])
+    int NewInterpreter::run(CodeGenBitcode *code, int argc, char *argv[])
     {
         logger.logDebug("running code...");
 

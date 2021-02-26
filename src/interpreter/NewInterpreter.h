@@ -1,5 +1,5 @@
-#ifndef INTERPRETER_INTERPRETER_H
-#define INTERPRETER_INTERPRETER_H
+#ifndef INTERPRETER_NEWINTERPRETER_H
+#define INTERPRETER_NEWINTERPRETER_H
 
 #include "../codeGen/CodeGen.h"
 
@@ -10,7 +10,7 @@ namespace stark
     /**
      * Executes bitcode.
      */
-    class Interpreter
+    class NewInterpreter
     {
         Logger logger;
 
