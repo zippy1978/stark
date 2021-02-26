@@ -20,6 +20,8 @@ ifeq ($(LLC),)
 LLC := /usr/local/opt/llvm/bin/llc
 endif
 
+SANITIZER_FLAGS:=-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1
+
 compile:
 	mkdir -p $(OUT_DIR)
 	# Build main with main and functions
@@ -28,7 +30,7 @@ compile:
 	# Link code with runtime and create binary
 	#gcc -L$(LIB_PATH) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o -lstark
 	# Static link runtime
-	gcc -pthread -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o $(LIB_PATH)/libstark.a
+	gcc -pthread $(SANITIZER_FLAGS) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o $(LIB_PATH)/libstark.a
 
 test: compile
 	$(OUT_DIR)/$(PROGRAM_NAME)

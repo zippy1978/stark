@@ -11,7 +11,7 @@ set_target_properties(dynamic_runtime PROPERTIES OUTPUT_NAME stark)
 install(TARGETS dynamic_runtime DESTINATION lib)
 
 # Static runtime library
-# Need to merged libgc with custom script
+# Need to merge libgc with custom script
 add_library(static_runtime ${SOURCES})
 set(STATIC_LIB ${CMAKE_BINARY_DIR}/lib/libstark.a)
 set(TEMP_DIR ${CMAKE_BINARY_DIR}/lib/libstark)
