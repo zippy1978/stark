@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(stark)
 enable_testing()
 add_definitions("-std=c++14")
+add_definitions(-fPIC)
 
 # Comment when working
 # Only when using /usr/local/opt/llvm/bin/clang++
