@@ -11,6 +11,7 @@
 #include "parser/StarkParser.h"
 #include "runtime/Runtime.h"
 #include "codeGen/CodeGen.h"
+#include "interpreter/Interpreter.h"
 #include "compiler/Compiler.h"
 #include "util/Util.h"
 #include "version.h"
@@ -189,7 +190,7 @@ int main(int argc, char *argv[])
         CodeGenBitcode *linkedCode = linker.link();
 
         // Run code
-        CodeGenInterpreter interpreter;
+        Interpreter interpreter;
         int result = interpreter.run(linkedCode, options.argc, options.argv);
         delete linkedCode;
         return result;

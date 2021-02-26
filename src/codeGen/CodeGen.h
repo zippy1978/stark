@@ -4,6 +4,6 @@
 #include "CodeGenFileContext.h"
 #include "CodeGenBitcodeLinker.h"
 #include "CodeGenBitcode.h"
-#include "CodeGenInterpreter.h"
+#include "CodeGenConstants.h"
 
 #endif

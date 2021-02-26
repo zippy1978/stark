@@ -1,8 +1,7 @@
-#ifndef CODEGEN_CODEGENINTERPRETER_H
-#define CODEGEN_CODEGENINTERPRETER_H
+#ifndef INTERPRETER_INTERPRETER_H
+#define INTERPRETER_INTERPRETER_H
 
-#include "CodeGenBitcode.h"
-#include "CodeGenFileContext.h"
+#include "../codeGen/CodeGen.h"
 
 using namespace llvm;
 
@@ -11,7 +10,7 @@ namespace stark
     /**
      * Executes bitcode.
      */
-    class CodeGenInterpreter
+    class Interpreter
     {
         Logger logger;
 

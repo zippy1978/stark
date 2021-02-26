@@ -21,15 +21,15 @@
 
 #include "../runtime/Runtime.h"
 #include "../util/Util.h"
-#include "CodeGenConstants.h"
-#include "CodeGenInterpreter.h"
+
+#include "Interpreter.h"
 
 using namespace llvm;
 
 namespace stark
 {
 
-    int CodeGenInterpreter::run(CodeGenBitcode *code, int argc, char *argv[])
+    int Interpreter::run(CodeGenBitcode *code, int argc, char *argv[])
     {
         logger.logDebug("running code...");
         

@@ -1,6 +1,4 @@
-println("test")
-
-
-func test(): void {
-
-}
+//println("test")
+s: string = "dd"
+i: int = 1
+return i

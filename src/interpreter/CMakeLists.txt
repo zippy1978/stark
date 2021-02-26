@@ -1,0 +1,6 @@
+include_directories(${LLVM_INCLUDE_DIRS})
+include_directories(${CONAN_INCLUDE_DIRS_BDWGC})
+include_directories(${CMAKE_BINARY_DIR})
+file(GLOB_RECURSE SOURCES *.cpp)
+add_library(interpreter OBJECT ${SOURCES})
+target_link_libraries(interpreter static_runtime)
