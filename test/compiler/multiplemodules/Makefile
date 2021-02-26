@@ -45,7 +45,7 @@ main: company_module
 	# Link code with runtime and create binary
 	#gcc -L./$(LIB_PATH) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o -lstark
 	# Static link runtime
-	gcc -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o $(LIB_PATH)/libstark.a
+	gcc -pthread -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o $(LIB_PATH)/libstark.a
 
 test: main
 	$(OUT_DIR)/$(PROGRAM_NAME)

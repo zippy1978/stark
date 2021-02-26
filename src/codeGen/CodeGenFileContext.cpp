@@ -80,7 +80,9 @@ namespace stark
 		}
 
 		// Not found
+        logger.logError(formatv("unknown type {0}", typeName));
 		return nullptr;
+
 	}
 
 	std::string CodeGenFileContext::getTypeName(Type *type)

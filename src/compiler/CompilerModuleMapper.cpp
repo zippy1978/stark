@@ -32,6 +32,7 @@ namespace stark
                 if (dynamic_cast<ASTModuleDeclaration *>(block->getStatements()[0]))
                 {
                     ASTModuleDeclaration *d = static_cast<ASTModuleDeclaration *>(block->getStatements()[0]);
+                    logger.logDebug(format("mapping %s to module %s", sourceFilename.c_str(), d->getId()->getFullName().c_str()));
                     result[d->getId()->getFullName()].push_back(sourceFilename);
                     hasModule = true;
                 }

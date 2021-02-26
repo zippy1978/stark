@@ -15,11 +15,6 @@ namespace stark
     {
         Type *t = context->getType(typeName);
 
-        if (t == nullptr)
-        {
-            context->logger.logError(formatv("unknown type {0}", typeName));
-        }
-
         addMember("elements", typeName, t->getPointerTo());
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }

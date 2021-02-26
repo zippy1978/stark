@@ -5,7 +5,15 @@ namespace stark
 {
     static bool compareStatements(ASTStatement *first, ASTStatement *second)
     {
-        return first->getPriority() < second->getPriority();
+        // If both statemetn have the same priority: the source file position is used to get the priority
+        if (first->getPriority() == second->getPriority())
+        {
+            return first->location.line < second->location.line;
+        }
+        else
+        {
+            return first->getPriority() < second->getPriority();
+        }
     }
 
     /** Creates a deep copy of a ASTStatementList */

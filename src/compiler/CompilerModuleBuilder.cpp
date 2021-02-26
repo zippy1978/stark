@@ -7,6 +7,7 @@
 #include <strstream>
 #include <sys/stat.h>
 
+#include "../ast/AST.h"
 #include "../codeGen/CodeGen.h"
 #include "../runtime/Runtime.h"
 #include "../parser/StarkParser.h"
@@ -130,6 +131,8 @@ namespace stark
             std::string sourceFilename = it->first;
             ASTBlock *sourceBlock = it->second.get();
 
+            logger.logDebug(format("compiling %s", sourceFilename.c_str()));
+
             // Preprend other module sources declarations
             std::vector<ASTBlock *> declarations = getDeclarationsFor(sourceFilename);
             for (auto it2 = declarations.begin(); it2 != declarations.end(); it2++)
@@ -140,6 +143,7 @@ namespace stark
 
             // Prepend imported modules declarations
             std::vector<ASTBlock *> externalModulesDeclarations = getExternalModulesDeclarationsFor(sourceFilename);
+
             for (auto it2 = externalModulesDeclarations.begin(); it2 != externalModulesDeclarations.end(); it2++)
             {
                 ASTBlock *block = *it2;
@@ -173,7 +177,6 @@ namespace stark
         // Main module
         if (name.compare("main") == 0)
         {
-            // TODO : link modules bitcode to main module !!!!!!!
 
             // Link main module with all external modules required
             std::vector<CompilerModule *> externalModules = moduleLoader.get()->getModules();
