@@ -15,13 +15,12 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
-// This is the interpreter implementation
-#include <llvm/ExecutionEngine/MCJIT.h>
 
-#include "CodeGenVisitor.h"
 #include "../runtime/Runtime.h"
 #include "../util/Util.h"
+
 #include "CodeGenConstants.h"
+#include "CodeGenVisitor.h"
 
 #include "CodeGenFileContext.h"
 
