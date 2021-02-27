@@ -20,6 +20,7 @@ add_executable(stark stark.cpp)
 # TODO : when swithing to new interpreter, use orcjit instead of mcjit
 llvm_map_components_to_libnames(llvm_libs mcjit ${LLVM_TARGETS_TO_BUILD})
 target_link_libraries (
+    # Important : -rdynamic is required for Linux !
     stark pthread interpreter runtime util ast parser codeGen compiler CONAN_PKG::bdwgc ${llvm_libs} -rdynamic
 )
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/stark DESTINATION bin)
