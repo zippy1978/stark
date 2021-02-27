@@ -1,32 +1,31 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(stark)
+# Project settings
+project(Stark VERSION 0.0.1)
 enable_testing()
 add_definitions("-std=c++14")
 add_definitions(-fPIC)
-
-# Comment when working
-# Only when using /usr/local/opt/llvm/bin/clang++
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+# Compiler and linker settings
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g3 -O1")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g3 -O1")
+set (CMAKE_LINKER_FLAGS_RELEASE "${CMAKE_LINKER_FLAGS_RELEASE} -O3")
 # For GDB
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-
-set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g3 -O1")
-# For GDB
 #set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -g3 -O0")
-set (CMAKE_LINKER_FLAGS_RELEASE "${CMAKE_LINKER_FLAGS_RELEASE} -O3")
 
-# On macOS, search Homebrew for keg-only versions. Xcode does
-# not provide new enough versions for us to use.
+# Install configuration
+set(INSTALL_BIN_DIR "bin")
+set(INSTALL_INCLUDE_DIR "include/stark")
+set(INSTALL_LIB_DIR "lib/stark")
+
+
+# On macOS, search Homebrew for keg-only versions. Xcode does not provide new enough versions for us to use.
 if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
 
     # Bison
@@ -77,12 +76,19 @@ set(LLVM_MIN_VERSION "11.0.0")
 # Find required packages
 find_package(BISON ${BISON_MIN_VERSION} REQUIRED)
 find_package(FLEX ${FLEX_MIN_VERSION} REQUIRED)
-#find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
+find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
 find_package(LLVM REQUIRED CONFIG)
 
 # Plug conan dependencies
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
+
+# Uninstall target
+#xargs rm < install_manifest.txt
+add_custom_target(uninstall
+        COMMAND xargs rm -f < install_manifest.txt
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
 
 add_subdirectory(src)
 add_subdirectory(test)

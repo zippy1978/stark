@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <strstream>
 #include <stdbool.h>
+
+#include "StarkConfig.h"
 
 #include "ast/AST.h"
 #include "parser/StarkParser.h"
@@ -20,12 +21,12 @@ using namespace stark;
 
 typedef struct
 {
-    bool debug = false;
-    bool version = false;
-    int argc = 0;
-    char **argv = nullptr;
-    bool error = false;
-    char *modulePath = nullptr;
+    bool debug;
+    bool version;
+    int argc;
+    char **argv;
+    bool error;
+    char *modulePath;
 
 } CommandOptions;
 
@@ -39,12 +40,12 @@ void printUsage()
               << "OPTIONS:" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
-    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environement variable)" << std::endl;
+    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
 }
 
 void printVersion()
 {
-    std::cout << stark::format("Stark interpreter version %s", VERSION_NUMBER) << std::endl;
+    std::cout << stark::format("Stark interpreter version %s", Stark_VERSION) << std::endl;
 }
 
 void parseOptions(int argc, char *argv[])
@@ -97,6 +98,13 @@ void parseOptions(int argc, char *argv[])
  */
 int main(int argc, char *argv[])
 {
+    // Init options
+    options.debug = false;
+    options.version = false;
+    options.argc = 0;
+    options.argv = nullptr;
+    options.error = false;
+    options.modulePath = nullptr;
     // Parse options
     parseOptions(argc, argv);
 

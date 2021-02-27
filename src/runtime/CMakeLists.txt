@@ -8,7 +8,7 @@ add_library(runtime OBJECT ${SOURCES})
 add_library(dynamic_runtime SHARED ${SOURCES})
 target_link_libraries(dynamic_runtime CONAN_PKG::bdwgc)
 set_target_properties(dynamic_runtime PROPERTIES OUTPUT_NAME stark)
-install(TARGETS dynamic_runtime DESTINATION lib)
+install(TARGETS dynamic_runtime DESTINATION ${INSTALL_LIB_DIR})
 
 # Static runtime library
 # Need to merge libgc with custom script
@@ -34,10 +34,7 @@ set_target_properties(static_runtime
         PROPERTIES
         IMPORTED_LOCATION ${STATIC_LIB}
 )
+install(FILES ${STATIC_LIB} DESTINATION ${INSTALL_LIB_DIR})
 
-# Copy headers
-file(GLOB HEADERS *.h)
-install(FILES ${HEADERS} DESTINATION include/${CMAKE_PROJECT_NAME})
-
-# cd $(OUT_DIR)/libstark && ar -x ../../$(DEPS_DIR)/bdwgc/libgc.a
-# 	ar rcs $(OUT_DIR)/libstark.a  $(OUT_DIR)/libstark/*.o
+# TODO : add a proper header for runtime to allow C brdige development
+#install(FILES ${header} DESTINATION ${INSTALL_INCLUDE_DIR})

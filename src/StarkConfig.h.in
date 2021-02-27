@@ -1,0 +1,4 @@
+#define Stark_VERSION_MAJOR @Stark_VERSION_MAJOR@
+#define Stark_VERSION_MINOR @Stark_VERSION_MINOR@
+#define Stark_VERSION_PATCH @Stark_VERSION_PATCH@
+#define Stark_VERSION "@Stark_VERSION_MAJOR@.@Stark_VERSION_MINOR@.@Stark_VERSION_PATCH@"

@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <strstream>
 #include <sys/stat.h>
 
 #include "../ast/AST.h"
