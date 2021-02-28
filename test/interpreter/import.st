@@ -1,7 +1,9 @@
 import test
 
-func anotherFunc(): void {
-    
+extern assertIntEquals(actual: int, expected: int): void
+
+func anotherFunc(): int {
+    return test.addTest(1, 2)
 }
 
-println("TODO : call testAdd when possible !")
+assertIntEquals(anotherFunc(), 3)

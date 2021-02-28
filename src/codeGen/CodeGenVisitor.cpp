@@ -425,24 +425,40 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
-        context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
 
-        // First try to find a runtime function
-        Function *function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
-        // Then look in stark functions
-        if (function == nullptr)
+        std::string moduleName = context->getModuleName();
+        std::string functionName = node->getId()->getName();
+
+        int memberCount = node->getId()->countNestedMembers();
+        // If identifier has a member : then it is module.function
+        Function *function = nullptr;
+        if (memberCount == 1)
         {
-            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName()).c_str());
+            moduleName = node->getId()->getName();
+            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getMember()->getName(), moduleName).c_str());
         }
-        // Finally : look for an unmangled function
-        if (function == nullptr)
+        else
         {
-            function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
+            // Local module stark function
+            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), moduleName).c_str());
+
+            // Try to find a runtime function
+            if (function == nullptr)
+            {
+                function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
+            }
+
+            // Finally : look for an unmangled function
+            if (function == nullptr)
+            {
+                function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
+            }
         }
 
         if (function == nullptr)
         {
-            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getName()));
+            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
         }
 
         // Generate argument values
@@ -466,9 +482,9 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
 
-        std::string moduleName = "main";
+        std::string moduleName = context->getModuleName();
         std::string functionName = node->getId()->getName();
 
         int memberCount = node->getId()->countNestedMembers();

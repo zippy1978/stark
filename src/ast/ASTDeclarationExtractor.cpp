@@ -31,8 +31,12 @@ namespace stark
                 clonedArguments.push_back(s->clone());
             }
 
-            // TODO : declare with mdule name !!!
-            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->getType()->clone(), node->getId()->clone(), clonedArguments);
+            ASTIdentifierList *members = new ASTIdentifierList();
+            members->push_back(node->getId()->clone());
+            ASTIdentifier *idWithModule = new ASTIdentifier(moduleName, nullptr, members);
+            delete members;
+
+            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->getType()->clone(), idWithModule, clonedArguments);
             declarationBlock->addStatement(fd);
         }
     }
