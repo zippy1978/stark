@@ -13,6 +13,15 @@ namespace stark
         }
     }
 
+    void CodeGenChecker::checkTypeIdentifier(ASTIdentifier *typeId)
+    {
+        // A type id can have a module prefix module.type
+        if (typeId->countNestedMembers() > 1 && typeId->getIndex() != nullptr)
+        {
+            context->logger.logError(typeId->location, formatv("invalid type identifier {0}", typeId->getFullName()));
+        }
+    }
+
     void CodeGenChecker::checkAllowedVariableDeclaration(ASTIdentifier *variableId)
     {
 
@@ -44,9 +53,9 @@ namespace stark
 
     void CodeGenChecker::checkAllowedTypeDeclaration(ASTIdentifier *typeId)
     {
-        checkNoMemberIdentifier(typeId);
+        checkTypeIdentifier(typeId);
 
-        if (context->getPrimaryType(typeId->getName()) != nullptr || context->getComplexType(typeId->getName()) != nullptr)
+        if (context->getPrimaryType(typeId->getName()) != nullptr || context->getComplexType(typeId->getFullName()) != nullptr)
         {
             context->logger.logError(typeId->location, formatv("type {0} already declared", typeId->getFullName()));
         }

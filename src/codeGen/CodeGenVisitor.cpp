@@ -116,7 +116,7 @@ namespace stark
      */
     static Type *typeOf(ASTIdentifier &type, CodeGenFileContext *context)
     {
-        return context->getType(type.getName());
+        return context->getType(type.getFullName());
     }
 
     // Code generation
@@ -131,7 +131,7 @@ namespace stark
             argTypes.push_back(typeOf(*((**it).getType()), context));
         }
 
-        Type *returnType = type->isArray() ? context->getArrayComplexType(type->getName())->getType() : typeOf(*type, context);
+        Type *returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType() : typeOf(*type, context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
@@ -311,25 +311,25 @@ namespace stark
     void CodeGenVisitor::visit(ASTVariableDeclaration *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating variable declaration {0} {1}", node->getType()->getName(), node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating variable declaration {0} {1}", node->getType()->getFullName(), node->getId()->getName()));
 
         // Check that variable name is available
         context->getChecker()->checkAvailableLocalVariable(node->getId());
 
         // Type selection : based on the value of the declaration
         // Except if it is an array
-        Type *type = context->getType(node->getType()->getName());
+        Type *type = context->getType(node->getType()->getFullName());
         if (node->isArray())
         {
-            type = context->getArrayComplexType(node->getType()->getName())->getType();
+            type = context->getArrayComplexType(node->getType()->getFullName())->getType();
         }
 
         if (type == nullptr)
         {
-            context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getName()));
+            context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
         }
 
-        CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getName(), node->isArray(), type);
+        CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getFullName(), node->isArray(), type);
         context->declareLocal(var);
 
         if (node->getAssignmentExpr() != nullptr)
@@ -359,12 +359,22 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = arguments.begin(); it != arguments.end(); it++)
         {
-            argTypes.push_back(typeOf(*((**it).getType()), context));
+            ASTVariableDeclaration *v = *it;
+            Type *type = context->getType(v->getType()->getFullName());
+            if (v->isArray())
+            {
+                type = context->getArrayComplexType(v->getType()->getFullName())->getType();
+            }
+
+            if (type == nullptr)
+            {
+                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
+            }
+            argTypes.push_back(type);
         }
 
         // Create function
-
-        Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getName())->getType() : typeOf(*node->getType(), context);
+        Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getFullName())->getType() : typeOf(*node->getType(), context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
@@ -783,23 +793,23 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTStructDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->getId()->getFullName()));
 
         context->getChecker()->checkAllowedTypeDeclaration(node->getId());
 
-        CodeGenComplexType *structType = new CodeGenComplexType(node->getId()->getName(), context);
+        CodeGenComplexType *structType = new CodeGenComplexType(node->getId()->getFullName(), context);
         ASTVariableList arguments = node->getArguments();
         ASTVariableList::const_iterator it;
         for (it = arguments.begin(); it != arguments.end(); it++)
         {
-            structType->addMember((**it).getId()->getName(), (**it).getType()->getName(), typeOf(*((**it).getType()), context), (**it).isArray());
+            structType->addMember((**it).getId()->getName(), (**it).getType()->getFullName(), typeOf(*((**it).getType()), context), (**it).isArray());
         }
         context->declareComplexType(structType);
     }
 
     void CodeGenVisitor::visit(ASTTypeConversion *node)
     {
-        context->logger.logDebug(node->location, formatv("creating type convertion to type {0}", node->getType()->getName()));
+        context->logger.logDebug(node->location, formatv("creating type convertion to type {0}", node->getType()->getFullName()));
 
         // Evaluate expression
         CodeGenVisitor v(context);
@@ -810,11 +820,11 @@ namespace stark
         // Type conversion is not suported on complex types
         if (context->isPrimaryType(exprTypeName))
         {
-            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->getType()->getName(), node->location);
+            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->getType()->getFullName(), node->location);
         }
         else
         {
-            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getName(), node->location);
+            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getFullName(), node->location);
         }
     }
 

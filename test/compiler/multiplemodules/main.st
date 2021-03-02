@@ -1,13 +1,7 @@
 import company
 
 func main(): int {
-    //println("todo : call modules")
-    company.createEmployee("Gilles", 42)
-    
-    // Should fail after struct export is ok
-    e: Employee
-    e.name = "Gillou"
-    
+    e: Company.Employee = company.createEmployee("Gilles", 42)
     println(e.name)
     return 0
 }

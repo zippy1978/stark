@@ -4,6 +4,8 @@
  */
 module company
 
+import product
+
 struct Employee {
     name: string,
     age: int
@@ -11,5 +13,6 @@ struct Employee {
 
 struct Company {
     name: string,
-    employees: Employee[]
+    employees: Employee[],
+    products: product.Product[]
 }

@@ -13,3 +13,10 @@
  func addTest(a: int, b: int): int {
      return a + b
  }
+
+ // A funtion returning a Test type
+ func returnTest(): Test {
+     t: Test
+     t.name = "this is a test"
+     return t
+ }

@@ -71,6 +71,11 @@ namespace stark
         output << ": ";
         node->getType()->accept(this);
 
+        if (node->isArray())
+        {
+            output << "[]";
+        }
+
         if (node->getAssignmentExpr() != nullptr)
         {
             node->getAssignmentExpr()->accept(this);

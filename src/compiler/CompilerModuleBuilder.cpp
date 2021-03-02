@@ -15,23 +15,32 @@
 
 namespace stark
 {
-    void CompilerModuleBuilder::extractDeclarations()
+    std::map<std::string, std::unique_ptr<ASTBlock>> CompilerModuleBuilder::extractDeclarationsForTargetModule(std::string targetModuleName)
     {
+        std::map<std::string, std::unique_ptr<ASTBlock>> result;
         for (auto it = sourceASTs.begin(); it != sourceASTs.end(); it++)
         {
-            ASTDeclarationExtractor extractor;
+            ASTDeclarationExtractor extractor(targetModuleName);
 
             std::string sourceFilename = it->first;
             ASTBlock *sourceBlock = it->second.get();
 
             extractor.visit(sourceBlock);
-            declarationASTs[sourceFilename] = std::unique_ptr<ASTBlock>(extractor.getDeclarationBlock()->clone());
+            result[sourceFilename] = std::unique_ptr<ASTBlock>(extractor.getDeclarationBlock()->clone());
         }
+
+        return result;
+    }
+
+    void CompilerModuleBuilder::extractDeclarations()
+    {
+        declarationASTs = extractDeclarationsForTargetModule(name);
     }
 
     void CompilerModuleBuilder::extractExternalModules()
     {
 
+        // Find and load imported modules for each source file of the module
         for (auto it = sourceASTs.begin(); it != sourceASTs.end(); it++)
         {
             std::string sourceFilename = it->first;
@@ -39,7 +48,18 @@ namespace stark
 
             std::vector<std::string> sourceExternalModules;
 
-            externalModulesMap[sourceFilename] = moduleLoader.get()->extractModules(sourceBlock);
+            moduleLoader->extractModules(sourceBlock);
+        }
+
+        // Generate external modules declaration AST block
+        externalModulesDelcarationsAST = std::make_unique<ASTBlock>();
+        std::vector<CompilerModule *> modules = moduleLoader->getModules();
+        for (auto it = modules.begin(); it != modules.end(); it++)
+        {
+            CompilerModule *module = *it;
+            StarkParser parser("modules");
+            ASTBlock *declarations = parser.parse(module->getHeaderCode());
+            externalModulesDelcarationsAST->preprend(declarations);
         }
     }
 
@@ -56,30 +76,6 @@ namespace stark
             {
                 result.push_back(sourceBlock);
             }
-        }
-
-        return result;
-    }
-
-    std::vector<ASTBlock *> CompilerModuleBuilder::getExternalModulesDeclarationsFor(std::string filename)
-    {
-        std::vector<ASTBlock *> result;
-
-        std::vector<std::string> moduleNames = externalModulesMap[filename];
-        for (auto it = moduleNames.begin(); it != moduleNames.end(); it++)
-        {
-            std::string moduleName = *it;
-
-            ASTBlock *moduleDeclarationASTs = externalModulesDeclarationASTs[moduleName].get();
-            if (moduleDeclarationASTs == nullptr)
-            {
-                // If AST not available yet : parse file and add it to map for next time
-                CompilerModule *module = moduleLoader.get()->getModule(moduleName);
-                StarkParser parser(filename);
-                moduleDeclarationASTs = parser.parse(module->getHeaderCode());
-                externalModulesDeclarationASTs[moduleName] = std::unique_ptr<ASTBlock>(moduleDeclarationASTs);
-            }
-            result.push_back(moduleDeclarationASTs);
         }
 
         return result;
@@ -128,7 +124,9 @@ namespace stark
         {
 
             std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second.get();
+
+            // Working on a source block copy because it will be modified during the process
+            std::unique_ptr<ASTBlock> sourceBlock = std::unique_ptr<ASTBlock>(it->second.get()->clone());
 
             logger.logDebug(format("compiling %s", sourceFilename.c_str()));
 
@@ -141,14 +139,7 @@ namespace stark
             }
 
             // Prepend imported modules declarations
-            std::vector<ASTBlock *> externalModulesDeclarations = getExternalModulesDeclarationsFor(sourceFilename);
-
-            for (auto it2 = externalModulesDeclarations.begin(); it2 != externalModulesDeclarations.end(); it2++)
-            {
-                ASTBlock *block = *it2;
-
-                sourceBlock->preprend(block);
-            }
+            sourceBlock->preprend(externalModulesDelcarationsAST->clone());
 
             // Prepend runtime declarations
             sourceBlock->preprend(runtimeDeclarations);
@@ -159,13 +150,13 @@ namespace stark
             // Generate bitcode
             CodeGenFileContext *context = new CodeGenFileContext(sourceFilename);
             context->setDebugEnabled(debugEnabled);
-            CodeGenBitcode *code = context->generateCode(sourceBlock);
+            CodeGenBitcode *code = context->generateCode(sourceBlock.get());
 
             // Maintain context until module is compiled
             contexts.push_back(std::unique_ptr<CodeGenFileContext>(context));
 
             // Add to linker
-            linker.get()->addBitcode(std::unique_ptr<CodeGenBitcode>(code));
+            linker->addBitcode(std::unique_ptr<CodeGenBitcode>(code));
         }
 
         delete runtimeDeclarations;
@@ -178,24 +169,26 @@ namespace stark
         {
 
             // Link main module with all external modules required
-            std::vector<CompilerModule *> externalModules = moduleLoader.get()->getModules();
+            std::vector<CompilerModule *> externalModules = moduleLoader->getModules();
             for (auto it = externalModules.begin(); it != externalModules.end(); it++)
             {
                 CompilerModule *m = *it;
-                linker.get()->addBitcode(m->getBitcode());
+                linker->addBitcode(m->getBitcode());
             }
 
-            CodeGenBitcode *moduleCode = linker.get()->link();
+            CodeGenBitcode *moduleCode = linker->link();
             return new CompilerModule(name, moduleCode, "");
         }
         // Other module : create directory layout
         else
         {
-            CodeGenBitcode *moduleCode = linker.get()->link();
+            CodeGenBitcode *moduleCode = linker->link();
 
             // Merge declarations
+            // Declarations must be re-extracted from the module for external linking
+            std::map<std::string, std::unique_ptr<ASTBlock>> publicDeclarations(std::move(extractDeclarationsForTargetModule("main")));
             ASTBlock moduleDelcarations;
-            for (auto it = declarationASTs.begin(); it != declarationASTs.end(); it++)
+            for (auto it = publicDeclarations.begin(); it != publicDeclarations.end(); it++)
             {
                 ASTBlock *d = it->second.get();
                 moduleDelcarations.preprend(d);

@@ -3,9 +3,11 @@ struct ff {
     t: int,
     n: string
 }
+
+func test(g: ff): void {
+    println(g.n)
+}
+
 f: ff
-f.t = 1
-f.n = "ff"
-s: string = "dd"
-i: int = 1
-return i
+f.n = "hello"
+test(f)

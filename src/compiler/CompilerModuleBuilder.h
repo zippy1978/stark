@@ -32,17 +32,11 @@ namespace stark
          * */
         std::map<std::string, std::unique_ptr<ASTBlock>> declarationASTs;
 
-        /**
-         * Map holding external modules declarations AST.
-         * Key is the module name.
-         * */
-        std::map<std::string, std::unique_ptr<ASTBlock>> externalModulesDeclarationASTs;
 
         /**
-         * Map holding imported external modules for each source file of this module.
-         * Key is the module name.
-         * */
-        std::map<std::string, std::vector<std::string>> externalModulesMap;
+         * AST of all imported modules declarations for the current module
+         */
+        std::unique_ptr<ASTBlock> externalModulesDelcarationsAST;
 
         /** 
          * Holds each source file context of the module
@@ -60,10 +54,10 @@ namespace stark
         std::unique_ptr<CodeGenBitcodeLinker> linker;
 
     private:
+        std::map<std::string, std::unique_ptr<ASTBlock>> extractDeclarationsForTargetModule(std::string targetModuleName);
         void extractDeclarations();
         void extractExternalModules();
         std::vector<ASTBlock *> getDeclarationsFor(std::string filename);
-        std::vector<ASTBlock *> getExternalModulesDeclarationsFor(std::string filename);
 
     public:
         CompilerModuleBuilder(std::string name, CompilerModuleLoader *moduleLoader) : name(name), moduleLoader(moduleLoader)

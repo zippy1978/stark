@@ -17,7 +17,7 @@ namespace stark
     }
 
     /** Creates a deep copy of a ASTStatementList */
-    static ASTStatementList cloneList(ASTStatementList list)
+    ASTStatementList cloneList(ASTStatementList list)
     {
         ASTStatementList clone;
 
@@ -31,14 +31,14 @@ namespace stark
     }
 
     /** Deletes an ASTStatementList */
-    static void deleteList(ASTStatementList list)
+    void deleteList(ASTStatementList list)
     {
         for (int i = 0; i < list.size(); i++)
             delete list[i];
     }
 
     /** Creates a deep copy of a ASTVariableList */
-    static ASTVariableList cloneList(ASTVariableList list)
+    ASTVariableList cloneList(ASTVariableList list)
     {
         ASTVariableList clone;
 
@@ -52,14 +52,14 @@ namespace stark
     }
 
     /** Deletes an ASTVariableList */
-    static void deleteList(ASTVariableList list)
+    void deleteList(ASTVariableList list)
     {
         for (int i = 0; i < list.size(); i++)
             delete list[i];
     }
 
     /** Creates a deep copy of a ASTExpressionList */
-    static ASTExpressionList cloneList(ASTExpressionList list)
+    ASTExpressionList cloneList(ASTExpressionList list)
     {
         ASTExpressionList clone;
 
@@ -73,7 +73,7 @@ namespace stark
     }
 
     /** Deletes an ASTExpressionList */
-    static void deleteList(ASTExpressionList list)
+    void deleteList(ASTExpressionList list)
     {
         for (int i = 0; i < list.size(); i++)
             delete list[i];

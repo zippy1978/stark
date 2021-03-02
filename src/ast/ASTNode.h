@@ -21,6 +21,13 @@ namespace stark
   typedef std::vector<ASTVariableDeclaration *> ASTVariableList;
   typedef std::vector<ASTIdentifier *> ASTIdentifierList;
 
+  ASTStatementList cloneList(ASTStatementList list);
+  void deleteList(ASTStatementList list);
+  ASTVariableList cloneList(ASTVariableList list);
+  void deleteList(ASTVariableList list);
+  ASTExpressionList cloneList(ASTExpressionList list);
+  void deleteList(ASTExpressionList list);
+
   enum ASTBinaryOperator
   {
     AND,

@@ -1,7 +1,52 @@
+#include <algorithm>
+
 #include "ASTDeclarationExtractor.h"
 
 namespace stark
 {
+    ASTIdentifier *ASTDeclarationExtractor::extractType(ASTIdentifier *typeId)
+    {
+        ASTIdentifier *result;
+        if (shouldPrefix(typeId))
+        {
+            ASTIdentifierList *members = new ASTIdentifierList();
+            members->push_back(typeId->clone());
+            result = new ASTIdentifier(moduleName, nullptr, members);
+            delete members;
+        }
+        else
+        {
+            return typeId->clone();
+        }
+        return result;
+    }
+
+    ASTVariableList ASTDeclarationExtractor::extractVariableList(ASTVariableList list)
+    {
+        ASTVariableList result;
+        for (auto it = list.begin(); it != list.end(); it++)
+        {
+            ASTVariableDeclaration *vd = *it;
+            ASTVariableDeclaration *newDeclaration = new ASTVariableDeclaration(extractType(vd->getType()), vd->getId()->clone(), vd->isArray(), vd->getAssignmentExpr() != nullptr ? vd->getAssignmentExpr()->clone() : nullptr);
+            std::cout << ">>>> after process " << newDeclaration->getType()->getFullName() << std::endl;
+            result.push_back(newDeclaration);
+        }
+
+        return result;
+    }
+
+    bool ASTDeclarationExtractor::isModuleType(ASTIdentifier *typeId)
+    {
+        // A module type : a type without prefix, that is not a builtin type
+        return typeId->countNestedMembers() == 0 && (std::find(builtinTypeNames.begin(), builtinTypeNames.end(), typeId->getName()) == builtinTypeNames.end());
+    }
+
+    bool ASTDeclarationExtractor::shouldPrefix(ASTIdentifier *typeId)
+    {
+        // Prefix only for outside the module
+        return isModuleType(typeId) && (moduleName.compare(targetModuleName) != 0);
+    }
+
     void ASTDeclarationExtractor::visit(ASTInteger *node) {}
     void ASTDeclarationExtractor::visit(ASTBoolean *node) {}
     void ASTDeclarationExtractor::visit(ASTDouble *node) {}
@@ -21,22 +66,21 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTVariableDeclaration *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionDefinition *node)
     {
+        // Extract function definition to declaration
         if (node->getId()->getName().compare("main") != 0)
         {
-            ASTVariableList arguments = node->getArguments();
-            ASTVariableList clonedArguments;
-            for (auto it = arguments.begin(); it != arguments.end(); it++)
-            {
-                ASTVariableDeclaration *s = *it;
-                clonedArguments.push_back(s->clone());
-            }
 
+            ASTVariableList arguments = node->getArguments();
+            ASTVariableList clonedArguments = extractVariableList(node->getArguments());
+
+            // Prefix id with module name
             ASTIdentifierList *members = new ASTIdentifierList();
             members->push_back(node->getId()->clone());
             ASTIdentifier *idWithModule = new ASTIdentifier(moduleName, nullptr, members);
             delete members;
 
-            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(node->getType()->clone(), idWithModule, clonedArguments);
+            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(extractType(node->getType()), idWithModule, clonedArguments);
+            fd->location = node->location;
             declarationBlock->addStatement(fd);
         }
     }
@@ -50,7 +94,30 @@ namespace stark
 
     void ASTDeclarationExtractor::visit(ASTStructDeclaration *node)
     {
-        declarationBlock->addStatement(node->clone());
+        // Export struct declaration from the local module
+        if (node->getId()->countNestedMembers() == 0)
+        {
+            ASTVariableList clonedArguments = extractVariableList(node->getArguments());
+
+            ASTIdentifier *id;
+            // Add prefix only if target module is not the current module
+            if (moduleName.compare(targetModuleName) != 0)
+            {
+                ASTIdentifierList *members = new ASTIdentifierList();
+                members->push_back(node->getId()->clone());
+                id = new ASTIdentifier(moduleName, nullptr, members);
+                delete members;
+            }
+            else
+            {
+                id = node->getId()->clone();
+            }
+
+            ASTStructDeclaration *sd = new ASTStructDeclaration(id, clonedArguments);
+            sd->location = node->location;
+            declarationBlock->addStatement(sd);
+
+        }
     }
 
     void ASTDeclarationExtractor::visit(ASTArray *node) {}
