@@ -18,8 +18,9 @@ namespace stark
 
     public:
         CodeGenChecker(CodeGenFileContext *context): context(context) {}
-        void checkNoMemberIdentifier(ASTIdentifier *variableId);
+        void checkNoMemberIdentifier(ASTIdentifier *id);
         void checkTypeIdentifier(ASTIdentifier *typeId);
+        void checkModuleIdentifier(ASTIdentifier *moduleId);
         void checkAllowedVariableDeclaration(ASTIdentifier *variableId);
         void checkAvailableLocalVariable(ASTIdentifier *variableId);
         void checkAllowedTypeDeclaration(ASTIdentifier *typeId);

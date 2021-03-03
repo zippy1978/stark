@@ -2,6 +2,7 @@
 #define CODEGEN_CODEGENFILECONTEXT_H
 
 #include <stack>
+#include <algorithm>
 #include <typeinfo>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/LLVMContext.h>
@@ -67,6 +68,9 @@ namespace stark
 
     /** Program main function */
     Function *mainFunction = nullptr;
+
+    /** Holds imported module names */
+    std::vector<std::string> importedModuleNames;
 
     /** Holds language complex types (built-in and custom) */
     std::map<std::string, std::unique_ptr<CodeGenComplexType>> complexTypes;
@@ -137,6 +141,10 @@ namespace stark
 
     void declareLocal(CodeGenVariable *var);
     CodeGenVariable *getLocal(std::string name);
+
+    void addImportedModuleName(std::string moduleName) { importedModuleNames.push_back(moduleName); }
+    std::vector<std::string> getImportedModuleNames() { return importedModuleNames; }
+    bool isModuleImported(std::string moduleName) { return (std::find(importedModuleNames.begin(), importedModuleNames.end(), moduleName) == importedModuleNames.end()); }
 
     BasicBlock *getCurrentBlock() { return blocks.size() > 0 ? blocks.top()->block : nullptr; }
     void pushBlock(BasicBlock *block);

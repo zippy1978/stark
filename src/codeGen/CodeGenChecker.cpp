@@ -5,11 +5,11 @@
 
 namespace stark
 {
-    void CodeGenChecker::checkNoMemberIdentifier(ASTIdentifier *variableId)
+    void CodeGenChecker::checkNoMemberIdentifier(ASTIdentifier *id)
     {
-        if (variableId->countNestedMembers() > 0)
+        if (id->countNestedMembers() > 0)
         {
-            context->logger.logError(variableId->location, formatv("invalid identifier {0}", variableId->getFullName()));
+            context->logger.logError(id->location, formatv("invalid identifier {0}", id->getFullName()));
         }
     }
 
@@ -19,6 +19,15 @@ namespace stark
         if (typeId->countNestedMembers() > 1 && typeId->getIndex() != nullptr)
         {
             context->logger.logError(typeId->location, formatv("invalid type identifier {0}", typeId->getFullName()));
+        }
+    }
+
+    void CodeGenChecker::checkModuleIdentifier(ASTIdentifier *moduleId)
+    {
+        checkNoMemberIdentifier(moduleId);
+
+        if (context->isModuleImported(moduleId->getFullName())) {
+            context->logger.logError(moduleId->location, formatv("module {0} already imported", moduleId->getFullName()));
         }
     }
 

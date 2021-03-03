@@ -60,6 +60,7 @@ namespace stark
             StarkParser parser("modules");
             ASTBlock *declarations = parser.parse(module->getHeaderCode());
             externalModulesDelcarationsAST->preprend(declarations);
+            delete declarations;
         }
     }
 
@@ -139,7 +140,7 @@ namespace stark
             }
 
             // Prepend imported modules declarations
-            sourceBlock->preprend(externalModulesDelcarationsAST->clone());
+            sourceBlock->preprend(externalModulesDelcarationsAST.get());
 
             // Prepend runtime declarations
             sourceBlock->preprend(runtimeDeclarations);

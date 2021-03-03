@@ -861,6 +861,8 @@ namespace stark
                 context->logger.logError(node->location, "import declaration is not allowed inside a block");
             }
         }
+
+        context->addImportedModuleName(node->getId()->getFullName());
     }
 
 } // namespace stark
