@@ -1,6 +1,6 @@
-# The stark programming language
+# The Stark programming language
 
-Welcome to the stark programming language source code repository.
+Welcome to the Stark programming language source code repository.
 
 This repository contains everything to build:
 
@@ -8,7 +8,7 @@ This repository contains everything to build:
 - The **stark** interpreted command
 - The language runtime (available as a static or shared library)
 
-
+Stark currently runs on Linux and macOS.
 
 ## Getting started
 
@@ -20,11 +20,13 @@ Eventhough conan is used to manage project dependencies, some of them still requ
 
  - llvm 11+
  - flex 2.6+
- - bison 3.7+
+ - bison 3.5+
 
 For fast building the use of [ninja](https://ninja-build.org/) is recommended.
 
-Here is the commands to install all the required tools above with [Homebrew](https://brew.sh/) on macOS:
+#### macOS setup
+
+Here are the commands to install all the required tools above with [Homebrew](https://brew.sh/) on macOS:
 
 
 ```
@@ -34,6 +36,16 @@ brew install llvm
 brew install flex
 brew install bison
 brew ninja
+```
+
+#### Linux (Ubuntu) setup
+
+On Linux (tested on Ubuntu), required tools can be installed with:
+
+```
+apt-get -y install llvm clang git cmake python python3-pip bison libfl-dev flex ninja-build
+
+pip3 install conan
 ```
 
 ### Building
@@ -57,7 +69,7 @@ Then build the project
 ninja
 ```
 
-After a successfuly build, **stark** and **starkc** binaries will be avilable from *build/bin* directory, and runtime libraries from the *build/lib* directory.
+After a successfuly build, **stark** and **starkc** binaries will be available from *build/bin* directory, and runtime libraries from the *build/lib* directory.
 
 
 
@@ -72,4 +84,25 @@ ninja test
 
 ### Installing
 
-TODO !
+
+Install with:
+
+```
+# From the project build directory
+ninja install
+```
+
+Test installation with:
+
+```
+stark -v
+Stark interpreter version 0.0.1
+```
+
+Uninstall with:
+
+```
+# From the project build directory
+ninja uninstall
+```
+
