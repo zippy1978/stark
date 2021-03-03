@@ -15,7 +15,7 @@ Prism.languages.stark = Prism.languages.extend('clike', {
 			}
 		}
 	},
-	'keyword': /\b(?:as|define|extern|if|else|import|return|func|struct|while|__(?:COLUMN__|FILE__|FUNCTION__|LINE__))\b/,
+	'keyword': /\b(?:as|module|define|extern|if|else|import|return|func|struct|while|__(?:COLUMN__|FILE__|FUNCTION__|LINE__))\b/,
 	'number': /\b(?:[\d_]+(?:\.[\de_]+)?|0x[a-f0-9_]+(?:\.[a-f0-9p_]+)?|0b[01_]+|0o[0-7_]+)\b/i,
 	'constant': /\b(?:nil|[A-Z_]{2,}|k[A-Z][A-Za-z_]+)\b/,
 	'atrule': /@\b(?:IB(?:Outlet|Designable|Action|Inspectable)|class_protocol|exported|noreturn|NS(?:Copying|Managed)|objc|UIApplicationMain|auto_closure)\b/,

@@ -9,6 +9,7 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/FormatVariadic.h>
 
+#include "CodeGenConstants.h"
 #include "CodeGenVisitor.h"
 
 using namespace std;
@@ -40,10 +41,10 @@ namespace stark
      * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
      */
-    static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenContext *context)
+    static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenFileContext *context)
     {
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Array case : must point to index element
@@ -60,7 +61,7 @@ namespace stark
             // Evaluate index expression
             CodeGenVisitor vi(context);
             identifier->getIndex()->accept(&vi);
-            Value *indexExprAsInt32 = Builder.CreateIntCast(vi.result, Type::getInt32Ty(context->llvmContext), false);
+            Value *indexExprAsInt32 = Builder.CreateIntCast(vi.result, Type::getInt32Ty(context->getLlvmContext()), false);
 
             // Get elements member
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
@@ -113,9 +114,9 @@ namespace stark
      * Then look for complex types.
      * If no type found, returns void type.
      */
-    static Type *typeOf(ASTIdentifier &type, CodeGenContext *context)
+    static Type *typeOf(ASTIdentifier &type, CodeGenFileContext *context)
     {
-        return context->getType(type.getName());
+        return context->getType(type.getFullName());
     }
 
     // Code generation
@@ -130,9 +131,9 @@ namespace stark
             argTypes.push_back(typeOf(*((**it).getType()), context));
         }
 
-        Type *returnType = type->isArray() ? context->getArrayComplexType(type->getName())->getType() : typeOf(*type, context);
+        Type *returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType() : typeOf(*type, context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
         // If in interpreter mode : try to init the memory manager
         // as soon as the required runtime function is declared
@@ -174,10 +175,10 @@ namespace stark
     {
         context->logger.logDebug(node->location, formatv("creating array of {0} elements", node->getArguments().size()));
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-        Type *elementType = Type::getVoidTy(context->llvmContext);
+        Type *elementType = Type::getVoidTy(context->getLlvmContext());
 
         // Generate elements and determine type
         std::vector<Value *> elementValues;
@@ -208,6 +209,7 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
+
         context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->getFullName()));
 
         CodeGenVariable *var = context->getLocal(node->getName());
@@ -216,7 +218,7 @@ namespace stark
             context->logger.logError(node->location, formatv("undeclared identifier {0}", node->getName()));
         }
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Retrieve variable complex type
@@ -235,7 +237,28 @@ namespace stark
 
         context->logger.logDebug(node->location, "generating block");
 
+        bool isOnRoot = context->getCurrentBlock() == nullptr;
+
         ASTStatementList statements = node->getStatements();
+
+        // Look for module declaration on first statement of the root block
+        // Also : modules are not supported in interpreter mode
+        if (isOnRoot && statements.size() > 0 && !context->isInterpreterMode())
+        {
+            if (dynamic_cast<ASTModuleDeclaration *>(node->getStatements()[0]))
+            {
+                ASTModuleDeclaration *d = static_cast<ASTModuleDeclaration *>(node->getStatements()[0]);
+
+                context->getChecker()->checkAllowedModuleDeclaration(d->getId());
+
+                context->logger.logDebug(node->location, formatv("declaring module {0}", d->getId()->getFullName()));
+                context->setModuleName(d->getId()->getFullName());
+
+                // Remove from statements to process
+                statements.erase(statements.begin());
+            }
+        }
+
         for (it = statements.begin(); it != statements.end(); it++)
         {
             ASTStatement *s = *it;
@@ -288,25 +311,25 @@ namespace stark
     void CodeGenVisitor::visit(ASTVariableDeclaration *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating variable declaration {0} {1}", node->getType()->getName(), node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating variable declaration {0} {1}", node->getType()->getFullName(), node->getId()->getName()));
 
         // Check that variable name is available
         context->getChecker()->checkAvailableLocalVariable(node->getId());
 
         // Type selection : based on the value of the declaration
         // Except if it is an array
-        Type *type = context->getType(node->getType()->getName());
+        Type *type = context->getType(node->getType()->getFullName());
         if (node->isArray())
         {
-            type = context->getArrayComplexType(node->getType()->getName())->getType();
+            type = context->getArrayComplexType(node->getType()->getFullName())->getType();
         }
 
         if (type == nullptr)
         {
-            context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getName()));
+            context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
         }
 
-        CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getName(), node->isArray(), type);
+        CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getFullName(), node->isArray(), type);
         context->declareLocal(var);
 
         if (node->getAssignmentExpr() != nullptr)
@@ -336,18 +359,28 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = arguments.begin(); it != arguments.end(); it++)
         {
-            argTypes.push_back(typeOf(*((**it).getType()), context));
+            ASTVariableDeclaration *v = *it;
+            Type *type = context->getType(v->getType()->getFullName());
+            if (v->isArray())
+            {
+                type = context->getArrayComplexType(v->getType()->getFullName())->getType();
+            }
+
+            if (type == nullptr)
+            {
+                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
+            }
+            argTypes.push_back(type);
         }
 
         // Create function
-
-        Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getName())->getType() : typeOf(*node->getType(), context);
+        Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getFullName())->getType() : typeOf(*node->getType(), context);
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLLvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
-        BasicBlock *bblock = BasicBlock::Create(context->llvmContext, "entry", function, 0);
+        BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
 
         context->pushBlock(bblock);
 
@@ -378,7 +411,7 @@ namespace stark
         // If no return : add a default one
         if (context->getReturnValue() != nullptr)
         {
-            ReturnInst::Create(context->llvmContext, context->getReturnValue(), context->getCurrentBlock());
+            ReturnInst::Create(context->getLlvmContext(), context->getReturnValue(), context->getCurrentBlock());
         }
         else
         {
@@ -386,12 +419,12 @@ namespace stark
             {
                 // Add return to void function
                 context->logger.logDebug(node->location, formatv("adding void return in {0}.{1}", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->llvmContext, context->getCurrentBlock());
+                ReturnInst::Create(context->getLlvmContext(), context->getCurrentBlock());
             }
             else
             {
                 context->logger.logDebug(node->location, formatv("missing return in {0}.{1}, adding one with block value", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->llvmContext, v.result, context->getCurrentBlock());
+                ReturnInst::Create(context->getLlvmContext(), v.result, context->getCurrentBlock());
             }
         }
 
@@ -402,24 +435,40 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
-        context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
 
-        // First try to find a runtime function
-        Function *function = context->getLLvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
-        // Then look in stark functions
-        if (function == nullptr)
+        std::string moduleName = context->getModuleName();
+        std::string functionName = node->getId()->getName();
+
+        int memberCount = node->getId()->countNestedMembers();
+        // If identifier has a member : then it is module.function
+        Function *function = nullptr;
+        if (memberCount == 1)
         {
-            function = context->getLLvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName()).c_str());
+            moduleName = node->getId()->getName();
+            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getMember()->getName(), moduleName).c_str());
         }
-        // Finally : look for an unmangled function
-        if (function == nullptr)
+        else
         {
-            function = context->getLLvmModule()->getFunction(node->getId()->getName().c_str());
+            // Local module stark function
+            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), moduleName).c_str());
+
+            // Try to find a runtime function
+            if (function == nullptr)
+            {
+                function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
+            }
+
+            // Finally : look for an unmangled function
+            if (function == nullptr)
+            {
+                function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
+            }
         }
 
         if (function == nullptr)
         {
-            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getName()));
+            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
         }
 
         // Generate argument values
@@ -443,9 +492,9 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
 
-        std::string moduleName = "main";
+        std::string moduleName = context->getModuleName();
         std::string functionName = node->getId()->getName();
 
         int memberCount = node->getId()->countNestedMembers();
@@ -472,7 +521,7 @@ namespace stark
     void CodeGenVisitor::visit(ASTExternDeclaration *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getType()->getName()));
+        context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
 
         std::string functionName = node->getId()->getName();
         ASTVariableList arguments = node->getArguments();
@@ -535,7 +584,7 @@ namespace stark
 
         context->logger.logDebug(node->location, formatv("creating comparison {0}", node->getOp()));
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
 
         CodeGenVisitor vl(context);
         node->getLhs()->accept(&vl);
@@ -573,7 +622,7 @@ namespace stark
             return;
         }
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
 
         // Generate condition code
         CodeGenVisitor vc(context);
@@ -583,11 +632,11 @@ namespace stark
         Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
-        BasicBlock *ifBlock = BasicBlock::Create(context->llvmContext, "if", currentFunction);
+        BasicBlock *ifBlock = BasicBlock::Create(context->getLlvmContext(), "if", currentFunction);
         BasicBlock *elseBlock = nullptr;
         if (generateElseBlock)
-            elseBlock = BasicBlock::Create(context->llvmContext, "else");
-        BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "ifcont");
+            elseBlock = BasicBlock::Create(context->getLlvmContext(), "else");
+        BasicBlock *mergeBlock = BasicBlock::Create(context->getLlvmContext(), "ifcont");
 
         // Create condition
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -679,15 +728,15 @@ namespace stark
             return;
         }
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
 
         // Get the function of the current block fon instertion
         Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
-        BasicBlock *whileTestBlock = BasicBlock::Create(context->llvmContext, "whiletest", currentFunction);
-        BasicBlock *whileBlock = BasicBlock::Create(context->llvmContext, "while");
-        BasicBlock *mergeBlock = BasicBlock::Create(context->llvmContext, "whilecont");
+        BasicBlock *whileTestBlock = BasicBlock::Create(context->getLlvmContext(), "whiletest", currentFunction);
+        BasicBlock *whileBlock = BasicBlock::Create(context->getLlvmContext(), "while");
+        BasicBlock *mergeBlock = BasicBlock::Create(context->getLlvmContext(), "whilecont");
 
         // Branch to test block
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -744,23 +793,23 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTStructDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->getId()->getFullName()));
 
         context->getChecker()->checkAllowedTypeDeclaration(node->getId());
 
-        CodeGenComplexType *structType = new CodeGenComplexType(node->getId()->getName(), context);
+        CodeGenComplexType *structType = new CodeGenComplexType(node->getId()->getFullName(), context);
         ASTVariableList arguments = node->getArguments();
         ASTVariableList::const_iterator it;
         for (it = arguments.begin(); it != arguments.end(); it++)
         {
-            structType->addMember((**it).getId()->getName(), (**it).getType()->getName(), typeOf(*((**it).getType()), context), (**it).isArray());
+            structType->addMember((**it).getId()->getName(), (**it).getType()->getFullName(), typeOf(*((**it).getType()), context), (**it).isArray());
         }
         context->declareComplexType(structType);
     }
 
     void CodeGenVisitor::visit(ASTTypeConversion *node)
     {
-        context->logger.logDebug(node->location, formatv("creating type convertion to type {0}", node->getType()->getName()));
+        context->logger.logDebug(node->location, formatv("creating type convertion to type {0}", node->getType()->getFullName()));
 
         // Evaluate expression
         CodeGenVisitor v(context);
@@ -771,11 +820,46 @@ namespace stark
         // Type conversion is not suported on complex types
         if (context->isPrimaryType(exprTypeName))
         {
-            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->getType()->getName(), node->location);
+            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->getType()->getFullName(), node->location);
         }
         else
         {
-            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getName(), node->location);
+            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getFullName(), node->location);
+        }
+    }
+
+    void CodeGenVisitor::visit(ASTModuleDeclaration *node)
+    {
+        // Module declaration must be delcared as first statement of a file : it should be never directly visited !
+        context->logger.logError(node->location, "module declaration is only supported as first statement of a file");
+    }
+
+    void CodeGenVisitor::visit(ASTImportDeclaration *node)
+    {
+        // Does not generate any code
+        // Import declaration is only allowed on root
+
+        // TODO: make sure that the imported module was not already imported !
+        // And that identifier format is ok
+        // >> add a check
+
+        // Compiler mode
+        if (!context->isInterpreterMode())
+        {
+            bool isOnRoot = context->getCurrentBlock() == nullptr;
+            if (!isOnRoot)
+            {
+                context->logger.logError(node->location, "import declaration is not allowed inside a block");
+            }
+        }
+        // Interpreter mode
+        else
+        {
+            bool isInMain = context->getCurrentBlock()->getParent()->getName().compare(MAIN_FUNCTION_NAME) == 0;
+            if (!isInMain)
+            {
+                context->logger.logError(node->location, "import declaration is not allowed inside a block");
+            }
         }
     }
 

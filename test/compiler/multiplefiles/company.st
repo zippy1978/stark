@@ -4,12 +4,12 @@
  *  Functions and types 
  */
 
-struct Employee {
+ struct Employee {
     name: string,
     age: int
 }
 
-struct Company {
+ struct Company {
     name: string,
     employees: Employee[]
 }

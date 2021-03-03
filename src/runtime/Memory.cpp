@@ -1,4 +1,5 @@
-#include "../../dependencies/bdwgc/include/gc.h"
+#include <gc.h>
+//#include "../../dependencies/bdwgc/include/gc.h"
 
 #include "Memory.h"
 

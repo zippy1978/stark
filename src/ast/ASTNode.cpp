@@ -1,9 +1,23 @@
+#include <algorithm>
 #include "ASTNode.h"
 
 namespace stark
 {
+    static bool compareStatements(ASTStatement *first, ASTStatement *second)
+    {
+        // If both statemetn have the same priority: the source file position is used to get the priority
+        if (first->getPriority() == second->getPriority())
+        {
+            return first->location.line < second->location.line;
+        }
+        else
+        {
+            return first->getPriority() < second->getPriority();
+        }
+    }
+
     /** Creates a deep copy of a ASTStatementList */
-    static ASTStatementList cloneList(ASTStatementList list)
+    ASTStatementList cloneList(ASTStatementList list)
     {
         ASTStatementList clone;
 
@@ -17,14 +31,14 @@ namespace stark
     }
 
     /** Deletes an ASTStatementList */
-    static void deleteList(ASTStatementList list)
+    void deleteList(ASTStatementList list)
     {
         for (int i = 0; i < list.size(); i++)
             delete list[i];
     }
 
     /** Creates a deep copy of a ASTVariableList */
-    static ASTVariableList cloneList(ASTVariableList list)
+    ASTVariableList cloneList(ASTVariableList list)
     {
         ASTVariableList clone;
 
@@ -38,14 +52,14 @@ namespace stark
     }
 
     /** Deletes an ASTVariableList */
-    static void deleteList(ASTVariableList list)
+    void deleteList(ASTVariableList list)
     {
         for (int i = 0; i < list.size(); i++)
             delete list[i];
     }
 
     /** Creates a deep copy of a ASTExpressionList */
-    static ASTExpressionList cloneList(ASTExpressionList list)
+    ASTExpressionList cloneList(ASTExpressionList list)
     {
         ASTExpressionList clone;
 
@@ -59,7 +73,7 @@ namespace stark
     }
 
     /** Deletes an ASTExpressionList */
-    static void deleteList(ASTExpressionList list)
+    void deleteList(ASTExpressionList list)
     {
         for (int i = 0; i < list.size(); i++)
             delete list[i];
@@ -71,7 +85,9 @@ namespace stark
 
     ASTInteger *ASTInteger::clone()
     {
-        return new ASTInteger(this->value);
+        ASTInteger *clone = new ASTInteger(this->value);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTBoolean
@@ -80,7 +96,9 @@ namespace stark
 
     ASTBoolean *ASTBoolean::clone()
     {
-        return new ASTBoolean(this->value);
+        ASTBoolean *clone = new ASTBoolean(this->value);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTDouble
@@ -89,7 +107,9 @@ namespace stark
 
     ASTDouble *ASTDouble::clone()
     {
-        return new ASTDouble(this->value);
+        ASTDouble *clone = new ASTDouble(this->value);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTString
@@ -98,7 +118,9 @@ namespace stark
 
     ASTString *ASTString::clone()
     {
-        return new ASTString(this->value);
+        ASTString *clone = new ASTString(this->value);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTIdentifier
@@ -179,6 +201,7 @@ namespace stark
         ASTIdentifier *clone = new ASTIdentifier(this->getName(), this->getIndex() != nullptr ? this->getIndex()->clone() : nullptr, nullptr);
         if (this->getMember() != nullptr)
             clone->member = std::unique_ptr<ASTIdentifier>(this->getMember()->clone());
+        clone->location = this->location;
         return clone;
     }
 
@@ -191,9 +214,19 @@ namespace stark
 
     void ASTBlock::preprend(ASTBlock *block)
     {
+
+        int offset = 0;
+        if (this->statements.size() > 0)
+        {
+            if (dynamic_cast<ASTModuleDeclaration *>(this->statements[0]))
+            {
+                offset = 1;
+            }
+        }
+
         // Insert a clone of each statement of the new block
         ASTStatementList clonedSts = cloneList(block->statements);
-        statements.insert(statements.begin(), clonedSts.begin(), clonedSts.end());
+        statements.insert(statements.begin() + offset, clonedSts.begin(), clonedSts.end());
     }
 
     void ASTBlock::accept(ASTVisitor *visitor) { visitor->visit(this); }
@@ -202,7 +235,13 @@ namespace stark
     {
         ASTBlock *clone = new ASTBlock();
         clone->statements = cloneList(this->statements);
+        clone->location = this->location;
         return clone;
+    }
+
+    void ASTBlock::sort()
+    {
+        std::sort(statements.begin(), statements.end(), compareStatements);
     }
 
     // ASTAssignment
@@ -211,7 +250,9 @@ namespace stark
 
     ASTAssignment *ASTAssignment::clone()
     {
-        return new ASTAssignment(this->getLhs()->clone(), this->getRhs()->clone());
+        ASTAssignment *clone = new ASTAssignment(this->getLhs()->clone(), this->getRhs()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTExpressionStatement
@@ -220,7 +261,9 @@ namespace stark
 
     ASTExpressionStatement *ASTExpressionStatement::clone()
     {
-        return new ASTExpressionStatement(this->getExpression()->clone());
+        ASTExpressionStatement *clone = new ASTExpressionStatement(this->getExpression()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTVariableDeclaration
@@ -229,7 +272,9 @@ namespace stark
 
     ASTVariableDeclaration *ASTVariableDeclaration::clone()
     {
-        return new ASTVariableDeclaration(this->getType()->clone(), this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType()->clone(), this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTFunctionDefinition
@@ -244,7 +289,9 @@ namespace stark
     ASTFunctionDefinition *ASTFunctionDefinition::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        return new ASTFunctionDefinition(this->getType()->clone(), this->getId()->clone(), arguments, this->getBlock()->clone());
+        ASTFunctionDefinition *clone = new ASTFunctionDefinition(this->getType()->clone(), this->getId()->clone(), arguments, this->getBlock()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTFunctionCall
@@ -259,7 +306,9 @@ namespace stark
     ASTFunctionCall *ASTFunctionCall::clone()
     {
         ASTExpressionList arguments = cloneList(this->getArguments());
-        return new ASTFunctionCall(this->getId()->clone(), arguments);
+        ASTFunctionCall *clone = new ASTFunctionCall(this->getId()->clone(), arguments);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTExternDeclaration
@@ -269,7 +318,9 @@ namespace stark
     ASTExternDeclaration *ASTExternDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        return new ASTExternDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+        ASTExternDeclaration *clone = new ASTExternDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTReturnStatement
@@ -278,7 +329,9 @@ namespace stark
 
     ASTReturnStatement *ASTReturnStatement::clone()
     {
-        return new ASTReturnStatement(this->getExpression()->clone());
+        ASTReturnStatement *clone = new ASTReturnStatement(this->getExpression()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTBinaryOperation
@@ -287,7 +340,9 @@ namespace stark
 
     ASTBinaryOperation *ASTBinaryOperation::clone()
     {
-        return new ASTBinaryOperation(this->getLhs()->clone(), this->getOp(), this->getRhs()->clone());
+        ASTBinaryOperation *clone = new ASTBinaryOperation(this->getLhs()->clone(), this->getOp(), this->getRhs()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTComparison
@@ -296,7 +351,9 @@ namespace stark
 
     ASTComparison *ASTComparison::clone()
     {
-        return new ASTComparison(this->getLhs()->clone(), this->getOp(), this->getRhs()->clone());
+        ASTComparison *clone = new ASTComparison(this->getLhs()->clone(), this->getOp(), this->getRhs()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTIfElseStatement
@@ -305,7 +362,9 @@ namespace stark
 
     ASTIfElseStatement *ASTIfElseStatement::clone()
     {
-        return new ASTIfElseStatement(this->getCondition()->clone(), this->getTrueBlock()->clone(), this->getFalseBlock() != nullptr ? this->getFalseBlock()->clone() : nullptr);
+        ASTIfElseStatement *clone = new ASTIfElseStatement(this->getCondition()->clone(), this->getTrueBlock()->clone(), this->getFalseBlock() != nullptr ? this->getFalseBlock()->clone() : nullptr);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTWhileStatement
@@ -314,7 +373,9 @@ namespace stark
 
     ASTWhileStatement *ASTWhileStatement::clone()
     {
-        return new ASTWhileStatement(this->getCondition()->clone(), this->getBlock()->clone());
+        ASTWhileStatement *clone = new ASTWhileStatement(this->getCondition()->clone(), this->getBlock()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTStructDeclaration
@@ -329,7 +390,9 @@ namespace stark
     ASTStructDeclaration *ASTStructDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        return new ASTStructDeclaration(this->getId()->clone(), arguments);
+        ASTStructDeclaration *clone = new ASTStructDeclaration(this->getId()->clone(), arguments);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTArray
@@ -344,7 +407,9 @@ namespace stark
     ASTArray *ASTArray::clone()
     {
         ASTExpressionList arguments = cloneList(this->arguments);
-        return new ASTArray(arguments);
+        ASTArray *clone = new ASTArray(arguments);
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTTypeConversion
@@ -353,7 +418,9 @@ namespace stark
 
     ASTTypeConversion *ASTTypeConversion::clone()
     {
-        return new ASTTypeConversion(this->getExpression()->clone(), this->getType()->clone());
+        ASTTypeConversion *clone = new ASTTypeConversion(this->getExpression()->clone(), this->getType()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
     // ASTFunctionDeclaration
@@ -368,7 +435,29 @@ namespace stark
     ASTFunctionDeclaration *ASTFunctionDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        return new ASTFunctionDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+        clone->location = this->location;
+        return clone;
+    }
+
+    // ASTModuleDeclaration
+    void ASTModuleDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTModuleDeclaration *ASTModuleDeclaration::clone()
+    {
+        ASTModuleDeclaration *clone = new ASTModuleDeclaration(this->getId()->clone());
+        clone->location = this->location;
+        return clone;
+    }
+
+    // ASTImportDeclaration
+    void ASTImportDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTImportDeclaration *ASTImportDeclaration::clone()
+    {
+        ASTImportDeclaration *clone = new ASTImportDeclaration(this->getId()->clone());
+        clone->location = this->location;
+        return clone;
     }
 
 } // namespace stark

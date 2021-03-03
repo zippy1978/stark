@@ -2,11 +2,11 @@
 #include <llvm/IR/IRBuilder.h>
 
 #include "CodeGenPrimaryType.h"
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 
 namespace stark
 {
-    CodeGenDoubleType::CodeGenDoubleType(CodeGenContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->llvmContext), "double") {}
+    CodeGenDoubleType::CodeGenDoubleType(CodeGenFileContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->getLlvmContext()), "double") {}
 
     Value *CodeGenDoubleType::convert(Value *value, std::string typeName, FileLocation location)
     {
@@ -17,7 +17,7 @@ namespace stark
         // string
         if (typeName.compare("string") == 0)
         {
-            Function *function = context->getLLvmModule()->getFunction("stark_runtime_priv_conv_double_string");
+            Function *function = context->getLlvmModule()->getFunction("stark_runtime_priv_conv_double_string");
             if (function == nullptr)
             {
                 context->logger.logError("cannot find runtime function");
@@ -41,7 +41,7 @@ namespace stark
 
     Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;
@@ -72,7 +72,7 @@ namespace stark
 
     Value *CodeGenDoubleType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;

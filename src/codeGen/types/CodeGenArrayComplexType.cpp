@@ -2,7 +2,7 @@
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/IRBuilder.h>
 
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 #include "CodeGenComplexType.h"
 
 using namespace llvm;
@@ -11,9 +11,11 @@ using namespace std;
 namespace stark
 {
 
-    CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
+    CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
-        addMember("elements", typeName, context->getType(typeName)->getPointerTo());
+        Type *t = context->getType(typeName);
+
+        addMember("elements", typeName, t->getPointerTo());
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
@@ -23,7 +25,7 @@ namespace stark
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
 
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
          // Alloc inner array
@@ -36,8 +38,8 @@ namespace stark
         for (auto it = values.begin(); it != values.end(); it++)
         {
             std::vector<llvm::Value *> indices;
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, 0, true)));
-            indices.push_back(ConstantInt::get(context->llvmContext, APInt(32, index, true)));
+            indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, 0, true)));
+            indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, index, true)));
             Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;

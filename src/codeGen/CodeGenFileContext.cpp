@@ -15,15 +15,14 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
-// This is the interpreter implementation
-#include <llvm/ExecutionEngine/MCJIT.h>
 
-#include "CodeGenVisitor.h"
 #include "../runtime/Runtime.h"
 #include "../util/Util.h"
-#include "CodeGenConstants.h"
 
-#include "CodeGenContext.h"
+#include "CodeGenConstants.h"
+#include "CodeGenVisitor.h"
+
+#include "CodeGenFileContext.h"
 
 using namespace llvm;
 using namespace std;
@@ -33,13 +32,13 @@ namespace stark
 
 	class CodeGenVisitor;
 
-	void CodeGenContext::declareComplexTypes()
+	void CodeGenFileContext::declareComplexTypes()
 	{
 		// string
 		declareComplexType(new CodeGenStringComplexType(this));
 	}
 
-	void CodeGenContext::registerPrimaryTypes()
+	void CodeGenFileContext::registerPrimaryTypes()
 	{
 
 		// int
@@ -63,7 +62,7 @@ namespace stark
 		primaryTypes[anyType->getName()] = std::unique_ptr<CodeGenPrimaryType>(anyType);
 	}
 
-	Type *CodeGenContext::getType(std::string typeName)
+	Type *CodeGenFileContext::getType(std::string typeName)
 	{
 		// Primary types
 		CodeGenPrimaryType *primaryType = getPrimaryType(typeName);
@@ -80,10 +79,12 @@ namespace stark
 		}
 
 		// Not found
+        logger.logError(formatv("unknown type {0}", typeName));
 		return nullptr;
+
 	}
 
-	std::string CodeGenContext::getTypeName(Type *type)
+	std::string CodeGenFileContext::getTypeName(Type *type)
 	{
 
 		// Extract llvm type name
@@ -118,14 +119,14 @@ namespace stark
 		return llvmTypeName;
 	}
 
-	void CodeGenContext::declareComplexType(CodeGenComplexType *complexType)
+	void CodeGenFileContext::declareComplexType(CodeGenComplexType *complexType)
 	{
 
 		complexType->declare();
 		complexTypes[complexType->getName()] = std::unique_ptr<CodeGenComplexType>(complexType);
 	}
 
-	CodeGenComplexType *CodeGenContext::getComplexType(std::string typeName)
+	CodeGenComplexType *CodeGenFileContext::getComplexType(std::string typeName)
 	{
 		if (complexTypes.find(typeName) != complexTypes.end())
 		{
@@ -135,7 +136,7 @@ namespace stark
 		return nullptr;
 	}
 
-	CodeGenArrayComplexType *CodeGenContext::getArrayComplexType(std::string typeName)
+	CodeGenArrayComplexType *CodeGenFileContext::getArrayComplexType(std::string typeName)
 	{
 
 		// First : try to find the array type (if already declared)
@@ -157,7 +158,7 @@ namespace stark
 		return arrayComplexType;
 	}
 
-	CodeGenPrimaryType *CodeGenContext::getPrimaryType(std::string typeName)
+	CodeGenPrimaryType *CodeGenFileContext::getPrimaryType(std::string typeName)
 	{
 		if (primaryTypes.find(typeName) != primaryTypes.end())
 		{
@@ -167,14 +168,14 @@ namespace stark
 		return nullptr;
 	}
 
-	void CodeGenContext::declareLocal(CodeGenVariable *var)
+	void CodeGenFileContext::declareLocal(CodeGenVariable *var)
 	{
 		CodeGenBlock *top = blocks.top();
 		var->declare(top->block);
 		top->locals[var->getName()] = std::unique_ptr<CodeGenVariable>(var);
 	}
 
-	CodeGenVariable *CodeGenContext::getLocal(std::string name)
+	CodeGenVariable *CodeGenFileContext::getLocal(std::string name)
 	{
 		CodeGenBlock *top = blocks.top();
 		if (top->locals.find(name) != top->locals.end())
@@ -186,13 +187,13 @@ namespace stark
 	}
 
 	/* Push new block on the stack */
-	void CodeGenContext::pushBlock(BasicBlock *block)
+	void CodeGenFileContext::pushBlock(BasicBlock *block)
 	{
 		pushBlock(block, false);
 	}
 
 	/* Push new block on the stack, with ability to copy local variables of the curretn block to the new block */
-	void CodeGenContext::pushBlock(BasicBlock *block, bool inheritLocals)
+	void CodeGenFileContext::pushBlock(BasicBlock *block, bool inheritLocals)
 	{
 		CodeGenBlock *top = nullptr;
 
@@ -220,7 +221,7 @@ namespace stark
 	}
 
 	/* Pop block from the stack */
-	void CodeGenContext::popBlock()
+	void CodeGenFileContext::popBlock()
 	{
 		CodeGenBlock *top = blocks.top();
 
@@ -239,10 +240,10 @@ namespace stark
 	}
 
 	/* Generate code from AST root */
-	void CodeGenContext::generateCode(ASTBlock *root)
+	CodeGenBitcode *CodeGenFileContext::generateCode(ASTBlock *root)
 	{
 		// Create module
-		llvmModule = new Module(filename, llvmContext);
+		llvmModule = new Module(filename, getLlvmContext());
 
 		// Configure logger
 		logger.debugEnabled = this->debugEnabled;
@@ -264,9 +265,9 @@ namespace stark
 			// Create the top level interpreter function to call as entry
 			vector<Type *> argTypes;
 			argTypes.push_back(getArrayComplexType("string")->getType());
-			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(llvmContext), makeArrayRef(argTypes), false);
-			mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
-			BasicBlock *bblock = BasicBlock::Create(llvmContext, "entry", mainFunction, 0);
+			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(getLlvmContext()), makeArrayRef(argTypes), false);
+			mainFunction = Function::Create(ftype, GlobalValue::ExternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
+			BasicBlock *bblock = BasicBlock::Create(getLlvmContext(), "entry", mainFunction, 0);
 
 			// Push a new variable/block context
 			pushBlock(bblock);
@@ -274,7 +275,7 @@ namespace stark
 			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
 			declareLocal(argsVar);
 
-			IRBuilder<> Builder(llvmContext);
+			IRBuilder<> Builder(getLlvmContext());
 			Builder.SetInsertPoint(getCurrentBlock());
 
 			// Get argc and argv values
@@ -289,13 +290,13 @@ namespace stark
 			// No return provided on main function, add a default return to the block (with 0 return)
 			if (this->getReturnValue() != nullptr)
 			{
-				ReturnInst::Create(llvmContext, this->getReturnValue(), getCurrentBlock());
+				ReturnInst::Create(getLlvmContext(), this->getReturnValue(), getCurrentBlock());
 			}
 			else
 			{
 				// If no return : return 0
 				logger.logDebug(formatv("not return on block {0}.{1}, adding one", getCurrentBlock()->getParent()->getName(), getCurrentBlock()->getName()));
-				ReturnInst::Create(llvmContext, ConstantInt::get(Type::getInt32Ty(llvmContext), 0, true), getCurrentBlock());
+				ReturnInst::Create(getLlvmContext(), ConstantInt::get(Type::getInt32Ty(getLlvmContext()), 0, true), getCurrentBlock());
 			}
 
 			popBlock();
@@ -317,68 +318,11 @@ namespace stark
 			std::cout << "----------- DUMP -------------\n";
 			llvmModule->print(llvm::errs(), nullptr);
 		}
+
+		return new CodeGenBitcode(llvmModule);;
 	}
 
-	void CodeGenContext::writeCode(std::string filename)
-	{
-		// TODO : hande error
-		std::error_code errorCode;
-		//raw_ostream output = outs();
-		raw_fd_ostream output(filename, errorCode);
-		WriteBitcodeToFile(*llvmModule, output);
-	}
-
-	/* Executes the AST by running the main function */
-	int CodeGenContext::runCode(int argc, char *argv[])
-	{
-
-		logger.logDebug("running code...");
-		std::string err;
-
-		LLVMInitializeNativeTarget();
-		LLVMInitializeNativeAsmPrinter();
-		LLVMInitializeNativeAsmParser();
-		ExecutionEngine *ee = EngineBuilder(unique_ptr<Module>(llvmModule)).setErrorStr(&err).create();
-		if (!ee)
-		{
-			logger.logError(formatv("JIT error: {0}", err));
-		}
-
-		// TODO: pass manager here !
-
-		ee->finalizeObject();
-
-		// Build stark string array to pass to main function
-		stark::array_t args;
-		args.len = argc;
-		stark::string_t *elements = (stark::string_t *)malloc(sizeof(stark::string_t) * argc);
-		for (int i = 0; i < argc; i++)
-		{
-			stark::string_t s;
-			s.len = strlen(argv[i]);
-			s.data = (char *)malloc(sizeof(char) * s.len + 1);
-			strcpy(s.data, argv[i]);
-			elements[i] = s;
-		}
-		args.elements = elements;
-
-		// Call main function
-		int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
-		int retValue = main_func(args);
-
-		for (int i = 0; i < argc; i++)
-		{
-			free(elements[i].data);
-		}
-		free(elements);
-
-		delete ee;
-
-		logger.logDebug(formatv("code was run, return code is {0}", retValue));
-		return retValue;
-	}
-
-	void CodeGenContext::initMemoryManager()
+	void CodeGenFileContext::initMemoryManager()
 	{
 		if (this->gcInitialized)
 		{
@@ -389,7 +333,7 @@ namespace stark
 		// 1. Runtime function must be already declared
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
-		Function *function = this->getLLvmModule()->getFunction("stark_runtime_priv_mm_init");
+		Function *function = this->getLlvmModule()->getFunction("stark_runtime_priv_mm_init");
 		if (function != nullptr && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
 		{
 
@@ -401,9 +345,9 @@ namespace stark
 		}
 	}
 
-	Value *CodeGenContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
+	Value *CodeGenFileContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
 	{
-		Function *function = this->getLLvmModule()->getFunction("stark_runtime_priv_mm_alloc");
+		Function *function = this->getLlvmModule()->getFunction("stark_runtime_priv_mm_alloc");
 		if (function == nullptr)
 		{
 			this->logger.logError("cannot allocate memory: cannot find runtime function");
@@ -414,7 +358,7 @@ namespace stark
 		return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
 	}
 
-	bool CodeGenContext::isRuntimeFunctionName(std::string functionName)
+	bool CodeGenFileContext::isRuntimeFunctionName(std::string functionName)
 	{
 		return (functionName.rfind(RUNTIME_FUNCTION_PREFIX, 0) == 0);
 	}

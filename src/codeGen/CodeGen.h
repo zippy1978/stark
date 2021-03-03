@@ -1,7 +1,9 @@
 #ifndef CODEGEN_CODEGEN_H
 #define CODEGEN_CODEGEN_H
 
-#include "CodeGenContext.h"
-#include "CodeGenModuleLinker.h"
+#include "CodeGenFileContext.h"
+#include "CodeGenBitcodeLinker.h"
+#include "CodeGenBitcode.h"
+#include "CodeGenConstants.h"
 
 #endif

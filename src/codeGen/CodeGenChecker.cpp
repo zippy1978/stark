@@ -1,4 +1,4 @@
-#include "CodeGenContext.h"
+#include "CodeGenFileContext.h"
 #include "CodeGenConstants.h"
 
 #include "CodeGenChecker.h"
@@ -10,6 +10,15 @@ namespace stark
         if (variableId->countNestedMembers() > 0)
         {
             context->logger.logError(variableId->location, formatv("invalid identifier {0}", variableId->getFullName()));
+        }
+    }
+
+    void CodeGenChecker::checkTypeIdentifier(ASTIdentifier *typeId)
+    {
+        // A type id can have a module prefix module.type
+        if (typeId->countNestedMembers() > 1 && typeId->getIndex() != nullptr)
+        {
+            context->logger.logError(typeId->location, formatv("invalid type identifier {0}", typeId->getFullName()));
         }
     }
 
@@ -44,9 +53,9 @@ namespace stark
 
     void CodeGenChecker::checkAllowedTypeDeclaration(ASTIdentifier *typeId)
     {
-        checkNoMemberIdentifier(typeId);
+        checkTypeIdentifier(typeId);
 
-        if (context->getPrimaryType(typeId->getName()) != nullptr || context->getComplexType(typeId->getName()) != nullptr)
+        if (context->getPrimaryType(typeId->getName()) != nullptr || context->getComplexType(typeId->getFullName()) != nullptr)
         {
             context->logger.logError(typeId->location, formatv("type {0} already declared", typeId->getFullName()));
         }
@@ -57,7 +66,7 @@ namespace stark
         // Mangle name
         std::string functionName = context->getMangler()->mangleFunctionName(functionId->getName(), context->getModuleName());
 
-        if (context->getLLvmModule()->getFunction(functionName.c_str()) != nullptr)
+        if (context->getLlvmModule()->getFunction(functionName.c_str()) != nullptr)
         {
             context->logger.logError(functionId->location, formatv("function {0} already declared", functionId->getName()));
         }
@@ -94,6 +103,14 @@ namespace stark
                 context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->getName(), argTypeName, i, valueTypeName));
             }
             i++;
+        }
+    }
+
+    void CodeGenChecker::checkAllowedModuleDeclaration(ASTIdentifier *moduleId)
+    {
+        if (moduleId->countNestedMembers() > 0)
+        {
+            context->logger.logError(moduleId->location, formatv("invalid module identifier {0}", moduleId->getFullName()));
         }
     }
 

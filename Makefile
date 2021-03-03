@@ -33,7 +33,7 @@ generate:
 
 stark: deps generate
 	mkdir -p $(OUT_DIR)
-	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(DEPS_DIR)/bdwgc/libgc.a $(SRC_DIR)/util/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/compiler/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/stark.cpp
+	$(CC) -g -O3 -o $(OUT_DIR)/stark `$(LLVMCONFIG) --cxxflags --ldflags --system-libs --libs all` $(CPPFLAGS) $(LDFLAGS) $(DEPS_DIR)/bdwgc/libgc.a $(SRC_DIR)/util/*.cpp $(SRC_DIR)/interpreter/*.cpp $(SRC_DIR)/runtime/*.cpp $(SRC_DIR)/ast/*.cpp $(SRC_DIR)/parser/*.cpp $(SRC_DIR)/compiler/*.cpp $(SRC_DIR)/codeGen/*.cpp $(SRC_DIR)/codeGen/types/*.cpp $(SRC_DIR)/stark.cpp
 
 stark_leak_detection: deps generate
 	# use export ASAN_OPTIONS=detect_leaks=1
@@ -65,30 +65,36 @@ clean:
 	rm -rf $(DEPS_DIR)
 
 test_lang: stark
-	./$(OUT_DIR)/stark -d test/comments.st
-	./$(OUT_DIR)/stark -d test/variables/declaration.st
-	./$(OUT_DIR)/stark -d test/variables/assignment.st
-	./$(OUT_DIR)/stark -d test/functions/declaration.st
-	./$(OUT_DIR)/stark -d test/functions/call.st
-	./$(OUT_DIR)/stark -d test/functions/external.st
-	./$(OUT_DIR)/stark -d test/expressions/binary.st
-	./$(OUT_DIR)/stark -d test/expressions/comparison.st
-	./$(OUT_DIR)/stark -d test/expressions/conversion.st
-	./$(OUT_DIR)/stark -d test/statements/ifelse.st
-	./$(OUT_DIR)/stark -d test/statements/while.st
-	./$(OUT_DIR)/stark -d test/types/string.st
-	./$(OUT_DIR)/stark -d test/structs/declaration.st
-	./$(OUT_DIR)/stark -d test/structs/assignment.st
-	./$(OUT_DIR)/stark -d test/arrays/declaration.st
-	./$(OUT_DIR)/stark -d test/arrays/assignment.st
-	./$(OUT_DIR)/stark -d test/interpreter/args.st arg1 arg2
+	./$(OUT_DIR)/stark -d test/lang/comments.st
+	./$(OUT_DIR)/stark -d test/lang/variables/declaration.st
+	./$(OUT_DIR)/stark -d test/lang/variables/assignment.st
+	./$(OUT_DIR)/stark -d test/lang/functions/declaration.st
+	./$(OUT_DIR)/stark -d test/lang/functions/call.st
+	./$(OUT_DIR)/stark -d test/lang/functions/external.st
+	./$(OUT_DIR)/stark -d test/lang/expressions/binary.st
+	./$(OUT_DIR)/stark -d test/lang/expressions/comparison.st
+	./$(OUT_DIR)/stark -d test/lang/expressions/conversion.st
+	./$(OUT_DIR)/stark -d test/lang/statements/ifelse.st
+	./$(OUT_DIR)/stark -d test/lang/statements/while.st
+	./$(OUT_DIR)/stark -d test/lang/types/string.st
+	./$(OUT_DIR)/stark -d test/lang/structs/declaration.st
+	./$(OUT_DIR)/stark -d test/lang/structs/assignment.st
+	./$(OUT_DIR)/stark -d test/lang/arrays/declaration.st
+	./$(OUT_DIR)/stark -d test/lang/arrays/assignment.st	
 
-test_interpreter: stark
+test_interpreter: starkc stark
+	# Build test module
+	rm -rf $(OUT_DIR)/modules
+	mkdir -p $(OUT_DIR)/modules
+	./$(OUT_DIR)/starkc -o $(OUT_DIR)/modules test/modules/module.st
 	@./$(OUT_DIR)/stark -d test/interpreter/return.st && exit 1 || echo "expected return failure"
+	./$(OUT_DIR)/stark -d test/interpreter/args.st arg1 arg2
+	export STARK_MODULE_PATH=$(OUT_DIR)/modules && ./$(OUT_DIR)/stark -d test/interpreter/import.st
 
 test_compiler: starkc runtime
 	@cd $(ROOT_DIR)/test/compiler/singlefile && make
 	@cd $(ROOT_DIR)/test/compiler/multiplefiles && make
+	@cd $(ROOT_DIR)/test/compiler/multiplemodules && make
 
 test: test_lang test_interpreter test_compiler
 

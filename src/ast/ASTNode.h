@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "../util/Util.h"
 
@@ -19,6 +20,13 @@ namespace stark
   typedef std::vector<ASTExpression *> ASTExpressionList;
   typedef std::vector<ASTVariableDeclaration *> ASTVariableList;
   typedef std::vector<ASTIdentifier *> ASTIdentifierList;
+
+  ASTStatementList cloneList(ASTStatementList list);
+  void deleteList(ASTStatementList list);
+  ASTVariableList cloneList(ASTVariableList list);
+  void deleteList(ASTVariableList list);
+  ASTExpressionList cloneList(ASTExpressionList list);
+  void deleteList(ASTExpressionList list);
 
   enum ASTBinaryOperator
   {
@@ -60,6 +68,12 @@ namespace stark
   public:
     virtual ~ASTStatement() {}
     virtual ASTStatement *clone() = 0;
+    /**
+     * Defines order priority in a source file.
+     * Used when sorting blocks.
+     * The lowest value is the higher priority.
+     * */
+    virtual int getPriority() { return 10; }
   };
 
   class ASTInteger : public ASTExpression
@@ -152,7 +166,16 @@ namespace stark
     ASTStatementList getStatements() { return statements; }
     void addStatement(ASTStatement *s) { statements.push_back(s); }
     ASTBlock *clone();
-    /* Prepend statements of a block to the current block */
+    /**
+     * Sort statments of a block.
+     * Sort order is : types, then functions, then the rest.
+     * */
+    void sort();
+    /** 
+     * Prepend statements of a block to the current block.
+     * If the first statement of the target (this) block is a module declaration :
+     * then statements are inserted right after it.
+     * */
     void preprend(ASTBlock *block);
     void accept(ASTVisitor *visitor);
   };
@@ -251,6 +274,7 @@ namespace stark
     ASTVariableList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     ASTExternDeclaration *clone();
+    int getPriority() { return 2; }
   };
 
   class ASTFunctionDeclaration : public ASTStatement
@@ -267,6 +291,7 @@ namespace stark
     ASTVariableList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     ASTFunctionDeclaration *clone();
+    int getPriority() { return 3; }
   };
 
   class ASTReturnStatement : public ASTStatement
@@ -350,6 +375,7 @@ namespace stark
     ASTVariableList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     ASTStructDeclaration *clone();
+    int getPriority() { return 1; }
   };
 
   class ASTTypeConversion : public ASTExpression
@@ -363,6 +389,30 @@ namespace stark
     ASTIdentifier *getType() { return type.get(); }
     void accept(ASTVisitor *visitor);
     ASTTypeConversion *clone();
+  };
+
+  class ASTModuleDeclaration : public ASTStatement
+  {
+    std::unique_ptr<ASTIdentifier> id;
+
+  public:
+    ASTModuleDeclaration(ASTIdentifier *id) : id(id) {}
+    ASTIdentifier *getId() { return id.get(); }
+    void accept(ASTVisitor *visitor);
+    ASTModuleDeclaration *clone();
+    int getPriority() { return 0; }
+  };
+
+  class ASTImportDeclaration : public ASTStatement
+  {
+    std::unique_ptr<ASTIdentifier> id;
+
+  public:
+    ASTImportDeclaration(ASTIdentifier *id) : id(id) {}
+    ASTIdentifier *getId() { return id.get(); }
+    void accept(ASTVisitor *visitor);
+    ASTImportDeclaration *clone();
+    int getPriority() { return 0; }
   };
 
   /*
@@ -392,6 +442,8 @@ namespace stark
     virtual void visit(ASTArray *node) = 0;
     virtual void visit(ASTTypeConversion *node) = 0;
     virtual void visit(ASTFunctionDeclaration *node) = 0;
+    virtual void visit(ASTModuleDeclaration *node) = 0;
+    virtual void visit(ASTImportDeclaration *node) = 0;
   };
 
 } // namespace stark

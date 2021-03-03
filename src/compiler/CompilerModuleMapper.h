@@ -16,8 +16,11 @@ namespace stark
     class CompilerModuleMapper
     {
 
+        Logger logger;
+
     public:
         CompilerModuleMapper() {}
+        void setDebugEnabled(bool d) { logger.setDebugEnabled(d); }
         /** Add source file to the mapper */
         void addSourceFile(std::string filename);
         /** Analyse provided source files and return a map, 

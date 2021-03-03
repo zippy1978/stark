@@ -14,7 +14,7 @@ using namespace llvm;
 
 namespace stark
 {
-    class CodeGenContext;
+    class CodeGenFileContext;
 
     /**
      * Represents an abstract primary type.
@@ -25,10 +25,10 @@ namespace stark
         std::string name;
         std::string llvmTypeName;
         Type *type;
-        CodeGenContext *context;
+        CodeGenFileContext *context;
 
     public:
-        CodeGenPrimaryType(std::string name, CodeGenContext *context, Type *type, std::string llvmTypeName) : name(name), context(context), type(type), llvmTypeName(llvmTypeName)  {}
+        CodeGenPrimaryType(std::string name, CodeGenFileContext *context, Type *type, std::string llvmTypeName) : name(name), context(context), type(type), llvmTypeName(llvmTypeName)  {}
         Type *getType() { return type; }
         std::string getName() { return name; }
         std::string getLLvmTypeName() { return llvmTypeName; }
@@ -47,7 +47,7 @@ namespace stark
     class CodeGenIntType : public CodeGenPrimaryType
     {
     public:
-        CodeGenIntType(CodeGenContext *context);
+        CodeGenIntType(CodeGenFileContext *context);
         Value* convert(Value* value, std::string typeName, FileLocation location);
         Value* create(long long i, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
@@ -60,7 +60,7 @@ namespace stark
     class CodeGenDoubleType : public CodeGenPrimaryType
     {
     public:
-        CodeGenDoubleType(CodeGenContext *context);
+        CodeGenDoubleType(CodeGenFileContext *context);
         Value* convert(Value* value, std::string typeName, FileLocation location);
         Value* create(double d, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
@@ -73,7 +73,7 @@ namespace stark
     class CodeGenBoolType : public CodeGenPrimaryType
     {
     public:
-        CodeGenBoolType(CodeGenContext *context);
+        CodeGenBoolType(CodeGenFileContext *context);
         Value* convert(Value* value, std::string typeName, FileLocation location);
         Value* create(bool b, FileLocation location);
         Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
@@ -86,7 +86,7 @@ namespace stark
     class CodeGenVoidType : public CodeGenPrimaryType
     {
     public:
-        CodeGenVoidType(CodeGenContext *context);
+        CodeGenVoidType(CodeGenFileContext *context);
     };
 
     /**
@@ -95,7 +95,7 @@ namespace stark
     class CodeGenAnyType : public CodeGenPrimaryType
     {
     public:
-        CodeGenAnyType(CodeGenContext *context);
+        CodeGenAnyType(CodeGenFileContext *context);
     };
 
 } // namespace stark

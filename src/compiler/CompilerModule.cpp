@@ -4,116 +4,74 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <strstream>
-
-#include "../codeGen/CodeGen.h"
-#include "../runtime/Runtime.h"
-#include "../parser/StarkParser.h"
+#include <sys/stat.h>
 
 #include "CompilerModule.h"
 
 namespace stark
 {
-    void CompilerModule::extractDeclarations()
+    void CompilerModule::write(std::string filename)
     {
-        for (auto it = sourceASTs.begin(); it != sourceASTs.end(); it++)
+        // Write module to a directory if it has a header
+        if (headerCode.compare("") != 0)
         {
-            ASTDeclarationExtractor extractor;
+            std::string moduleDir = filename.append("/").append(name);
 
-            std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second.get();
+            if (mkdir(moduleDir.c_str(), 0700) == -1)
+                logger.logError(format("cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
 
-            extractor.visit(sourceBlock);
-            declarationASTs[sourceFilename] = std::unique_ptr<ASTBlock>(extractor.getDeclarationBlock()->clone());
-        }
-    }
+            // Write bitcode
+            std::string bitcodeFilename = moduleDir;
+            bitcodeFilename.append("/").append(name).append(".bc");
+            bitcode.get()->write(bitcodeFilename);
 
-    std::vector<ASTBlock *> CompilerModule::getDeclarationsFor(std::string filename)
-    {
-        std::vector<ASTBlock *> result;
-
-        for (auto it = declarationASTs.begin(); it != declarationASTs.end(); it++)
-        {
-            std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second.get();
-
-            if (filename.compare(sourceFilename) != 0)
+            // Write .sth header
+            std::string sthFilename = moduleDir;
+            sthFilename.append("/").append(name).append(".sth");
+            std::ofstream out(sthFilename);
+            if (!out.is_open())
             {
-                result.push_back(sourceBlock);
+                logger.logError(format("failed to create file %s", sthFilename.c_str()));
             }
+            out << headerCode;
+            out.close();
         }
-
-        return result;
-    }
-
-    void CompilerModule::addSourceFile(std::string filename)
-    {
-        // Read input file
-        std::ifstream input(filename);
-        if (!input)
+        // Without header : outputs directly to the file name
+        else
         {
-            logger.logError(format("Cannot open input file: %s", filename.c_str()));
+            bitcode.get()->write(filename);
         }
-
-        // Parse source file and add to module source ASTs
-        StarkParser parser(filename);
-        sourceASTs[filename] = std::unique_ptr<ASTBlock>(parser.parse(&input));
     }
 
-    void CompilerModule::addSourceFiles(std::vector<std::string> filenames)
+    void CompilerModule::load(std::string filename)
     {
-        for (auto it = filenames.begin(); it != filenames.end(); it++)
+        struct stat buf;
+        stat(filename.c_str(), &buf);
+        bool isDirectory = S_ISDIR(buf.st_mode);
+
+        // If filename is a file
+        if (!isDirectory)
         {
-            addSourceFile(*it);
+            // Load bitcode
+            bitcode = std::make_unique<CodeGenBitcode>(nullptr);
+            bitcode.get()->load(filename);
+        }
+        // If filename is a directory
+        else
+        {
+            // Load bitcode
+            bitcode = std::make_unique<CodeGenBitcode>(nullptr);
+            std::string bitcodePath = filename;
+            bitcodePath.append("/").append(name).append(".bc");
+            bitcode.get()->load(bitcodePath);
+
+            // Load header code
+            std::string headerPath = filename;
+            headerPath.append("/").append(name).append(".sth");
+            std::ifstream t(headerPath);
+            std::string str((std::istreambuf_iterator<char>(t)),
+            std::istreambuf_iterator<char>());
+            headerCode = str;
         }
     }
-
-    void CompilerModule::compile(std::string filename, bool singleMode)
-    {
-        CodeGenModuleLinker linker(this->name);
-        linker.setDebugEnabled(debugEnabled);
-
-        // Load and parse runtime declarations
-        StarkParser parser("runtime");
-        ASTBlock *runtimeDeclarations = parser.parse(Runtime::getDeclarations());
-
-        // Extract module declarations
-        extractDeclarations();
-
-        for (auto it = sourceASTs.begin(); it != sourceASTs.end(); it++)
-        {
-
-            std::string sourceFilename = it->first;
-            ASTBlock *sourceBlock = it->second.get();
-
-            // Preprend other sources declarations
-            std::vector<ASTBlock *> declarations = getDeclarationsFor(sourceFilename);
-            for (auto it2 = declarations.begin(); it2 != declarations.end(); it2++)
-            {
-                ASTBlock *block = *it2;
-                sourceBlock->preprend(block);
-            }
-
-            // Prepend runtime declarations
-            sourceBlock->preprend(runtimeDeclarations);
-
-            // Generate IR
-            CodeGenContext *context = new CodeGenContext(sourceFilename);
-            context->setDebugEnabled(debugEnabled);
-            context->generateCode(sourceBlock);
-
-            // Add to linker
-            linker.addContext(context);
-        }
-
-        delete runtimeDeclarations;
-
-        // Link generated code
-        linker.link();
-
-        // Write code
-        // TODO : if not singleMode, handle module packaging !
-        linker.writeCode(filename);
-    }
-
-} // namespace stark
+}

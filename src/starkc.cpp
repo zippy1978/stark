@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <strstream>
 #include <stdbool.h>
+
+#include "StarkConfig.h"
 
 #include "ast/AST.h"
 #include "parser/StarkParser.h"
@@ -19,12 +20,13 @@ using namespace stark;
 
 typedef struct
 {
-    bool debug = false;
-    bool version = false;
-    int argc = 0;
-    char **argv = nullptr;
-    bool error = false;
-    char *outputfile = nullptr;
+    bool debug;
+    bool version;
+    int argc;
+    char **argv;
+    bool error;
+    char *outputfile;
+    char *modulePath;
 
 } CommandOptions;
 
@@ -36,14 +38,15 @@ void printUsage()
               << "USAGE: starkc [options] filename" << std::endl;
     std::cout << std::endl
               << "OPTIONS:" << std::endl;
-    std::cout << "  -o      Output file name (if single module to build) or directory (if multiple modules to build)" << std::endl;
+    std::cout << "  -o      Output file name or directory name (for modules)" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
+    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
 }
 
 void printVersion()
 {
-    std::cout << stark::format("Stark compiler version %s", VERSION_NUMBER) << std::endl;
+    std::cout << stark::format("Stark compiler version %s", Stark_VERSION) << std::endl;
 }
 
 void parseOptions(int argc, char *argv[])
@@ -52,7 +55,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvo:")) != -1)
+    while ((c = getopt(argc, argv, "dvo:m:")) != -1)
         switch (c)
         {
         case 'd':
@@ -64,8 +67,11 @@ void parseOptions(int argc, char *argv[])
         case 'o':
             options.outputfile = optarg;
             break;
+        case 'm':
+            options.modulePath = optarg;
+            break;
         case '?':
-            if (optopt == 'o')
+            if (optopt == 'o' || optopt == 'm')
                 std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
             else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
@@ -112,6 +118,15 @@ void parseOptions(int argc, char *argv[])
  */
 int main(int argc, char *argv[])
 {
+    // Init options
+    options.debug = false;
+    options.version = false;
+    options.argc = 0;
+    options.argv = nullptr;
+    options.error = false;
+    options.outputfile = nullptr;
+    options.modulePath = nullptr;
+    
     // Parse options
     parseOptions(argc, argv);
 
@@ -145,7 +160,31 @@ int main(int argc, char *argv[])
 
         // Map modules
         CompilerModuleMapper mapper;
+        mapper.setDebugEnabled(options.debug);
         std::map<std::string, std::vector<std::string>> modulesMap = mapper.map(sourceFilenames);
+
+        // Do sources contain a main module ?
+        bool containsMainModule = (modulesMap.find("main") != modulesMap.end());
+
+        if (containsMainModule && modulesMap.size() > 1)
+        {
+            std::cerr << "Cannot compile main executable and modules at the same time" << std::endl;
+            exit(1);
+        }
+
+        // Get module search paths
+        std::vector<std::string> searchPaths;
+        // Environement variable
+        if (const char *modulePath = std::getenv("STARK_MODULE_PATH"))
+        {
+            searchPaths = split(modulePath, ':');
+        }
+        // -m parameter
+        if (options.modulePath != nullptr)
+        {
+            std::vector<std::string> commandSearchPaths = split(options.modulePath, ':');
+            searchPaths.insert(std::end(searchPaths), std::begin(commandSearchPaths), std::end(commandSearchPaths));
+        }
 
         // Build each module
         for (auto it = modulesMap.begin(); it != modulesMap.end(); it++)
@@ -153,11 +192,13 @@ int main(int argc, char *argv[])
             std::string moduleName = it->first;
             std::vector<std::string> moduleSourceFilenames = it->second;
 
-            CompilerModule module(moduleName);
-            module.setDebugEnabled(options.debug);
-            module.addSourceFiles(moduleSourceFilenames);
+            CompilerModuleBuilder moduleBuilder(moduleName, new CompilerModuleLoader(new CompilerModuleResolver(searchPaths)));
+            moduleBuilder.setDebugEnabled(options.debug);
+            moduleBuilder.addSourceFiles(moduleSourceFilenames);
 
-            module.compile(options.outputfile, modulesMap.size() == 1);
+            CompilerModule *module = moduleBuilder.build();
+            module->write(options.outputfile);
+            delete module;
         }
     }
 

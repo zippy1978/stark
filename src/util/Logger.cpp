@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdarg.h>
+
 #include "StringUtil.h"
 
 #include "Logger.h"
@@ -11,8 +12,14 @@ namespace stark
 
     std::string Logger::buildMessage(std::string typeName, FileLocation location, std::string message)
     {
-        return stark::format("%s:%d:%d %s: %s", filename.c_str(), location.line, location.column, typeName.c_str(), message.c_str());
-        
+        if (location.column == 0 && location.line == 0 && filename.compare("unknown") == 0)
+        {
+            return stark::format("%s: %s", typeName.c_str(), message.c_str());
+        }
+        else
+        {
+            return stark::format("%s:%d:%d %s: %s", filename.c_str(), location.line, location.column, typeName.c_str(), message.c_str());
+        }
     }
 
     void Logger::logError(std::string message)

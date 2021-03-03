@@ -2,12 +2,12 @@
 #include <llvm/IR/IRBuilder.h>
 
 #include "CodeGenPrimaryType.h"
-#include "../CodeGenContext.h"
+#include "../CodeGenFileContext.h"
 
 namespace stark
 {
 
-    CodeGenBoolType::CodeGenBoolType(CodeGenContext *context) : CodeGenPrimaryType("bool", context, Type::getInt1Ty(context->llvmContext), "i1") {}
+    CodeGenBoolType::CodeGenBoolType(CodeGenFileContext *context) : CodeGenPrimaryType("bool", context, Type::getInt1Ty(context->getLlvmContext()), "i1") {}
 
     Value *CodeGenBoolType::convert(Value *value, std::string typeName, FileLocation location)
     {
@@ -34,7 +34,7 @@ namespace stark
 
         if (runtimeFunctionName.compare("none") != 0)
         {
-            Function *function = context->getLLvmModule()->getFunction(runtimeFunctionName);
+            Function *function = context->getLlvmModule()->getFunction(runtimeFunctionName);
             if (function == nullptr)
             {
                 context->logger.logError("cannot find runtime function");
@@ -58,7 +58,7 @@ namespace stark
 
     Value *CodeGenBoolType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;
@@ -80,7 +80,7 @@ namespace stark
 
     Value *CodeGenBoolType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
     {
-        IRBuilder<> Builder(context->llvmContext);
+        IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Instruction::BinaryOps instr;
