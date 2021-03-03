@@ -28,7 +28,6 @@ namespace stark
         {
             ASTVariableDeclaration *vd = *it;
             ASTVariableDeclaration *newDeclaration = new ASTVariableDeclaration(extractType(vd->getType()), vd->getId()->clone(), vd->isArray(), vd->getAssignmentExpr() != nullptr ? vd->getAssignmentExpr()->clone() : nullptr);
-            std::cout << ">>>> after process " << newDeclaration->getType()->getFullName() << std::endl;
             result.push_back(newDeclaration);
         }
 
