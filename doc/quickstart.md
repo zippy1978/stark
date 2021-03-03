@@ -6,38 +6,69 @@ In this section, we are going to install Stark, write a first "Hello World" prog
 
 !> At the moment, Stark is still in its early developpment stage, no binary package is available.
 
-!> Build script is only compatible with macOS at the moment !
 
-### Install dependencies
+### Requirements
 
-```bash
-brew install llvm
-brew install flex
-brew install bison
-```
+Stark currently runs on Linux and macOS.
+In order to compile, some tools are required.
 
-### Clone the sources
+#### macOS setup
 
-```bash
-$ git clone https://github.com/zippy1978/stark.git
-```
+Here are the commands to install all the required tools above with [Homebrew](https://brew.sh/) on macOS:
 
-### Build
-
-From the project directory:
 
 ```bash
-$ make
+$ brew install cmake
+$ brew install conan
+$ brew install llvm
+$ brew install flex
+$ brew install bison
+$ brew ninja
 ```
 
-This will build the Stark binaries to the */bin* directory of the project directory and run all tests.
+#### Linux (Ubuntu) setup
 
-Once it is finished, here are the relevant binaries you will get:
+On Linux (tested on Ubuntu), required tools can be installed with:
 
-- **stark** is the interpreter
-- **starkc** is the compiler
-- **libstark.so** is the runtime shared library
-- **libstark.a** is the runtime static library
+```bash
+$ apt-get -y install llvm clang git cmake python python3-pip bison libfl-dev flex ninja-build
+$ pip3 install conan
+```
+
+### Building
+
+Once all the required tools are installed, use the following commands to generate the project (here with ninja build system):
+
+```bash
+# From the project root directory
+# Create build directory
+$ mkdir build && cd build
+# Install conan dependencies
+$ conan install ..
+# Generate ninja project with cmake
+$ cmake -GNinja ..
+```
+
+Then build the project
+
+```bash
+# From the project build directory
+$ ninja
+```
+
+And install it to your system with:
+
+```bash
+# From the project build directory
+$ ninja install
+```
+
+At anytime, Stark can be uninstalled with:
+
+```bash
+# From the project build directory
+$ ninja uninstall
+```
 
 ## A first program: "Hello World"
 
