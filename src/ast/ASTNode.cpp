@@ -123,6 +123,17 @@ namespace stark
         return clone;
     }
 
+    // ASTNull
+
+    void ASTNull::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTNull *ASTNull::clone()
+    {
+        ASTNull *clone = new ASTNull();
+        clone->location = this->location;
+        return clone;
+    }
+
     // ASTIdentifier
 
     void ASTIdentifier::accept(ASTVisitor *visitor) { visitor->visit(this); }

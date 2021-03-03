@@ -171,6 +171,12 @@ namespace stark
         this->result = context->getComplexType("string")->create(node->getValue(), node->location);
     }
 
+    void CodeGenVisitor::visit(ASTNull *node)
+    {
+        context->logger.logDebug(node->location, "creating null");
+        this->result = ConstantPointerNull::getNullValue(Type::getInt8PtrTy(context->getLlvmContext()));
+    }
+
     void CodeGenVisitor::visit(ASTArray *node)
     {
         context->logger.logDebug(node->location, formatv("creating array of {0} elements", node->getArguments().size()));

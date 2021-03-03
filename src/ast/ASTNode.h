@@ -120,6 +120,13 @@ namespace stark
     ASTString *clone();
   };
 
+  class ASTNull : public ASTExpression
+  {
+  public:
+    void accept(ASTVisitor *visitor);
+    ASTNull *clone();
+  };
+
   class ASTArray : public ASTExpression
   {
     ASTExpressionList arguments;
@@ -444,6 +451,7 @@ namespace stark
     virtual void visit(ASTFunctionDeclaration *node) = 0;
     virtual void visit(ASTModuleDeclaration *node) = 0;
     virtual void visit(ASTImportDeclaration *node) = 0;
+    virtual void visit(ASTNull *node) = 0;
   };
 
 } // namespace stark

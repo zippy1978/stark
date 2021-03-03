@@ -22,6 +22,10 @@ namespace stark
             return value;
         }
 
+        if (typeName.compare("any") == 0) {
+            return new BitCastInst(value, context->getPrimaryType("any")->getType(), "", context->getCurrentBlock());
+        }
+
         std::string runtimeFunctionName = "none";
         // int
         if (typeName.compare("int") == 0)

@@ -46,10 +46,11 @@
 %token WHILE
 %token AS
 %token MODULE IMPORT
+%token NULL_VALUE
 
 %type <ident> ident
 %type <identvec> chained_ident
-%type <expr> numeric expr str comparison array type_conversion
+%type <expr> numeric expr str comparison array type_conversion null_value
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl module_import
 %type <varvec> decl_args
@@ -351,6 +352,14 @@ str:
       }
 ;
 
+null_value:
+      NULL_VALUE
+      {
+            $$ = new stark::ASTNull();
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+
 array:
       LBRACKET expr_args RBRACKET
       {
@@ -489,6 +498,8 @@ expr:
       numeric
 | 
       str
+|
+      null_value
 |
       comparison
 |

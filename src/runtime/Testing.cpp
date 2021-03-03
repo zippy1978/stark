@@ -61,6 +61,15 @@ extern "C" void assertFalse(bool actual)
     }
 }
 
+extern "C" void assertNull(stark::any_t actual)
+{
+    if (actual != nullptr)
+    {
+        printf("Assert failure : not null\n");
+        exit(1);
+    }
+}
+
 extern "C" void failure()
 {
     printf("Failure : should not be called\n");

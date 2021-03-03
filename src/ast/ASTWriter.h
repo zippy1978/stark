@@ -40,6 +40,7 @@ namespace stark
     void visit(ASTFunctionDeclaration *node);
     void visit(ASTModuleDeclaration *node);
     void visit(ASTImportDeclaration *node);
+    void visit(ASTNull *node);
     std::string getSourceCode() { return output.str(); }
   };
 

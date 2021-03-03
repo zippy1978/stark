@@ -317,4 +317,9 @@ namespace stark
         node->getId()->accept(this);
     }
 
+    void ASTWriter::visit(ASTNull *node)
+    {
+        output << "null";
+    }
+
 } // namespace stark

@@ -14,10 +14,10 @@ namespace stark
      */
     class CodeGenChecker
     {
-        CodeGenFileContext *context;    
+        CodeGenFileContext *context;
 
     public:
-        CodeGenChecker(CodeGenFileContext *context): context(context) {}
+        CodeGenChecker(CodeGenFileContext *context) : context(context) {}
         void checkNoMemberIdentifier(ASTIdentifier *id);
         void checkTypeIdentifier(ASTIdentifier *typeId);
         void checkModuleIdentifier(ASTIdentifier *moduleId);
@@ -28,6 +28,14 @@ namespace stark
         void checkAllowedFunctionCall(ASTIdentifier *functionId, Function *function, std::vector<Value *> args);
         void checkVariableAssignment(ASTIdentifier *variableId, Value *variable, Value *value);
         void checkAllowedModuleDeclaration(ASTIdentifier *moduleId);
+        /**
+         * Tests if a given LLVM value is a null (constant).
+         */
+        bool isNull(Value *value);
+        /**
+         * Tests if a value can be assign to a type.
+         */
+        bool canAssign(Value *value, std::string typeName);
     };
 
 } // namespace stark

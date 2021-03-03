@@ -1,4 +1,6 @@
 #include <vector>
+#include <llvm/IR/Constant.h>
+#include <llvm/IR/IRBuilder.h>
 
 #include "../CodeGenFileContext.h"
 #include "CodeGenComplexType.h"
@@ -31,7 +33,6 @@ namespace stark
             else
             {
                 memberTypes.push_back(m->type);
-                
             }
         }
 
@@ -65,8 +66,15 @@ namespace stark
 
     Value *CodeGenComplexType::convert(Value *value, std::string typeName, FileLocation location)
     {
-        context->logger.logError(location, formatv("cannot covert type {0} to type {1}", this->name, typeName));
-        return nullptr;
+        if (typeName.compare("any") == 0)
+        {
+            return new BitCastInst(value, context->getPrimaryType("any")->getType(), "", context->getCurrentBlock());
+        }
+        else
+        {
+            context->logger.logError(location, formatv("cannot convert type {0} to type {1}", this->name, typeName));
+            return nullptr;
+        }
     }
 
 } // namespace stark

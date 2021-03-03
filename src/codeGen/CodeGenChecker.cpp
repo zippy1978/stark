@@ -5,6 +5,44 @@
 
 namespace stark
 {
+    bool CodeGenChecker::isNull(Value *value)
+    {
+        std::string valueTypeName = context->getTypeName(value->getType());
+
+        // A null value is always of type any
+        if (valueTypeName.compare("any") == 0)
+        {
+            bool result = false;
+            if (dyn_cast<Constant>(value))
+            {
+                Constant *c = cast<Constant>(value);
+                return c->isNullValue();
+            }
+        }
+        return false;
+    }
+
+    bool CodeGenChecker::canAssign(Value *value, std::string typeName)
+    {
+        std::string valueTypeName = context->getTypeName(value->getType());
+
+        // If value is not null : assignment must be of the same type
+        if (!isNull(value))
+        {
+            if (valueTypeName.compare(typeName) != 0)
+            {
+                return false;
+            }
+        }
+        // Null assignment is only allowed for complex types
+        else if (context->isPrimaryType(typeName))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     void CodeGenChecker::checkNoMemberIdentifier(ASTIdentifier *id)
     {
         if (id->countNestedMembers() > 0)
@@ -26,7 +64,8 @@ namespace stark
     {
         checkNoMemberIdentifier(moduleId);
 
-        if (context->isModuleImported(moduleId->getFullName())) {
+        if (context->isModuleImported(moduleId->getFullName()))
+        {
             context->logger.logError(moduleId->location, formatv("module {0} already imported", moduleId->getFullName()));
         }
     }
@@ -52,12 +91,15 @@ namespace stark
 
     void CodeGenChecker::checkVariableAssignment(ASTIdentifier *variableId, Value *variable, Value *value)
     {
+
         std::string valueTypeName = context->getTypeName(value->getType());
         std::string varTypeName = context->getTypeName(variable->getType()->getPointerElementType());
-        if (varTypeName.compare(valueTypeName) != 0)
+
+        if (!canAssign(value, varTypeName))
         {
             context->logger.logError(variableId->location, formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, variableId->getFullName(), varTypeName));
         }
+
     }
 
     void CodeGenChecker::checkAllowedTypeDeclaration(ASTIdentifier *typeId)
@@ -107,7 +149,7 @@ namespace stark
             Value *argValue = *it;
             std::string argTypeName = context->getTypeName(function->getArg(i)->getType());
             std::string valueTypeName = context->getTypeName(argValue->getType());
-            if (argTypeName.compare(valueTypeName) != 0)
+            if (!canAssign(argValue, argTypeName))
             {
                 context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->getName(), argTypeName, i, valueTypeName));
             }

@@ -131,5 +131,6 @@ namespace stark
     {
         declarationBlock->addStatement(node->clone());
     }
+    void ASTDeclarationExtractor::visit(ASTNull *node) {}
 
 } // namespace stark

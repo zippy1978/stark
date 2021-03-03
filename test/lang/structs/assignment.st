@@ -6,6 +6,7 @@ extern assertIntEquals(actual: int, expected: int): void
 extern assertStringEquals(actual: string, expected: string): void
 extern assertDoubleEquals(actual: double, expected: double): void
 extern assertTrue(actual: bool): void
+extern assertNull(actual: any): void
 extern failure(): void
 
 // Struct with primary types
@@ -34,3 +35,9 @@ superMarket.prices = superMarketPrices
 assertIntEquals(superMarket.name.len, 14)
 assertIntEquals(superMarket.prices.wine, 10)
 assertStringEquals(superMarket.name, "super discount")
+
+// Null assignement
+superMarket.name = null
+assertNull(superMarket.name as any)
+superMarket = null
+assertNull(superMarket as any)

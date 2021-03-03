@@ -3,13 +3,14 @@
  */
 
 extern assertIntEquals(actual: int, expected: int): void
+extern assertNull(actual: any): void
 
-// No arg declaration
+// No arg
 func noArg(): void {
 }
 noArg()
 
-// Declaration with args
+// With args
 func withArgs(a: int, b: int): int {
     return a
 }
@@ -24,3 +25,9 @@ func fib(x: int): int {
     }
 }
 assertIntEquals(fib(9), 34)
+
+// Null return
+func echoString(s: string): string {
+    return s
+}
+assertNull(echoString(null) as any)

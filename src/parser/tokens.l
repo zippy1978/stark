@@ -35,6 +35,7 @@ while                   return parser::token::WHILE;
 as                      return parser::token::AS;
 module                  return parser::token::MODULE;
 import                  return parser::token::IMPORT;
+null                    return parser::token::NULL_VALUE;
 
 [a-zA-Z_][a-zA-Z0-9_]*  return parser::token::IDENTIFIER;
 
