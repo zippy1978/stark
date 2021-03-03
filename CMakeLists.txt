@@ -76,7 +76,7 @@ set(LLVM_MIN_VERSION "11.0.0")
 # Find required packages
 find_package(BISON ${BISON_MIN_VERSION} REQUIRED)
 find_package(FLEX ${FLEX_MIN_VERSION} REQUIRED)
-find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
+#find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
 find_package(LLVM REQUIRED CONFIG)
 
 # Plug conan dependencies
