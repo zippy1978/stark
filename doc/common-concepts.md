@@ -139,20 +139,21 @@ Available comparisons are :
 
 #### The void type
 
-The void type is a special primary type used to mark the absence of value. It cannot be assigned, and is primarly used for functions without a return type.
+The *void* type is a special primary type used to mark the absence of value. It cannot be assigned, and is primarly used for functions without a return type.
 
 ### Complex types
 
 Complex types are types holding more than one value. They are allocated on the heap, and they can have a null value.
 
 Complex types include:
+
 - strings
 - arrays
 - structs (custom types)
 
 ### The string type
 
-The string type is a specific builtin complex type.
+The *string* type is a specific builtin complex type.
 
 It can be initialized with a litteral, and its *len* member can be used to retrieve its length (number of characters):
 
@@ -163,7 +164,7 @@ l: int = s.len
 
 ### Type conversion
 
-A Value of some type can be converted to antoher type using the *as* operator.
+A value of some type can be converted to antoher type using the *as* operator.
 
 Conversion is only supported on primary types and string, and only if the conversion does not cause a data loss:
 
@@ -187,6 +188,42 @@ d = s as double
 ```
 
 ?> When a string cannot be converted to a primary type, the returned value is 0 (false for a bool)
+
+### The any type
+
+The *any* type is, like void, a special primary type used to represent any kind of complex type. It cannot be created from code, and is mainly used to interract with C functions pointers. Under the hood, *any* is an anonymous pointer.
+
+```stark
+// Here 'any' is used to materialize C pointers: char* and FILE*
+extern fopen(filename: any, accessMode: any): any
+extern fprintf(file: any, format: any): int
+extern fclose(file: any): int
+
+filename: string = "output"
+
+// toCString is a builtin runtime function 
+// used to convert a Stark string to a C string (char *) 
+file: any = fopen(toCString(filename), toCString("w"))
+if (file == null) {
+    println("file cannot be opened")
+    return 1
+} else {
+    fprintf(file, toCString("This was witten from Stark !"))
+    fclose(file)
+}
+```
+
+### Nullability
+
+Complex types can be assigned null values, to mark the abscence of value on a variable.
+
+```stark
+s: string = "A string value"
+s = null
+if (s == null) {
+  println("s is null")
+}
+```
 
 ## Functions
 

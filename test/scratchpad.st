@@ -5,6 +5,7 @@ extern fclose(file: any): int
 
 // System
 extern system(command: any): int
+extern sleep(t: int): int
 
 //-----------------------------------------------------------
 
@@ -23,6 +24,9 @@ if (file == null) {
     fclose(file)
 }
 println("finsihed writting file!")
+
+// In seconds
+sleep(1)
 
 if (system(toCString("ls")) != 0) {
     println("cannot run system command")
