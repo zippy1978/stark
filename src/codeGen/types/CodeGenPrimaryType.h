@@ -96,6 +96,7 @@ namespace stark
     {
     public:
         CodeGenAnyType(CodeGenFileContext *context);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
     };
 
 } // namespace stark

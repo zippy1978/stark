@@ -600,19 +600,25 @@ namespace stark
         std::string lhsTypeName = context->getTypeName(vl.result->getType());
         std::string rhsTypeName = context->getTypeName(vr.result->getType());
 
-        // Operands must be of same type
-        if (lhsTypeName.compare(rhsTypeName) != 0)
+        // Primary type
+        if (context->isPrimaryType(lhsTypeName) && context->isPrimaryType(rhsTypeName))
         {
-            context->logger.logError(node->location, formatv("cannot compare values of diffrent types"));
-        }
+            // Operands must be of same type
+            if (lhsTypeName.compare(rhsTypeName) != 0)
+            {
+                context->logger.logError(node->location, "cannot compare values of diffrent types");
+            }
 
-        // Comparisons are supported on primary types only
-        if (!context->isPrimaryType(lhsTypeName))
+            this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->getOp(), vr.result, node->location);
+        }
+        // Complex type
+        else
         {
-            context->logger.logError(node->location, formatv("comparison is not supported on type {0}", lhsTypeName));
-        }
 
-        this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->getOp(), vr.result, node->location);
+            CodeGenComplexType *complexType = context->isPrimaryType(lhsTypeName) ? context->getComplexType(rhsTypeName) : context->getComplexType(lhsTypeName);
+
+            this->result = complexType->createComparison(vl.result, node->getOp(), vr.result, node->location);
+        }
     }
 
     void CodeGenVisitor::visit(ASTIfElseStatement *node)

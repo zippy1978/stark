@@ -77,4 +77,49 @@ namespace stark
         }
     }
 
+    Value *CodeGenComplexType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    {
+        // Complex types can only be compared to null with == or != operators
+
+        std::string lhsTypeName = context->getTypeName(lhs->getType());
+        std::string rhsTypeName = context->getTypeName(rhs->getType());
+
+        if (context->getChecker()->isNull(lhs) || context->getChecker()->isNull(rhs))
+        {
+            if (context->isPrimaryType(lhsTypeName) || context->isPrimaryType(rhsTypeName))
+            {
+                IRBuilder<> Builder(context->getLlvmContext());
+                Builder.SetInsertPoint(context->getCurrentBlock());
+
+                Value *lhsPointer;
+                Value *rhsPointer;
+                // Null is lhs
+                if (context->isPrimaryType(lhsTypeName))
+                {
+                    lhsPointer = lhs;
+                    rhsPointer = Builder.CreateBitCast(rhs, rhs->getType()->getPointerTo());
+                }
+                // Null is rhs
+                else
+                {
+                    lhsPointer = Builder.CreateBitCast(lhs, lhs->getType()->getPointerTo());
+                    rhsPointer = rhs;
+                }
+
+                switch (op)
+                {
+                case EQ:
+                    return Builder.CreateICmpEQ(lhsPointer, rhsPointer, "cmp");
+                    break;
+                case NE:
+                    return Builder.CreateICmpNE(lhsPointer, rhsPointer, "cmp");
+                    break;
+                }
+            }
+        }
+
+        context->logger.logError(location, "comparison not supported");
+        return nullptr;
+    }
+
 } // namespace stark
