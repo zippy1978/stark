@@ -79,6 +79,12 @@ find_package(FLEX ${FLEX_MIN_VERSION} REQUIRED)
 find_package(LLVM REQUIRED CONFIG)
 #find_package(LLVM REQUIRED CONFIG)
 
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
 if (${LLVM_PACKAGE_VERSION} VERSION_LESS LLVM_MIN_VERSION)
     message(FATAL_ERROR "Unsupported LLVM version ${LLVM_PACKAGE_VERSION}, minimum required is ${LLVM_MIN_VERSION}")
 endif()
