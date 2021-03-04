@@ -35,6 +35,7 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 10
+          sudo update-alternatives –install /usr/bin/llvm-config llvm-config /lib/llvm-11/bin/llvm-config 33
     
     - name: Install conan
       run: pip3 install conan
