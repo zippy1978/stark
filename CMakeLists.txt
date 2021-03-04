@@ -69,7 +69,7 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
 endif()
 
 # Set required versions
-set(BISON_MIN_VERSION "3.5.0")
+set(BISON_MIN_VERSION "3.0.0")
 set(FLEX_MIN_VERSION "2.6.0")
 set(LLVM_MIN_VERSION "11.0.0")
 
