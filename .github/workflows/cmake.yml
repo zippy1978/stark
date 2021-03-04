@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-20.04, ubuntu-18.04]
+        os: [ubuntu-20.04, macos-11.0]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,14 +28,23 @@ jobs:
     
     - name: Install tools
       run: |
-          sudo apt-get update 
-          sudo apt-get -y install git cmake bison libfl-dev flex ninja-build
-          sudo apt-get purge --auto-remove llvm
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 10
-          sudo update-alternatives --install /usr/bin/llvm-config llvm-config /lib/llvm-10/bin/llvm-config 33
-          echo LLVM default version is $(llvm-config --version)
+         if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo apt-get update 
+              sudo apt-get -y install git cmake bison libfl-dev flex ninja-build
+              sudo apt-get purge --auto-remove llvm
+              wget https://apt.llvm.org/llvm.sh
+              chmod +x llvm.sh
+              sudo ./llvm.sh 10
+              sudo update-alternatives --install /usr/bin/llvm-config llvm-config /lib/llvm-10/bin/llvm-config 33
+              echo LLVM default version is $(llvm-config --version)
+         else
+              brew install cmake
+              brew install conan
+              brew install llvm
+              brew install flex
+              brew install bison
+              brew ninja
+         fi
     
     - name: Install conan
       run: pip3 install conan
@@ -49,7 +58,12 @@ jobs:
 
     - name: Create build environment
       working-directory: ${{github.workspace}}/build
-      run: cmake -GNinja .. -DLLVM_DIR="$(llvm-config --cmakedir)"
+      run: |
+         if [ "$RUNNER_OS" == "Linux" ]; then
+              cmake -GNinja .. -DLLVM_DIR="$(llvm-config --cmakedir)"
+         else
+              cmake -GNinja ..
+         fi
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
