@@ -10,26 +10,20 @@ namespace stark
 
     Value *CodeGenAnyType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
     {
-        // Edge case : null with null comparison
-        if (context->getChecker()->isNull(lhs) && context->getChecker()->isNull(rhs))
-        {
-            IRBuilder<> Builder(context->getLlvmContext());
-            Builder.SetInsertPoint(context->getCurrentBlock());
+        IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
-            switch (op)
-            {
-            case EQ:
-                return Builder.CreateICmpEQ(lhs, rhs, "cmp");
-                break;
-            case NE:
-                return Builder.CreateICmpNE(lhs, rhs, "cmp");
-                break;
-            }
-        }
-        else
+        switch (op)
         {
-            context->logger.logError(location, formatv("unsupported comparison for type {0}", this->name));
+        case EQ:
+            return Builder.CreateICmpEQ(lhs, rhs, "cmp");
+            break;
+        case NE:
+            return Builder.CreateICmpNE(lhs, rhs, "cmp");
+            break;
         }
+
+        context->logger.logError(location, formatv("unsupported comparison for type {0}", this->name));
         return nullptr;
     }
 
