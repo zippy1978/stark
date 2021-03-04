@@ -29,8 +29,9 @@ jobs:
     - name: Install tools
       run: |
           wget --no-check-certificate -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          add-apt-repository 'deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-10  main'
-          sudo apt-get update && sudo apt-get -y install llvm clang git cmake bison libfl-dev flex ninja-build
+          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-10  main'
+          sudo apt-get update 
+          sudo apt-get -y install llvm clang git cmake bison libfl-dev flex ninja-build
     
     - name: Install conan
       run: pip3 install conan
