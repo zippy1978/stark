@@ -31,8 +31,7 @@ jobs:
       run: |
           sudo apt-get update 
           sudo apt-get -y install git cmake bison libfl-dev flex ninja-build
-          sudo apt-get remove llvm
-          sudo apt-get autoremove
+          sudo apt-get purge --auto-remove llvm
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 10
