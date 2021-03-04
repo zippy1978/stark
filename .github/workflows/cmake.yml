@@ -34,9 +34,6 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 10
-          sudo update-alternatives --install /usr/bin/llvm-config llvm-config /lib/llvm-10/bin/llvm-config 33
-          echo $(update-alternatives --list llvm-config)
-          echo LLVM default version is $(llvm-config --version)
     
     - name: Install conan
       run: pip3 install conan
