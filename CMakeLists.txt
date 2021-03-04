@@ -71,13 +71,17 @@ endif()
 # Set required versions
 set(BISON_MIN_VERSION "3.0.0")
 set(FLEX_MIN_VERSION "2.6.0")
-set(LLVM_MIN_VERSION "11.0.0")
+set(LLVM_MIN_VERSION "10.0.0")
 
 # Find required packages
 find_package(BISON ${BISON_MIN_VERSION} REQUIRED)
 find_package(FLEX ${FLEX_MIN_VERSION} REQUIRED)
-#find_package(LLVM ${LLVM_MIN_VERSION} REQUIRED CONFIG)
 find_package(LLVM REQUIRED CONFIG)
+#find_package(LLVM REQUIRED CONFIG)
+
+if (${LLVM_PACKAGE_VERSION} VERSION_LESS LLVM_MIN_VERSION)
+    message(FATAL_ERROR "Unsupported LLVM version ${LLVM_PACKAGE_VERSION}, minimum required is ${LLVM_MIN_VERSION}")
+endif()
 
 # Plug conan dependencies
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
