@@ -36,8 +36,7 @@ jobs:
               wget https://apt.llvm.org/llvm.sh
               chmod +x llvm.sh
               sudo ./llvm.sh 10
-              sudo update-alternatives --install /usr/bin/llvm-config llvm-config /lib/llvm-10/bin/llvm-config 33
-              echo LLVM default version is $(llvm-config --version)
+              echo LLVM default version is $(/usr/bin/llvm-config-10 --version)
          else
               brew install cmake
               brew install conan
@@ -61,7 +60,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
-              cmake -GNinja .. -DLLVM_DIR="$(llvm-config --cmakedir)"
+              cmake -GNinja .. -DLLVM_DIR="$(/usr/bin/llvm-config-10 --cmakedir)"
          else
               cmake -GNinja ..
          fi
