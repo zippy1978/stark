@@ -2,10 +2,10 @@
  * Binary expressions tests.
  */
 
-extern assertIntEquals(actual: int, expected: int): void
-extern assertDoubleEquals(actual: double, expected: double): void
-extern assertTrue(actual: bool): void
-extern assertFalse(actual: bool): void
+extern assertIntEquals(actual: int, expected: int)
+extern assertDoubleEquals(actual: double, expected: double)
+extern assertTrue(actual: bool)
+extern assertFalse(actual: bool)
 
 // Add
 assertIntEquals(1 + 2, 3)

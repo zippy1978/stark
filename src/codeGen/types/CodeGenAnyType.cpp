@@ -21,6 +21,12 @@ namespace stark
         case NE:
             return Builder.CreateICmpNE(lhs, rhs, "cmp");
             break;
+        case LT:
+        case LE:
+        case GT:
+        case GE:
+        default:
+            break;
         }
 
         context->logger.logError(location, formatv("unsupported comparison for type {0}", this->name));

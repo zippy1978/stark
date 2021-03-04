@@ -2,12 +2,12 @@
  *  String type tests.
  */
 
-extern assertIntEquals(actual: int, expected: int): void
-extern assertStringEquals(actual: string, expected: string): void
-extern assertDoubleEquals(actual: double, expected: double): void
-extern assertTrue(actual: bool): void
-extern assertNull(actual: any): void
-extern failure(): void
+extern assertIntEquals(actual: int, expected: int)
+extern assertStringEquals(actual: string, expected: string)
+extern assertDoubleEquals(actual: double, expected: double)
+extern assertTrue(actual: bool)
+extern assertNull(actual: any)
+extern failure()
 
 // Assignment 
 s: string = "hello"

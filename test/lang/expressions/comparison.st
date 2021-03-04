@@ -2,8 +2,8 @@
  * Comparison expressions tests.
  */
 
-extern assertTrue(actual: bool): void
-extern assertFalse(actual: bool): void
+extern assertTrue(actual: bool)
+extern assertFalse(actual: bool)
 
 // Equal
 assertTrue(1 == 1)

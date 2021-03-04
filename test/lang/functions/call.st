@@ -2,8 +2,8 @@
  *  Function calls tests.
  */
 
-extern assertIntEquals(actual: int, expected: int): void
-extern assertNull(actual: any): void
+extern assertIntEquals(actual: int, expected: int)
+extern assertNull(actual: any)
 
 // No arg
 func noArg(): void {

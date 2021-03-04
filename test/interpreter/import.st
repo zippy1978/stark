@@ -4,8 +4,8 @@
 // Import test module
 import test
 
-extern assertIntEquals(actual: int, expected: int): void
-extern assertStringEquals(actual: string, expected: string): void
+extern assertIntEquals(actual: int, expected: int)
+extern assertStringEquals(actual: string, expected: string)
 
 // Call function, calling a module function
 func anotherFunc(): int {

@@ -131,7 +131,16 @@ namespace stark
             argTypes.push_back(typeOf(*((**it).getType()), context));
         }
 
-        Type *returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType() : typeOf(*type, context);
+        Type *returnType;
+        if (type == nullptr)
+        {
+            returnType = context->getPrimaryType("void")->getType();
+        }
+        else
+        {
+            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType() : typeOf(*type, context);
+        }
+
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
@@ -380,7 +389,18 @@ namespace stark
         }
 
         // Create function
-        Type *returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getFullName())->getType() : typeOf(*node->getType(), context);
+
+        // If no return type : void is assumed
+        Type *returnType;
+        if (node->getType() == nullptr)
+        {
+            returnType = context->getPrimaryType("void")->getType();
+        }
+        else
+        {
+            returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getFullName())->getType() : typeOf(*node->getType(), context);
+        }
+
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html

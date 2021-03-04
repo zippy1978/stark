@@ -2,10 +2,10 @@
  *  If/else statements tests.
  */
 
-extern assertIntEquals(actual: int, expected: int): void
-extern assertDoubleEquals(actual: double, expected: double): void
-extern assertTrue(actual: bool): void
-extern failure(): void
+extern assertIntEquals(actual: int, expected: int)
+extern assertDoubleEquals(actual: double, expected: double)
+extern assertTrue(actual: bool)
+extern failure()
 
 // Simple empty if on main
 if (true) {}

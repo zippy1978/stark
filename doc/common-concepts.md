@@ -246,6 +246,11 @@ func sayHello(): void {
     println("Hello")
     // No need to return here
 }
+
+// When return type is void, it can be omitted
+func noReturn() {
+   println("This function has no return")
+}
 ```
 
 ### Call

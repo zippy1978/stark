@@ -10,3 +10,7 @@ func noArg(): void {
 func withArgs(a: int, b: int): int {
     return a
 }
+
+// Omitted return type
+func noReturn() {
+}

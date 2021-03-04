@@ -300,7 +300,7 @@ namespace stark
     ASTFunctionDefinition *ASTFunctionDefinition::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        ASTFunctionDefinition *clone = new ASTFunctionDefinition(this->getType()->clone(), this->getId()->clone(), arguments, this->getBlock()->clone());
+        ASTFunctionDefinition *clone = new ASTFunctionDefinition(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments, this->getBlock()->clone());
         clone->location = this->location;
         return clone;
     }
@@ -329,7 +329,7 @@ namespace stark
     ASTExternDeclaration *ASTExternDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        ASTExternDeclaration *clone = new ASTExternDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+        ASTExternDeclaration *clone = new ASTExternDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
         clone->location = this->location;
         return clone;
     }
@@ -446,7 +446,7 @@ namespace stark
     ASTFunctionDeclaration *ASTFunctionDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType()->clone(), this->getId()->clone(), arguments);
+        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
         clone->location = this->location;
         return clone;
     }

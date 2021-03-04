@@ -114,6 +114,12 @@ namespace stark
                 case NE:
                     return Builder.CreateICmpNE(lhsPointer, rhsPointer, "cmp");
                     break;
+                case LT:
+                case LE:
+                case GT:
+                case GE:
+                default:
+                    break;
                 }
             }
         }

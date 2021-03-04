@@ -2,9 +2,9 @@
  *  Array assignments tests.
  */
 
-extern assertIntEquals(actual: int, expected: int): void
-extern assertStringEquals(actual: string, expected: string): void
-extern assertDoubleEquals(actual: double, expected: double): void
+extern assertIntEquals(actual: int, expected: int)
+extern assertStringEquals(actual: string, expected: string)
+extern assertDoubleEquals(actual: double, expected: double)
 extern assertTrue(actual: bool): void
 extern failure(): void
 

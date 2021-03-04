@@ -2,10 +2,10 @@
  * Conversion expressions tests.
  */
 
-extern assertStringEquals(actual: string, expected: string): void
-extern assertDoubleEquals(actual: double, expected: double): void
-extern assertIntEquals(actual: int, expected: int): void
-extern assertTrue(actual: bool): void
+extern assertStringEquals(actual: string, expected: string)
+extern assertDoubleEquals(actual: double, expected: double)
+extern assertIntEquals(actual: int, expected: int)
+extern assertTrue(actual: bool)
 
 // int
 i: int = 34
