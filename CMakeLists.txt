@@ -76,7 +76,7 @@ set(LLVM_MIN_VERSION "10.0.0")
 # Find required packages
 find_package(BISON ${BISON_MIN_VERSION} REQUIRED)
 find_package(FLEX ${FLEX_MIN_VERSION} REQUIRED)
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM REQUIRED)
 #find_package(LLVM REQUIRED CONFIG)
 
 get_cmake_property(_variableNames VARIABLES)
@@ -94,7 +94,6 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
 # Uninstall target
-#xargs rm < install_manifest.txt
 add_custom_target(uninstall
         COMMAND xargs rm -f < install_manifest.txt
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
