@@ -1,13 +1,29 @@
-println("test")
-struct ff {
-    t: int,
-    n: string
+// Files
+extern fopen(filename: any, accessMode: any ): any
+extern fprintf(file: any, format: any): int
+extern fclose(file: any): int
+
+// System
+extern system(command: any): int
+
+//-----------------------------------------------------------
+
+if (args.len < 2) {
+    println("filename is missing")
+    return 1
 }
 
-func test(g: ff): void {
-    println(g.n)
+filename: string = args[1]
+file: any = fopen(toCString(filename), toCString("w"))
+if (file == null) {
+    println("file cannot be opened")
+    return 1
+} else {
+    fprintf(file, toCString("This was witten from stark !"))
+    fclose(file)
 }
+println("finsihed writting file!")
 
-f: ff
-f.n = "hello"
-test(f)
+if (system(toCString("ls")) != 0) {
+    println("cannot run system command")
+}

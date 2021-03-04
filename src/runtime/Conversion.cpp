@@ -80,3 +80,21 @@ extern "C" stark::bool_t stark_runtime_priv_conv_string_bool(stark::string_t s)
 {
     return (stark::bool_t) (strcmp( s.data, "true" ) == 0);
 }
+
+// Public functions
+
+extern "C" stark::any_t stark_runtime_pub_toCString(stark::string_t s)
+{
+    char* result = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (s.len + 1));
+    strcpy(result, s.data);
+    return (stark::any_t)result;
+}
+
+extern "C" stark::string_t stark_runtime_pub_fromCString(stark::any_t s)
+{
+    stark::string_t result;
+    result.len = strlen((char *)s);
+    result.data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result.len);
+    strcpy(result.data, (char *)s);
+    return result;
+}
