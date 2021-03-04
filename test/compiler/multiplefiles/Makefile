@@ -20,7 +20,8 @@ ifeq ($(LLC),)
 LLC := /usr/local/opt/llvm/bin/llc
 endif
 
-SANITIZER_FLAGS:=-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1
+#SANITIZER_FLAGS:=-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1
+SANITIZER_FLAGS:=
 
 compile:
 	mkdir -p $(OUT_DIR)
