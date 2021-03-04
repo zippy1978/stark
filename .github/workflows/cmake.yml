@@ -5,6 +5,9 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  CC: /usr/bin/clang
+  CXX: /usr/bin/clang++
+  CTEST_OUTPUT_ON_FAILURE: 1 
 
 jobs:
   build:
@@ -15,7 +18,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest]
+        #os: [ubuntu-20.04, ubuntu-latest]
+        os: [ubuntu-20.04]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,7 +28,16 @@ jobs:
         python-version: 3.8
     
     - name: Install tools
-      run: sudo apt-get update && sudo apt-get -y install llvm clang git cmake bison libfl-dev flex ninja-build
+      run: |
+          sudo apt-get update 
+          sudo apt-get -y install git cmake bison libfl-dev flex ninja-build
+          sudo apt-get purge --auto-remove llvm
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 10
+          sudo update-alternatives --install /usr/bin/llvm-config llvm-config /lib/llvm-10/bin/llvm-config 33
+          echo $(update-alternatives --list llvm-config)
+          echo LLVM default version is $(llvm-config --version)
     
     - name: Install conan
       run: pip3 install conan
@@ -48,7 +61,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DLLVM_DIR=$(llvm-config --cmakedir)
 
     - name: Build
       working-directory: ${{github.workspace}}/build
