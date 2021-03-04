@@ -36,6 +36,7 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 10
           sudo update-alternatives --install /usr/bin/llvm-config llvm-config /lib/llvm-10/bin/llvm-config 33
+          echo $(llvm-config --version)
     
     - name: Install conan
       run: pip3 install conan
