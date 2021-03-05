@@ -16,7 +16,7 @@
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 
-#include "../runtime/Runtime.h"
+#include <runtime/Runtime.h>
 #include "../util/Util.h"
 
 #include "CodeGenConstants.h"

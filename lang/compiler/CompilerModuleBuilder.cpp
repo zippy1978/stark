@@ -6,9 +6,10 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <runtime/Runtime.h>
+
 #include "../ast/AST.h"
 #include "../codeGen/CodeGen.h"
-#include "../runtime/Runtime.h"
 #include "../parser/StarkParser.h"
 
 #include "CompilerModuleBuilder.h"

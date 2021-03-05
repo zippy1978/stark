@@ -100,5 +100,7 @@ add_custom_target(uninstall
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
-add_subdirectory(src)
-add_subdirectory(test)
+add_subdirectory(lang)
+add_subdirectory(runtime)
+add_subdirectory(tools)
+add_subdirectory(tests)
