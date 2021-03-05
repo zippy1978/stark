@@ -326,34 +326,57 @@ namespace stark
     void CodeGenVisitor::visit(ASTVariableDeclaration *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating variable declaration {0} {1}", node->getType()->getFullName(), node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating variable declaration {0}", node->getId()->getName()));
 
         // Check that variable name is available
         context->getChecker()->checkAvailableLocalVariable(node->getId());
 
-        // Type selection : based on the value of the declaration
-        // Except if it is an array
-        Type *type = context->getType(node->getType()->getFullName());
-        if (node->isArray())
+        // var: type [= expr]
+        if (node->getType() != nullptr)
         {
-            type = context->getArrayComplexType(node->getType()->getFullName())->getType();
+            // Type selection : based on the value of the declaration
+            // Except if it is an array
+            Type *type = context->getType(node->getType()->getFullName());
+            if (node->isArray())
+            {
+                type = context->getArrayComplexType(node->getType()->getFullName())->getType();
+            }
+
+            if (type == nullptr)
+            {
+                context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
+            }
+
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getFullName(), node->isArray(), type);
+            context->declareLocal(var);
+
+            if (node->getAssignmentExpr() != nullptr)
+            {
+                ASTAssignment assn(node->getId()->clone(), node->getAssignmentExpr()->clone());
+                CodeGenVisitor v(context);
+                assn.accept(&v);
+            }
+
+            this->result = var->getValue();
         }
-
-        if (type == nullptr)
+        // No type: infer it from assignement (var := expr)
+        else
         {
-            context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
-        }
-
-        CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getFullName(), node->isArray(), type);
-        context->declareLocal(var);
-
-        if (node->getAssignmentExpr() != nullptr)
-        {
-            ASTAssignment assn(node->getId()->clone(), node->getAssignmentExpr()->clone());
             CodeGenVisitor v(context);
-            assn.accept(&v);
+            node->getAssignmentExpr()->accept(&v);
+            Type *type = v.result->getType();
+            std::string typeName = context->getTypeName(type);
+            bool isArray = false;
+            if (context->isArrayType(typeName))
+            {
+                type = context->getArrayComplexType(typeName)->getType();
+                isArray = true;
+            }
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, isArray, type);
+            context->declareLocal(var);
+
+            this->result = new StoreInst(v.result, var->getValue(), false, context->getCurrentBlock());
         }
-        this->result = var->getValue();
     }
 
     void CodeGenVisitor::visit(ASTFunctionDefinition *node)

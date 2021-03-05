@@ -59,3 +59,10 @@ assertIntEquals(shopGroups[0].shops[0].id, 1)
 assertIntEquals(shopGroups[0].shops[1].id, 2)
 assertStringEquals(shopGroups[0].shops[0].name, "shop 1")
 assertStringEquals(shopGroups[0].shops[1].name, "shop 2")
+
+// One line declaration
+oneLineInt := [1, 2]
+assertIntEquals(oneLineInt.len, 2)
+oneLineShops := shops
+assertIntEquals(oneLineShops.len, 2)
+assertStringEquals(oneLineShops[0].name, "shop 1")

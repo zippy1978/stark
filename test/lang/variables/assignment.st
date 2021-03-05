@@ -4,6 +4,7 @@
 
 extern assertIntEquals(actual: int, expected: int)
 extern assertDoubleEquals(actual: double, expected: double)
+extern assertStringEquals(actual: string, expected: string)
 extern assertTrue(actual: bool)
 extern failure()
 
@@ -24,3 +25,7 @@ assertIntEquals(var4, 1)
 // Assignement from expression
 var5: int = 10 * 5
 assertIntEquals(var5, 50)
+
+// One ligne dclaration
+var6 := "hello"
+assertStringEquals(var6, "hello")

@@ -133,6 +133,8 @@ namespace stark
     /** Check if the given type name is a primary type */
     bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }
 
+    bool isArrayType(std::string typeName) { return (typeName.rfind("array.") == 0); }
+
     /** Return LLVM type from a type name */
     Type *getType(std::string typeName);
 

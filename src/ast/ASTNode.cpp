@@ -283,7 +283,7 @@ namespace stark
 
     ASTVariableDeclaration *ASTVariableDeclaration::clone()
     {
-        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType()->clone(), this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
         clone->location = this->location;
         return clone;
     }

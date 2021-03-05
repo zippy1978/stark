@@ -21,6 +21,9 @@ Here are some examples :
 counter: int
 // A variable named message of type string initialized with a string litteral
 message: string = "Hello from Stark lang !"
+
+// When assigned directly, type can be omitted, it is inferred by the assigned value
+anotherMessage := "Hello, I'm inferred !"
 ```
 
 !> For the moment, an uninitialized variable has not default value. This will change in the future.

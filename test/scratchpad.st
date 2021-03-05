@@ -14,8 +14,8 @@ if (args.len < 2) {
     return 1
 }
 
-filename: string = args[1]
-file: any = fopen(toCString(filename), toCString("w"))
+filename := args[1]
+file := fopen(toCString(filename), toCString("w"))
 if (file == null) {
     println("file cannot be opened")
     return 1

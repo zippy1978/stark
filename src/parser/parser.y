@@ -174,6 +174,13 @@ var_decl:
             $$->location.column = @1.begin.column;
       }
 |
+      ident COLON EQUAL expr 
+      { 
+            $$ = new stark::ASTVariableDeclaration(nullptr, $1, false, $4);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+|
       RETURN expr 
       { 
             $$ = new stark::ASTReturnStatement($2);

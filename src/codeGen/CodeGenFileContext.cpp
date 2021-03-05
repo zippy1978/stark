@@ -79,9 +79,8 @@ namespace stark
 		}
 
 		// Not found
-        logger.logError(formatv("unknown type {0}", typeName));
+		logger.logError(formatv("unknown type {0}", typeName));
 		return nullptr;
-
 	}
 
 	std::string CodeGenFileContext::getTypeName(Type *type)
@@ -138,6 +137,12 @@ namespace stark
 
 	CodeGenArrayComplexType *CodeGenFileContext::getArrayComplexType(std::string typeName)
 	{
+		// If typeName is provided with array. prefix : remove it
+		std::string prefix = "array.";
+		if (typeName.rfind(prefix) == 0)
+		{
+			typeName = typeName.erase(0, prefix.length());
+		}
 
 		// First : try to find the array type (if already declared)
 		CodeGenArrayComplexType *arrayComplexType = nullptr;
@@ -319,7 +324,8 @@ namespace stark
 			llvmModule->print(llvm::errs(), nullptr);
 		}
 
-		return new CodeGenBitcode(llvmModule);;
+		return new CodeGenBitcode(llvmModule);
+		;
 	}
 
 	void CodeGenFileContext::initMemoryManager()
