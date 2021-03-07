@@ -3,6 +3,8 @@
 
 using namespace llvm;
 
+#include "../util/Util.h"
+
 namespace stark
 {
     /**
@@ -13,6 +15,8 @@ namespace stark
         Module *llvmModule;
 
         LLVMContext context;
+
+        Logger logger;
 
     public:
         CodeGenBitcode(Module *llvmModule) : llvmModule(llvmModule) {}
