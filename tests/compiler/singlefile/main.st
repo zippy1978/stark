@@ -4,11 +4,14 @@
  *  Hello world using a function.
  */
 
-func printHello(): void {
-    println("hello world")
+
+func printHello(msg: string) {
+    print("hello world ")
+    println(msg)
 }
 
+
 func main(): int {
-    printHello()
+    printHello(null)
     return  0
 }

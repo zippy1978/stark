@@ -114,7 +114,12 @@ namespace stark
 			}
 		}
 
-		// If not a primary type : must be a comlex type : return llvm type name
+		// If not a primary type : must be a complex type : return llvm type name without the "*" pointer
+
+		if (endsWith(llvmTypeName, "*"))
+		{
+			llvmTypeName = llvmTypeName.substr(0, llvmTypeName.size() - 1);
+		}
 		return llvmTypeName;
 	}
 

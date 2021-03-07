@@ -306,11 +306,19 @@ namespace stark
         // Retrieve variable
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node->getLhs(), context);
 
+        Value *assignedValue = v.result;
+
+        // If assigned value is null : bitcast it to th requested type
+        if (context->getChecker()->isNull(v.result))
+        {
+            assignedValue = new BitCastInst(v.result, varValue->getType()->getPointerElementType(), "", context->getCurrentBlock());
+        }
+
         // Check types
-        context->getChecker()->checkVariableAssignment(node->getLhs(), varValue, v.result);
+        context->getChecker()->checkVariableAssignment(node->getLhs(), varValue, assignedValue);
 
         // Store value
-        this->result = new StoreInst(v.result, varValue, false, context->getCurrentBlock());
+        this->result = new StoreInst(assignedValue, varValue, false, context->getCurrentBlock());
     }
 
     void CodeGenVisitor::visit(ASTExpressionStatement *node)
@@ -345,6 +353,12 @@ namespace stark
             if (type == nullptr)
             {
                 context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
+            }
+
+            // All complex types re pointer variables
+            if (!context->isPrimaryType(node->getType()->getFullName()))
+            {
+                type = type->getPointerTo();
             }
 
             CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getFullName(), node->isArray(), type);
