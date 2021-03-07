@@ -6,18 +6,23 @@ namespace stark
 {
     ASTIdentifier *ASTDeclarationExtractor::extractType(ASTIdentifier *typeId)
     {
-        ASTIdentifier *result;
-        if (shouldPrefix(typeId))
+        ASTIdentifier *result = nullptr;
+
+        if (typeId != nullptr)
         {
-            ASTIdentifierList *members = new ASTIdentifierList();
-            members->push_back(typeId->clone());
-            result = new ASTIdentifier(moduleName, nullptr, members);
-            delete members;
+            if (shouldPrefix(typeId))
+            {
+                ASTIdentifierList *members = new ASTIdentifierList();
+                members->push_back(typeId->clone());
+                result = new ASTIdentifier(moduleName, nullptr, members);
+                delete members;
+            }
+            else
+            {
+                return typeId->clone();
+            }
         }
-        else
-        {
-            return typeId->clone();
-        }
+
         return result;
     }
 
@@ -115,7 +120,6 @@ namespace stark
             ASTStructDeclaration *sd = new ASTStructDeclaration(id, clonedArguments);
             sd->location = node->location;
             declarationBlock->addStatement(sd);
-
         }
     }
 
