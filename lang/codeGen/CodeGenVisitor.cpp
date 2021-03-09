@@ -94,7 +94,7 @@ namespace stark
             }
 
             // Load member value
-            //varValue = Builder.CreateLoad(varValue);
+            varValue = Builder.CreateLoad(varValue);
             varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
 
             // Is member a complex type ?
