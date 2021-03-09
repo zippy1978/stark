@@ -67,6 +67,7 @@ namespace stark
             CodeGenComplexTypeMember *elementsMember = complexType->getMember("elements");
 
             // Get elements pointer (and load in between 2 GEPs !)
+            varValue = Builder.CreateLoad(varValue);
             Value *elementsPointer = Builder.CreateStructGEP(varValue, elementsMember->position, "elementptrs");
             varValue = Builder.CreateLoad(elementsPointer);
 
@@ -93,6 +94,7 @@ namespace stark
             }
 
             // Load member value
+            //varValue = Builder.CreateLoad(varValue);
             varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
 
             // Is member a complex type ?
@@ -124,11 +126,26 @@ namespace stark
     Function *CodeGenVisitor::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
     {
         vector<Type *> argTypes;
-        ASTVariableList::const_iterator it;
 
-        for (it = arguments.begin(); it != arguments.end(); it++)
+        for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
-            argTypes.push_back(typeOf(*((**it).getType()), context));
+            ASTVariableDeclaration *vd = *it;
+            std::string typeName = vd->getType()->getFullName();
+            Type *varType = context->getType(typeName);
+
+            // Array case
+            if (vd->getType()->isArray())
+            {
+                varType = context->getArrayComplexType(typeName)->getType()->getPointerTo();
+            }
+
+            // Complex types are pointers !
+            if (!context->isPrimaryType(typeName) && !vd->getType()->isArray())
+            {
+                varType = varType->getPointerTo();
+            }
+
+            argTypes.push_back(varType);
         }
 
         Type *returnType;
@@ -138,7 +155,13 @@ namespace stark
         }
         else
         {
-            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType() : typeOf(*type, context);
+            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType()->getPointerTo() : typeOf(*type, context);
+
+            // Complex types are pointers !
+            if (!context->isPrimaryType(type->getFullName()) && !type->isArray())
+            {
+                returnType = returnType->getPointerTo();
+            }
         }
 
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
@@ -241,7 +264,11 @@ namespace stark
         CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
 
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
-        this->result = Builder.CreateLoad(varValue->getType()->getPointerElementType(), varValue, "load");
+
+        std::string typeName = context->getTypeName(varValue->getType());
+        Type *type = varValue->getType()->getPointerElementType();
+
+        this->result = Builder.CreateLoad(type, varValue, "load");
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -308,10 +335,10 @@ namespace stark
 
         Value *assignedValue = v.result;
 
-        // If assigned value is null : bitcast it to th requested type
+        // If assigned value is null : create appropriate constant
         if (context->getChecker()->isNull(v.result))
         {
-            assignedValue = new BitCastInst(v.result, varValue->getType()->getPointerElementType(), "", context->getCurrentBlock());
+            assignedValue = ConstantPointerNull::getNullValue(varValue->getType()->getPointerElementType());
         }
 
         // Check types
@@ -347,7 +374,8 @@ namespace stark
             Type *type = context->getType(node->getType()->getFullName());
             if (node->isArray())
             {
-                type = context->getArrayComplexType(node->getType()->getFullName())->getType();
+                // Array variables are pointers !
+                type = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
             }
 
             if (type == nullptr)
@@ -355,8 +383,8 @@ namespace stark
                 context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
             }
 
-            // All complex types re pointer variables
-            if (!context->isPrimaryType(node->getType()->getFullName()))
+            // All complex types are pointer variables (be careful not to process array type once again)
+            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->isArray())
             {
                 type = type->getPointerTo();
             }
@@ -386,6 +414,7 @@ namespace stark
                 type = context->getArrayComplexType(typeName)->getType();
                 isArray = true;
             }
+
             CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, isArray, type);
             context->declareLocal(var);
 
@@ -415,13 +444,20 @@ namespace stark
             Type *type = context->getType(v->getType()->getFullName());
             if (v->isArray())
             {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType();
+                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
             }
 
             if (type == nullptr)
             {
                 context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
             }
+
+            // Complex types are pointer variables !
+            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+            {
+                type = type->getPointerTo();
+            }
+
             argTypes.push_back(type);
         }
 
@@ -537,12 +573,28 @@ namespace stark
         // Generate argument values
         std::vector<Value *> args;
         ASTExpressionList arguments = node->getArguments();
-        ASTExpressionList::const_iterator it;
-        for (it = arguments.begin(); it != arguments.end(); it++)
+
+        if (function->arg_size() != node->getArguments().size())
         {
+            context->logger.logError(node->location, formatv("function {0} is expecting {1} argument(s), not {2}", node->getId()->getFullName(), function->arg_size(), args.size()));
+        }
+
+        int i = 0;
+        for (auto it = arguments.begin(); it != arguments.end(); it++)
+        {
+            Value *argVar = function->getArg(i);
             CodeGenVisitor v(context);
             (**it).accept(&v);
-            args.push_back(v.result);
+
+            // If value ids null : set the appropriate null constant
+            Value *assignedValue = v.result;
+            if (context->getChecker()->isNull(v.result))
+            {
+                assignedValue = ConstantPointerNull::getNullValue(argVar->getType());
+            }
+
+            args.push_back(assignedValue);
+            i++;
         }
 
         // Check that function can be called

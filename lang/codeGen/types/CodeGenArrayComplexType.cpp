@@ -10,6 +10,14 @@ using namespace std;
 
 namespace stark
 {
+    /*static void printDebugType(Type *type)
+    {
+        std::string typeStr;
+        llvm::raw_string_ostream rso(typeStr);
+        type->print(rso);
+        std::string llvmTypeName = rso.str();
+        cout << ">>>>>> " << llvmTypeName << endl;
+    }*/
 
     CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
@@ -25,11 +33,15 @@ namespace stark
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
 
+        bool isPrimaryElementType = context->isPrimaryType(context->getTypeName(elementType));
+
+        
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-         // Alloc inner array
-        Type *innerArrayType = ArrayType::get(elementType, values.size());
+        // Alloc inner array
+        // If element type is a complex type : it is a pointer
+        Type *innerArrayType = ArrayType::get(isPrimaryElementType ? elementType : elementType->getPointerTo(), values.size());
         Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         // Initialize inner array with elements
@@ -59,7 +71,7 @@ namespace stark
         Builder.CreateStore(new BitCastInst(innerArrayAlloc, elementType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
 
         // Return new instance
-        return Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
+        return arrayAlloc;
     }
 
 } // namespace stark

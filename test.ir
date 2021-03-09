@@ -1,288 +1,47 @@
-; ModuleID = 'test/scratchpad.st'
-source_filename = "test/scratchpad.st"
+; ModuleID = 'main'
+source_filename = "main"
 
-%array.string = type { %string*, i64 }
 %string = type { i8*, i64 }
-%Employee = type { %string, i64 }
-%Company = type { %string, %array.Employee }
-%array.Employee = type { %Employee*, i64 }
+%array.int = type { i64*, i64 }
 
-define internal i32 @main(%array.string %0) {
+define i64 @main() {
 entry:
-  %args = alloca %array.string, align 8
-  store %array.string %0, %array.string* %args, align 8
   call void @stark_runtime_priv_mm_init()
-  %alloc = call i8* @stark_runtime_priv_mm_alloc(i64 5)
-  %1 = bitcast i8* %alloc to [5 x i8]*
-  %elementptr = getelementptr inbounds [5 x i8], [5 x i8]* %1, i32 0, i32 0
-  store i8 104, i8* %elementptr, align 1
-  %elementptr1 = getelementptr inbounds [5 x i8], [5 x i8]* %1, i32 0, i32 1
-  store i8 101, i8* %elementptr1, align 1
-  %elementptr2 = getelementptr inbounds [5 x i8], [5 x i8]* %1, i32 0, i32 2
-  store i8 108, i8* %elementptr2, align 1
-  %elementptr3 = getelementptr inbounds [5 x i8], [5 x i8]* %1, i32 0, i32 3
-  store i8 108, i8* %elementptr3, align 1
-  %elementptr4 = getelementptr inbounds [5 x i8], [5 x i8]* %1, i32 0, i32 4
-  store i8 111, i8* %elementptr4, align 1
-  %alloc5 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %2 = bitcast i8* %alloc5 to %string*
-  %arrayleninit = getelementptr inbounds %string, %string* %2, i32 0, i32 1
-  store i64 5, i64* %arrayleninit, align 4
-  %arrayeleminit = getelementptr inbounds %string, %string* %2, i32 0, i32 0
-  %3 = bitcast [5 x i8]* %1 to i8*
-  store i8* %3, i8** %arrayeleminit, align 8
-  %load = load %string, %string* %2, align 8
-  call void @stark_runtime_pub_println(%string %load)
-  %mickael = alloca %Employee, align 8
-  %alloc6 = call i8* @stark_runtime_priv_mm_alloc(i64 7)
-  %4 = bitcast i8* %alloc6 to [7 x i8]*
-  %elementptr7 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 0
-  store i8 77, i8* %elementptr7, align 1
-  %elementptr8 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 1
-  store i8 105, i8* %elementptr8, align 1
-  %elementptr9 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 2
-  store i8 99, i8* %elementptr9, align 1
-  %elementptr10 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 3
-  store i8 107, i8* %elementptr10, align 1
-  %elementptr11 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 4
-  store i8 97, i8* %elementptr11, align 1
-  %elementptr12 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 5
-  store i8 101, i8* %elementptr12, align 1
-  %elementptr13 = getelementptr inbounds [7 x i8], [7 x i8]* %4, i32 0, i32 6
-  store i8 108, i8* %elementptr13, align 1
-  %alloc14 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %5 = bitcast i8* %alloc14 to %string*
-  %arrayleninit15 = getelementptr inbounds %string, %string* %5, i32 0, i32 1
-  store i64 7, i64* %arrayleninit15, align 4
-  %arrayeleminit16 = getelementptr inbounds %string, %string* %5, i32 0, i32 0
-  %6 = bitcast [7 x i8]* %4 to i8*
-  store i8* %6, i8** %arrayeleminit16, align 8
-  %load17 = load %string, %string* %5, align 8
-  %memberptr = getelementptr inbounds %Employee, %Employee* %mickael, i32 0, i32 0
-  store %string %load17, %string* %memberptr, align 8
-  %memberptr18 = getelementptr inbounds %Employee, %Employee* %mickael, i32 0, i32 1
-  store i64 32, i64* %memberptr18, align 4
-  %david = alloca %Employee, align 8
-  %alloc19 = call i8* @stark_runtime_priv_mm_alloc(i64 5)
-  %7 = bitcast i8* %alloc19 to [5 x i8]*
-  %elementptr20 = getelementptr inbounds [5 x i8], [5 x i8]* %7, i32 0, i32 0
-  store i8 68, i8* %elementptr20, align 1
-  %elementptr21 = getelementptr inbounds [5 x i8], [5 x i8]* %7, i32 0, i32 1
-  store i8 97, i8* %elementptr21, align 1
-  %elementptr22 = getelementptr inbounds [5 x i8], [5 x i8]* %7, i32 0, i32 2
-  store i8 118, i8* %elementptr22, align 1
-  %elementptr23 = getelementptr inbounds [5 x i8], [5 x i8]* %7, i32 0, i32 3
-  store i8 105, i8* %elementptr23, align 1
-  %elementptr24 = getelementptr inbounds [5 x i8], [5 x i8]* %7, i32 0, i32 4
-  store i8 100, i8* %elementptr24, align 1
-  %alloc25 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %8 = bitcast i8* %alloc25 to %string*
-  %arrayleninit26 = getelementptr inbounds %string, %string* %8, i32 0, i32 1
-  store i64 5, i64* %arrayleninit26, align 4
-  %arrayeleminit27 = getelementptr inbounds %string, %string* %8, i32 0, i32 0
-  %9 = bitcast [5 x i8]* %7 to i8*
-  store i8* %9, i8** %arrayeleminit27, align 8
-  %load28 = load %string, %string* %8, align 8
-  %memberptr29 = getelementptr inbounds %Employee, %Employee* %david, i32 0, i32 0
-  store %string %load28, %string* %memberptr29, align 8
-  %memberptr30 = getelementptr inbounds %Employee, %Employee* %david, i32 0, i32 1
-  store i64 34, i64* %memberptr30, align 4
-  %insideapp = alloca %Company, align 8
-  %alloc31 = call i8* @stark_runtime_priv_mm_alloc(i64 10)
-  %10 = bitcast i8* %alloc31 to [10 x i8]*
-  %elementptr32 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 0
-  store i8 105, i8* %elementptr32, align 1
-  %elementptr33 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 1
-  store i8 110, i8* %elementptr33, align 1
-  %elementptr34 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 2
-  store i8 115, i8* %elementptr34, align 1
-  %elementptr35 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 3
-  store i8 105, i8* %elementptr35, align 1
-  %elementptr36 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 4
-  store i8 100, i8* %elementptr36, align 1
-  %elementptr37 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 5
-  store i8 101, i8* %elementptr37, align 1
-  %elementptr38 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 6
-  store i8 124, i8* %elementptr38, align 1
-  %elementptr39 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 7
-  store i8 97, i8* %elementptr39, align 1
-  %elementptr40 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 8
-  store i8 112, i8* %elementptr40, align 1
-  %elementptr41 = getelementptr inbounds [10 x i8], [10 x i8]* %10, i32 0, i32 9
-  store i8 112, i8* %elementptr41, align 1
-  %alloc42 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %11 = bitcast i8* %alloc42 to %string*
-  %arrayleninit43 = getelementptr inbounds %string, %string* %11, i32 0, i32 1
-  store i64 10, i64* %arrayleninit43, align 4
-  %arrayeleminit44 = getelementptr inbounds %string, %string* %11, i32 0, i32 0
-  %12 = bitcast [10 x i8]* %10 to i8*
-  store i8* %12, i8** %arrayeleminit44, align 8
-  %load45 = load %string, %string* %11, align 8
-  %memberptr46 = getelementptr inbounds %Company, %Company* %insideapp, i32 0, i32 0
-  store %string %load45, %string* %memberptr46, align 8
-  %load47 = load %Employee, %Employee* %mickael, align 8
-  %load48 = load %Employee, %Employee* %david, align 8
-  %alloc49 = call i8* @stark_runtime_priv_mm_alloc(i64 mul (i64 ptrtoint (i1** getelementptr (i1*, i1** null, i32 1) to i64), i64 2))
-  %13 = bitcast i8* %alloc49 to [2 x %Employee]*
-  %elementptr50 = getelementptr inbounds [2 x %Employee], [2 x %Employee]* %13, i32 0, i32 0
-  store %Employee %load47, %Employee* %elementptr50, align 8
-  %elementptr51 = getelementptr inbounds [2 x %Employee], [2 x %Employee]* %13, i32 0, i32 1
-  store %Employee %load48, %Employee* %elementptr51, align 8
-  %alloc52 = call i8* @stark_runtime_priv_mm_alloc(i64 ptrtoint (i1** getelementptr (i1*, i1** null, i32 1) to i64))
-  %14 = bitcast i8* %alloc52 to %array.Employee*
-  %arrayleninit53 = getelementptr inbounds %array.Employee, %array.Employee* %14, i32 0, i32 1
-  store i64 2, i64* %arrayleninit53, align 4
-  %arrayeleminit54 = getelementptr inbounds %array.Employee, %array.Employee* %14, i32 0, i32 0
-  %15 = bitcast [2 x %Employee]* %13 to %Employee*
-  store %Employee* %15, %Employee** %arrayeleminit54, align 8
-  %load55 = load %array.Employee, %array.Employee* %14, align 8
-  %memberptr56 = getelementptr inbounds %Company, %Company* %insideapp, i32 0, i32 1
-  store %array.Employee %load55, %array.Employee* %memberptr56, align 8
-  %alloc57 = call i8* @stark_runtime_priv_mm_alloc(i64 14)
-  %16 = bitcast i8* %alloc57 to [14 x i8]*
-  %elementptr58 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 0
-  store i8 77, i8* %elementptr58, align 1
-  %elementptr59 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 1
-  store i8 121, i8* %elementptr59, align 1
-  %elementptr60 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 2
-  store i8 32, i8* %elementptr60, align 1
-  %elementptr61 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 3
-  store i8 99, i8* %elementptr61, align 1
-  %elementptr62 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 4
-  store i8 111, i8* %elementptr62, align 1
-  %elementptr63 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 5
-  store i8 109, i8* %elementptr63, align 1
-  %elementptr64 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 6
-  store i8 112, i8* %elementptr64, align 1
-  %elementptr65 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 7
-  store i8 97, i8* %elementptr65, align 1
-  %elementptr66 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 8
-  store i8 110, i8* %elementptr66, align 1
-  %elementptr67 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 9
-  store i8 121, i8* %elementptr67, align 1
-  %elementptr68 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 10
-  store i8 32, i8* %elementptr68, align 1
-  %elementptr69 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 11
-  store i8 105, i8* %elementptr69, align 1
-  %elementptr70 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 12
-  store i8 115, i8* %elementptr70, align 1
-  %elementptr71 = getelementptr inbounds [14 x i8], [14 x i8]* %16, i32 0, i32 13
-  store i8 32, i8* %elementptr71, align 1
-  %alloc72 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %17 = bitcast i8* %alloc72 to %string*
-  %arrayleninit73 = getelementptr inbounds %string, %string* %17, i32 0, i32 1
-  store i64 14, i64* %arrayleninit73, align 4
-  %arrayeleminit74 = getelementptr inbounds %string, %string* %17, i32 0, i32 0
-  %18 = bitcast [14 x i8]* %16 to i8*
-  store i8* %18, i8** %arrayeleminit74, align 8
-  %load75 = load %string, %string* %17, align 8
-  call void @stark_runtime_pub_print(%string %load75)
-  %memberptr76 = getelementptr inbounds %Company, %Company* %insideapp, i32 0, i32 0
-  %load77 = load %string, %string* %memberptr76, align 8
-  call void @stark_runtime_pub_println(%string %load77)
-  %alloc78 = call i8* @stark_runtime_priv_mm_alloc(i64 15)
-  %19 = bitcast i8* %alloc78 to [15 x i8]*
-  %elementptr79 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 0
-  store i8 69, i8* %elementptr79, align 1
-  %elementptr80 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 1
-  store i8 109, i8* %elementptr80, align 1
-  %elementptr81 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 2
-  store i8 112, i8* %elementptr81, align 1
-  %elementptr82 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 3
-  store i8 108, i8* %elementptr82, align 1
-  %elementptr83 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 4
-  store i8 111, i8* %elementptr83, align 1
-  %elementptr84 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 5
-  store i8 121, i8* %elementptr84, align 1
-  %elementptr85 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 6
-  store i8 101, i8* %elementptr85, align 1
-  %elementptr86 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 7
-  store i8 101, i8* %elementptr86, align 1
-  %elementptr87 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 8
-  store i8 115, i8* %elementptr87, align 1
-  %elementptr88 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 9
-  store i8 32, i8* %elementptr88, align 1
-  %elementptr89 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 10
-  store i8 97, i8* %elementptr89, align 1
-  %elementptr90 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 11
-  store i8 114, i8* %elementptr90, align 1
-  %elementptr91 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 12
-  store i8 101, i8* %elementptr91, align 1
-  %elementptr92 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 13
-  store i8 58, i8* %elementptr92, align 1
-  %elementptr93 = getelementptr inbounds [15 x i8], [15 x i8]* %19, i32 0, i32 14
-  store i8 32, i8* %elementptr93, align 1
-  %alloc94 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %20 = bitcast i8* %alloc94 to %string*
-  %arrayleninit95 = getelementptr inbounds %string, %string* %20, i32 0, i32 1
-  store i64 15, i64* %arrayleninit95, align 4
-  %arrayeleminit96 = getelementptr inbounds %string, %string* %20, i32 0, i32 0
-  %21 = bitcast [15 x i8]* %19 to i8*
-  store i8* %21, i8** %arrayeleminit96, align 8
-  %load97 = load %string, %string* %20, align 8
-  call void @stark_runtime_pub_println(%string %load97)
-  %i = alloca i64, align 8
-  store i64 0, i64* %i, align 4
-  br label %whiletest
-
-whiletest:                                        ; preds = %while, %entry
-  %load98 = load i64, i64* %i, align 4
-  %memberptr99 = getelementptr inbounds %Company, %Company* %insideapp, i32 0, i32 1
-  %memberptr100 = getelementptr inbounds %array.Employee, %array.Employee* %memberptr99, i32 0, i32 1
-  %load101 = load i64, i64* %memberptr100, align 4
-  %cmp = icmp slt i64 %load98, %load101
-  br i1 %cmp, label %while, label %whilecont
-
-while:                                            ; preds = %whiletest
-  %alloc102 = call i8* @stark_runtime_priv_mm_alloc(i64 3)
-  %22 = bitcast i8* %alloc102 to [3 x i8]*
-  %elementptr103 = getelementptr inbounds [3 x i8], [3 x i8]* %22, i32 0, i32 0
-  store i8 32, i8* %elementptr103, align 1
-  %elementptr104 = getelementptr inbounds [3 x i8], [3 x i8]* %22, i32 0, i32 1
-  store i8 45, i8* %elementptr104, align 1
-  %elementptr105 = getelementptr inbounds [3 x i8], [3 x i8]* %22, i32 0, i32 2
-  store i8 32, i8* %elementptr105, align 1
-  %alloc106 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
-  %23 = bitcast i8* %alloc106 to %string*
-  %arrayleninit107 = getelementptr inbounds %string, %string* %23, i32 0, i32 1
-  store i64 3, i64* %arrayleninit107, align 4
-  %arrayeleminit108 = getelementptr inbounds %string, %string* %23, i32 0, i32 0
-  %24 = bitcast [3 x i8]* %22 to i8*
-  store i8* %24, i8** %arrayeleminit108, align 8
-  %load109 = load %string, %string* %23, align 8
-  call void @stark_runtime_pub_print(%string %load109)
-  %e = alloca %Employee, align 8
-  %memberptr110 = getelementptr inbounds %Company, %Company* %insideapp, i32 0, i32 1
-  %load111 = load i64, i64* %i, align 4
-  %25 = trunc i64 %load111 to i32
-  %elementptrs = getelementptr inbounds %array.Employee, %array.Employee* %memberptr110, i32 0, i32 0
-  %26 = load %Employee*, %Employee** %elementptrs, align 8
-  %27 = getelementptr inbounds %Employee, %Employee* %26, i32 %25
-  %load112 = load %Employee, %Employee* %27, align 8
-  store %Employee %load112, %Employee* %e, align 8
-  %memberptr113 = getelementptr inbounds %Employee, %Employee* %e, i32 0, i32 0
-  %load114 = load %string, %string* %memberptr113, align 8
-  call void @stark_runtime_pub_println(%string %load114)
-  %load115 = load i64, i64* %i, align 4
-  %binop = add i64 %load115, 1
-  store i64 %binop, i64* %i, align 4
-  br label %whiletest
-
-whilecont:                                        ; preds = %whiletest
-  %y = alloca i64, align 8
-  store i64 30, i64* %y, align 4
-  %load116 = load i64, i64* %y, align 4
-  %conv = call %string @stark_runtime_priv_conv_int_string(i64 %load116)
-  call void @stark_runtime_pub_println(%string %conv)
-  ret i32 0
+  %alloc = call i8* @stark_runtime_priv_mm_alloc(i64 2)
+  %0 = bitcast i8* %alloc to [2 x i8]*
+  %elementptr = getelementptr inbounds [2 x i8], [2 x i8]* %0, i32 0, i32 0
+  store i8 102, i8* %elementptr, align 1
+  %elementptr1 = getelementptr inbounds [2 x i8], [2 x i8]* %0, i32 0, i32 1
+  store i8 102, i8* %elementptr1, align 1
+  %alloc2 = call i8* @stark_runtime_priv_mm_alloc(i64 1)
+  %1 = bitcast i8* %alloc2 to %string*
+  %arrayleninit = getelementptr inbounds %string, %string* %1, i32 0, i32 1
+  store i64 2, i64* %arrayleninit, align 4
+  %arrayeleminit = getelementptr inbounds %string, %string* %1, i32 0, i32 0
+  %2 = bitcast [2 x i8]* %0 to i8*
+  store i8* %2, i8** %arrayeleminit, align 8
+  %s = alloca %string*, align 8
+  store %string* %1, %string** %s, align 8
+  %p = alloca %array.int, align 8
+  %alloc3 = call i8* @stark_runtime_priv_mm_alloc(i64 mul nuw (i64 ptrtoint (i64* getelementptr (i64, i64* null, i32 1) to i64), i64 3))
+  %3 = bitcast i8* %alloc3 to [3 x i64]*
+  %elementptr4 = getelementptr inbounds [3 x i64], [3 x i64]* %3, i32 0, i32 0
+  store i64 1, i64* %elementptr4, align 4
+  %elementptr5 = getelementptr inbounds [3 x i64], [3 x i64]* %3, i32 0, i32 1
+  store i64 0, i64* %elementptr5, align 4
+  %elementptr6 = getelementptr inbounds [3 x i64], [3 x i64]* %3, i32 0, i32 2
+  store i64 3, i64* %elementptr6, align 4
+  %alloc7 = call i8* @stark_runtime_priv_mm_alloc(i64 ptrtoint (i1** getelementptr (i1*, i1** null, i32 1) to i64))
+  %4 = bitcast i8* %alloc7 to %array.int*
+  %arrayleninit8 = getelementptr inbounds %array.int, %array.int* %4, i32 0, i32 1
+  store i64 3, i64* %arrayleninit8, align 4
+  %arrayeleminit9 = getelementptr inbounds %array.int, %array.int* %4, i32 0, i32 0
+  %5 = bitcast [3 x i64]* %3 to i64*
+  store i64* %5, i64** %arrayeleminit9, align 8
+  store %array.int* %4, %array.int* %p, align 8
+  ret i64 1
 }
 
 declare void @stark_runtime_priv_mm_init()
 
 declare i8* @stark_runtime_priv_mm_alloc(i64)
-
-declare %string @stark_runtime_priv_conv_int_string(i64)
-
-declare void @stark_runtime_pub_println(%string)
-
-declare void @stark_runtime_pub_print(%string)
