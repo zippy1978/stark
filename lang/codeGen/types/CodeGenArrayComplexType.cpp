@@ -10,18 +10,15 @@ using namespace std;
 
 namespace stark
 {
-    /*static void printDebugType(Type *type)
-    {
-        std::string typeStr;
-        llvm::raw_string_ostream rso(typeStr);
-        type->print(rso);
-        std::string llvmTypeName = rso.str();
-        cout << ">>>>>> " << llvmTypeName << endl;
-    }*/
 
     CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
         Type *t = context->getType(typeName);
+
+        // If element type is a complex type : it is a pointer
+        if (!context->isPrimaryType(typeName)) {
+            t = t->getPointerTo();
+        }
 
         addMember("elements", typeName, t->getPointerTo());
         addMember("len", "int", context->getPrimaryType("int")->getType());
@@ -32,16 +29,13 @@ namespace stark
 
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
-
-        bool isPrimaryElementType = context->isPrimaryType(context->getTypeName(elementType));
-
         
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Alloc inner array
         // If element type is a complex type : it is a pointer
-        Type *innerArrayType = ArrayType::get(isPrimaryElementType ? elementType : elementType->getPointerTo(), values.size());
+        Type *innerArrayType = ArrayType::get(elementType, values.size());
         Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         // Initialize inner array with elements

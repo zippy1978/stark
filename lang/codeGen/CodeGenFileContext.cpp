@@ -274,7 +274,7 @@ namespace stark
 		{
 			// Create the top level interpreter function to call as entry
 			vector<Type *> argTypes;
-			argTypes.push_back(getArrayComplexType("string")->getType());
+			argTypes.push_back(getArrayComplexType("string")->getType()->getPointerTo());
 			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(getLlvmContext()), makeArrayRef(argTypes), false);
 			mainFunction = Function::Create(ftype, GlobalValue::ExternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
 			BasicBlock *bblock = BasicBlock::Create(getLlvmContext(), "entry", mainFunction, 0);

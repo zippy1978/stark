@@ -83,7 +83,7 @@ namespace stark
             std::vector<llvm::Value *> indices;
             indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, 0, true)));
             indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, index, true)));
-            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
+            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "dataptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;
         }
@@ -92,11 +92,11 @@ namespace stark
         Value *arrayAlloc = context->createMemoryAllocation(context->getComplexType("string")->getType(), ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), 1, true), context->getCurrentBlock());
 
         // Set len member
-        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
+        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "stringleninit");
         Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), chars.size(), true), lenMember);
 
         // Set elements member with inner array
-        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
+        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "stringdatainit");
         Builder.CreateStore(new BitCastInst(innerArrayAlloc, charType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
 
         // Return new instance

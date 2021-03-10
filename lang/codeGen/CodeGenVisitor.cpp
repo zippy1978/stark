@@ -18,7 +18,7 @@ using namespace stark;
 namespace stark
 {
 
-    /*
+   /*
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -226,6 +226,7 @@ namespace stark
         {
             CodeGenVisitor v(context);
             (**it).accept(&v);
+
             elementValues.push_back(v.result);
             if (elementType->isVoidTy())
             {

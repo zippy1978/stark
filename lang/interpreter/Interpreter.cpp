@@ -20,6 +20,7 @@
 #include <llvm/ExecutionEngine/MCJIT.h>
 
 #include "../runtime/Runtime.h"
+#include "../runtime/Memory.h"
 #include "../util/Util.h"
 
 #include "Interpreter.h"
@@ -51,28 +52,28 @@ namespace stark
         ee->finalizeObject();
 
         // Build stark string array to pass to main function
-        stark::array_t args;
-        args.len = argc;
-        stark::string_t *elements = (stark::string_t *)malloc(sizeof(stark::string_t) * argc);
+        stark::array_t* args = (stark::array_t*)stark_runtime_priv_mm_alloc(sizeof(stark::array_t));
+        args->len = argc;
+        stark::string_t *elements = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t) * argc);
         for (int i = 0; i < argc; i++)
         {
             stark::string_t s;
             s.len = strlen(argv[i]);
-            s.data = (char *)malloc(sizeof(char) * s.len + 1);
+            s.data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * s.len + 1);
             strcpy(s.data, argv[i]);
             elements[i] = s;
         }
-        args.elements = elements;
+        args->elements = elements;
 
         // Call main function
-        int (*main_func)(stark::array_t) = (int (*)(stark::array_t))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
+        int (*main_func)(stark::array_t*) = (int (*)(stark::array_t*))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
         int retValue = main_func(args);
 
-        for (int i = 0; i < argc; i++)
+        /*for (int i = 0; i < argc; i++)
         {
             free(elements[i].data);
         }
-        free(elements);
+        free(elements);*/
 
         delete ee;
 

@@ -46,12 +46,14 @@ func main(): int {
     //test(p[1])
     
     //x: int[]
-    t: string[] = ["a"]
+    t: string[] = ["a", "gilles"]
     
-    // TODO : fix this, ember lookup should return a string* !
-    s: string = t[0]
+    // TODO : fix this, member lookup should return a string* !
+    t[1] = "ok"
+    println(t[1])
     
-    //println()
+    // this is ok
+    //println(t.len as string)
 
 
     return  0
