@@ -282,11 +282,8 @@ namespace stark
 			// Push a new variable/block context
 			pushBlock(bblock);
 
-			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
+			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType()->getPointerTo());
 			declareLocal(argsVar);
-
-			IRBuilder<> Builder(getLlvmContext());
-			Builder.SetInsertPoint(getCurrentBlock());
 
 			// Get argc and argv values
 			Function::arg_iterator argsValues = mainFunction->arg_begin();

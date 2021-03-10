@@ -54,13 +54,13 @@ namespace stark
         // Build stark string array to pass to main function
         stark::array_t* args = (stark::array_t*)stark_runtime_priv_mm_alloc(sizeof(stark::array_t));
         args->len = argc;
-        stark::string_t *elements = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t) * argc);
+        stark::string_t **elements = (stark::string_t **)stark_runtime_priv_mm_alloc(sizeof(stark::string_t*) * argc);
         for (int i = 0; i < argc; i++)
         {
-            stark::string_t s;
-            s.len = strlen(argv[i]);
-            s.data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * s.len + 1);
-            strcpy(s.data, argv[i]);
+            stark::string_t* s = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t*));
+            s->len = strlen(argv[i]);
+            s->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * s->len + 1);
+            strcpy(s->data, argv[i]);
             elements[i] = s;
         }
         args->elements = elements;
