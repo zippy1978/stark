@@ -11,7 +11,7 @@ func printHello(msg: string) {
     //println(msg)
 }*/
 
-/*
+
 struct Shop {
     id: int,
     name: string
@@ -20,7 +20,7 @@ struct Shop {
 struct ShopGroup {
     shops: Shop[],
     name: string
-}*/
+}
 
 /*
 func test(i: int) {
@@ -46,11 +46,13 @@ func main(): int {
     //test(p[1])
     
     //x: int[]
-    t: string[] = ["a", "gilles"]
+    //t: string[] = ["a", "gilles"]
     
-    // TODO : fix this, member lookup should return a string* !
-    t[1] = "ok"
-    println(t[1])
+    //t[1] = "ok"
+    //println(t[1])
+
+    // TODO
+    s: Shop = Shop(1, "test")
     
     // this is ok
     //println(t.len as string)

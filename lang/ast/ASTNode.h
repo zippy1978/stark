@@ -281,7 +281,13 @@ namespace stark
     ASTVariableList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     ASTExternDeclaration *clone();
-    int getPriority() { return 2; }
+    int getPriority()
+    {
+      // Very special case : runtime alloc function must be on top of the block !
+      // Should not be here (an AST should not know about specific function name)
+      // But, no idea where to put it (CodeGenVisitor : it is too late, as we are still generating code)
+      return id->getFullName().compare("stark_runtime_priv_mm_alloc") == 0 ? -1 : 2;
+    }
   };
 
   class ASTFunctionDeclaration : public ASTStatement

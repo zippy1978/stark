@@ -125,7 +125,6 @@ namespace stark
 
 	void CodeGenFileContext::declareComplexType(CodeGenComplexType *complexType)
 	{
-
 		complexType->declare();
 		complexTypes[complexType->getName()] = std::unique_ptr<CodeGenComplexType>(complexType);
 	}

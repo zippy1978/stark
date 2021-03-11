@@ -61,6 +61,11 @@ namespace stark
         }
     }
 
+    void CodeGenStringComplexType::defineConstructor()
+    {
+        // string constructor is not supported
+    }
+
     Value *CodeGenStringComplexType::create(std::string string, FileLocation location)
     {
 

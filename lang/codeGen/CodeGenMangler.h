@@ -14,6 +14,7 @@ namespace stark
 
     public:
         std::string mangleFunctionName(std::string functionName, std::string moduleName);
+        std::string mangleStructConstructorName(std::string structName, std::string moduleName);
         std::string manglePublicRuntimeFunctionName(std::string functionName);
     };
 

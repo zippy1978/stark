@@ -96,6 +96,8 @@ namespace stark
     /** Checker */
     std::unique_ptr<CodeGenChecker> checker;
 
+    FileLocation currentLocation;
+
   private:
     /** Declare built-in complex types into the LLVMContext */
     void declareComplexTypes();
@@ -180,8 +182,10 @@ namespace stark
      * Be careful : it is only available during code generation
      * */
     Module *getLlvmModule() { return llvmModule; }
-
     LLVMContext &getLlvmContext() { return llvmContext; }
+
+    void setCurrentLocation(FileLocation l) { currentLocation = l; }
+    FileLocation getCurrentLocation() { return currentLocation; }
   };
 
 } // namespace stark

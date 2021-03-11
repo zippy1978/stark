@@ -15,9 +15,7 @@ struct Prices {
     beer: int
 }
 
-superMarketPrices: Prices
-superMarketPrices.wine = 10
-superMarketPrices.beer = 5
+superMarketPrices: Prices = Prices(10, 5)
 
 assertIntEquals(superMarketPrices.wine, 10)
 assertIntEquals(superMarketPrices.beer, 5)
@@ -28,9 +26,7 @@ struct Shop {
     prices: Prices
 }
 
-superMarket: Shop
-superMarket.name = "super discount"
-superMarket.prices = superMarketPrices
+superMarket: Shop = Shop("super discount", superMarketPrices)
 
 assertIntEquals(superMarket.name.len, 14)
 assertIntEquals(superMarket.prices.wine, 10)

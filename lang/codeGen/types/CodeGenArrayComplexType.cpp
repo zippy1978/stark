@@ -24,6 +24,11 @@ namespace stark
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
+    void CodeGenArrayComplexType::defineConstructor()
+    {
+        // Array constructor is not supported
+    }
+
     Value *CodeGenArrayComplexType::create(std::vector<Value *> values, FileLocation location)
     {
 

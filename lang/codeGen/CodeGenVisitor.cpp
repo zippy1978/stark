@@ -18,7 +18,7 @@ using namespace stark;
 namespace stark
 {
 
-   /*
+    /*
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -541,28 +541,46 @@ namespace stark
         std::string functionName = node->getId()->getName();
 
         int memberCount = node->getId()->countNestedMembers();
-        // If identifier has a member : then it is module.function
         Function *function = nullptr;
-        if (memberCount == 1)
+
+        // If id matched a type : look for its constructor
+        if (context->getComplexType(node->getId()->getFullName()) != nullptr)
         {
-            moduleName = node->getId()->getName();
-            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getMember()->getName(), moduleName).c_str());
-        }
+            // If identifier has a member : then it is module.function
+            if (memberCount == 1)
+            {
+                moduleName = node->getId()->getName();
+                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleStructConstructorName(node->getId()->getMember()->getName(), moduleName).c_str());
+            }
+            else
+            {
+                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleStructConstructorName(node->getId()->getName(), moduleName).c_str());
+            }
+                }
         else
         {
-            // Local module stark function
-            function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), moduleName).c_str());
-
-            // Try to find a runtime function
-            if (function == nullptr)
+            // If identifier has a member : then it is module.function
+            if (memberCount == 1)
             {
-                function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
+                moduleName = node->getId()->getName();
+                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getMember()->getName(), moduleName).c_str());
             }
-
-            // Finally : look for an unmangled function
-            if (function == nullptr)
+            else
             {
-                function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
+                // Local module stark function
+                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), moduleName).c_str());
+
+                // Try to find a runtime function
+                if (function == nullptr)
+                {
+                    function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
+                }
+
+                // Finally : look for an unmangled function
+                if (function == nullptr)
+                {
+                    function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
+                }
             }
         }
 
@@ -926,6 +944,7 @@ namespace stark
         {
             structType->addMember((**it).getId()->getName(), (**it).getType()->getFullName(), typeOf(*((**it).getType()), context), (**it).isArray());
         }
+        context->setCurrentLocation(node->location);
         context->declareComplexType(structType);
     }
 

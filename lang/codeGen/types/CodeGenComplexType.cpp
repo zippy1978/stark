@@ -2,6 +2,7 @@
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/IRBuilder.h>
 
+#include "../CodeGenVisitor.h"
 #include "../CodeGenFileContext.h"
 #include "CodeGenComplexType.h"
 
@@ -10,6 +11,66 @@ using namespace std;
 
 namespace stark
 {
+    void CodeGenComplexType::defineConstructor()
+    {
+        // Mangle name
+        std::string functionName = context->getMangler()->mangleStructConstructorName(name, context->getModuleName());
+
+        // Build parameters from members
+        vector<Type *> argTypes;
+        std::vector<std::unique_ptr<CodeGenComplexTypeMember>> &members = this->members;
+        for (auto it = members.begin(); it != members.end(); it++)
+        {
+            CodeGenComplexTypeMember *m = it->get();
+            Type *type = m->type;
+            if (m->array)
+            {
+                type = context->getArrayComplexType(m->typeName)->getType()->getPointerTo();
+            }
+
+            // Complex types are pointer variables !
+            if (!context->isPrimaryType(m->typeName) && !m->array)
+            {
+                type = type->getPointerTo();
+            }
+
+            argTypes.push_back(type);
+        }
+
+        // Create function
+
+        Type *returnType = this->getType()->getPointerTo();
+
+        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
+        // TODO : being able to change function visibility by changing ExternalLinkage
+        // See https://llvm.org/docs/LangRef.html
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
+
+        BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
+
+        context->pushBlock(bblock);
+
+        Function::arg_iterator argsValues = function->arg_begin();
+        Value *argumentValue;
+        std::vector<Value *> inputArgs;
+
+        for (auto it = members.begin(); it != members.end(); it++)
+        {
+            CodeGenComplexTypeMember *m = it->get();
+
+            argumentValue = &*argsValues++;
+            argumentValue->setName(m->name.c_str());
+            inputArgs.push_back(argumentValue);
+        }
+
+        Value *newInstance = this->create(inputArgs, context->getCurrentLocation());
+
+        // Return new instance
+        ReturnInst::Create(context->getLlvmContext(), newInstance, context->getCurrentBlock());
+
+        context->popBlock();
+    }
+
     void CodeGenComplexType::declare()
     {
         // If type already exists
@@ -38,6 +99,8 @@ namespace stark
 
         // Build and store struct type
         type = StructType::create(context->getLlvmContext(), memberTypes, name, false);
+
+        this->defineConstructor();
     }
 
     CodeGenComplexTypeMember *CodeGenComplexType::getMember(std::string name)
@@ -56,7 +119,23 @@ namespace stark
 
     Value *CodeGenComplexType::create(std::vector<Value *> values, FileLocation location)
     {
-        return nullptr;
+        IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        // Create new instance
+        Value *structAlloc = context->createMemoryAllocation(type, ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), 1, true), context->getCurrentBlock());
+
+        // Set member values
+        int i = 0;
+        for (auto it = values.begin(); it != values.end(); it++)
+        {
+            Value *value = *it;
+            Value *memberAddress = Builder.CreateStructGEP(structAlloc, i, "structmemberinit");
+            Builder.CreateStore(value, memberAddress);
+            i++;
+        }
+
+        return structAlloc;
     }
 
     Value *CodeGenComplexType::create(std::string string, FileLocation location)

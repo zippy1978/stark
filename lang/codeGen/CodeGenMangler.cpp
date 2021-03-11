@@ -18,6 +18,12 @@ namespace stark
         }
     }
 
+    std::string CodeGenMangler::mangleStructConstructorName(std::string structName, std::string moduleName)
+    {
+        std::string result = STARK_STRUCT_PREFIX;
+        return result.append(moduleName).append(".").append(structName).append(".constructor");
+    }
+
     std::string CodeGenMangler::manglePublicRuntimeFunctionName(std::string functionName)
     {
         std::string result = STARK_PUBLIC_RUNTIME_FUNCTION_PREFIX;

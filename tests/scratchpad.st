@@ -1,33 +1,11 @@
-// Files
-extern fopen(filename: any, accessMode: any ): any
-extern fprintf(file: any, format: any): int
-extern fclose(file: any): int
-
-// System
-extern system(command: any): int
-extern sleep(t: int): int
-
-//-----------------------------------------------------------
-
-if (args.len < 2) {
-    println("filename is missing")
-    return 1
+struct Shop {
+    id: int,
+    name: string
 }
 
-filename := args[1]
-file := fopen(toCString(filename), toCString("w"))
-if (file == null) {
-    println("file cannot be opened")
-    return 1
-} else {
-    fprintf(file, toCString("This was witten from stark !"))
-    fclose(file)
-}
-println("finsihed writting file!")
+s: Shop = Shop(1, "test")
+//s.name = "ff"
 
-// In seconds
-sleep(1)
-
-if (system(toCString("ls")) != 0) {
-    println("cannot run system command")
-}
+// this does not work !!!
+//println(s.name.len as string)
+println(s.name)
