@@ -33,29 +33,8 @@ func test(i: int) {
 }*/
 
 func main(): int {
-    //s: string = null
-    //s := "ff"
-    //printHello("d")
-    //println(s.len as string)
-    //s.len
-    //p: int[] = [1, 0, 3]
-    //s: Shop
-    //s.id = 1
-    //s.name = "test"
-    //i:int = p[0] + 1
-    //test(p[1])
-    
-    //x: int[]
-    //t: string[] = ["a", "gilles"]
-    
-    //t[1] = "ok"
-    //println(t[1])
-
-    // TODO
     s: Shop = Shop(1, "test")
-    
-    // this is ok
-    //println(t.len as string)
+    println(s.name)
 
 
     return  0

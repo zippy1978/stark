@@ -106,7 +106,7 @@ namespace stark
 
         // Set elements member with inner array
         Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "stringdatainit");
-        Builder.CreateStore(innerArrayAlloc, elementsMemberPointer);
+        Builder.CreateStore(new BitCastInst(innerArrayAlloc, charType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
 
         // Return new instance
         return arrayAlloc;

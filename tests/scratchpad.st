@@ -1,48 +1,23 @@
 /**
- *  Array assignments tests.
+ *  Import with interpreter tests.
  */
+// Import test module
+import test
 
 extern assertIntEquals(actual: int, expected: int)
 extern assertStringEquals(actual: string, expected: string)
-extern assertDoubleEquals(actual: double, expected: double)
-extern assertTrue(actual: bool): void
-extern failure(): void
 
-struct Shop {
-    id: int,
-    name: string
+// Call function, calling a module function
+func anotherFunc(): int {
+    return test.addTest(1, 2)
 }
+assertIntEquals(anotherFunc(), 3)
 
-struct ShopGroup {
-    shops: Shop[],
-    name: string
-}
+// Use a type defined in the module
+t: test.Test
+t.name = "ok"
 
+// Call a module function returning a type defined in the module
+t2: test.Test = test.returnTest()
+assertStringEquals(t2.name, "this is a test")
 
-s1: Shop = Shop(1, "shop 1")
-s2: Shop = Shop(2, "shop 2")
-shops: Shop[] = [s1, s2]
-
-// Array with complex types, containing arrays
-sg: ShopGroup = ShopGroup(shops, "the shop group")
-
-shopGroups: ShopGroup[] = [sg]
-
-
-// Crash here !!!
-// Nested array case !
-shopGroups[0].shops.len
-
-// This works 
-shopGroups[0].shops
-
-//assertIntEquals(shopGroups[0].shops.len, 2)
-
-
-
-
-
-//assertIntEquals(shopGroups[0].shops[0].id, 1)
-//assertIntEquals(shopGroups[0].shops[1].id, 2)
-//assertStringEquals(shopGroups[0].shops[0].name, "shop 1")
-//assertStringEquals(shopGroups[0].shops[1].name, "shop 2")

@@ -13,6 +13,9 @@ namespace stark
 {
     void CodeGenComplexType::defineConstructor()
     {
+        IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
         // Mangle name
         std::string functionName = context->getMangler()->mangleStructConstructorName(name, context->getModuleName());
 
@@ -55,12 +58,16 @@ namespace stark
             argumentValue = &*argsValues++;
             argumentValue->setName(m->name.c_str());
             Type *type = m->type;
-            if (!context->isPrimaryType(m->typeName) && !m->array)
+
+            // Array case
+            if (m->array)
             {
-                type = type->getPointerTo();
+                type = context->getArrayComplexType(m->typeName)->getType()->getPointerTo();
             }
             // Create local var
             context->declareLocal(new CodeGenVariable(m->name, m->typeName, m->array, type));
+
+            
             new StoreInst(argumentValue, context->getLocal(m->name)->getValue(), false, context->getCurrentBlock());
             inputArgs.push_back(context->getLocal(m->name)->getValue());
         }
