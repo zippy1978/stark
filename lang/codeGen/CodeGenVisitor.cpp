@@ -182,37 +182,43 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating integer {0}", node->getValue()));
-        this->result = context->getPrimaryType("int")->create(node->getValue(), node->location);
+        context->setCurrentLocation(node->location);
+        this->result = context->getPrimaryType("int")->create(node->getValue());
     }
 
     void CodeGenVisitor::visit(ASTBoolean *node)
     {
         context->logger.logDebug(node->location, formatv("creating boolean {0}", node->getValue()));
-        this->result = context->getPrimaryType("bool")->create(node->getValue(), node->location);
+        context->setCurrentLocation(node->location);
+        this->result = context->getPrimaryType("bool")->create(node->getValue());
     }
 
     void CodeGenVisitor::visit(ASTDouble *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating double {0}", node->getValue()));
-        this->result = context->getPrimaryType("double")->create(node->getValue(), node->location);
+        context->setCurrentLocation(node->location);
+        this->result = context->getPrimaryType("double")->create(node->getValue());
     }
 
     void CodeGenVisitor::visit(ASTString *node)
     {
         context->logger.logDebug(node->location, formatv("creating string {0}", node->getValue()));
-        this->result = context->getComplexType("string")->create(node->getValue(), node->location);
+        context->setCurrentLocation(node->location);
+        this->result = context->getComplexType("string")->create(node->getValue());
     }
 
     void CodeGenVisitor::visit(ASTNull *node)
     {
         context->logger.logDebug(node->location, "creating null");
+        context->setCurrentLocation(node->location);
         this->result = ConstantPointerNull::getNullValue(Type::getInt8PtrTy(context->getLlvmContext()));
     }
 
     void CodeGenVisitor::visit(ASTArray *node)
     {
         context->logger.logDebug(node->location, formatv("creating array of {0} elements", node->getArguments().size()));
+        context->setCurrentLocation(node->location);
 
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -244,13 +250,14 @@ namespace stark
         }
 
         // Return new instance
-        this->result = context->getArrayComplexType(context->getTypeName(elementType))->create(elementValues, node->location);
+        this->result = context->getArrayComplexType(context->getTypeName(elementType))->create(elementValues);
     }
 
     void CodeGenVisitor::visit(ASTIdentifier *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->getFullName()));
+        context->setCurrentLocation(node->location);
 
         CodeGenVariable *var = context->getLocal(node->getName());
         if (var == nullptr)
@@ -279,6 +286,7 @@ namespace stark
         Value *last = nullptr;
 
         context->logger.logDebug(node->location, "generating block");
+        context->setCurrentLocation(node->location);
 
         bool isOnRoot = context->getCurrentBlock() == nullptr;
 
@@ -317,6 +325,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating assignment for {0}", node->getLhs()->getName()));
+        context->setCurrentLocation(node->location);
 
         // Check declaration
         context->getChecker()->checkAllowedVariableDeclaration(node->getLhs());
@@ -354,6 +363,7 @@ namespace stark
 
         auto &r = *node->getExpression();
         context->logger.logDebug(node->location, formatv("generating code for {0}", typeid(r).name()));
+        context->setCurrentLocation(node->location);
         CodeGenVisitor v(context);
         node->getExpression()->accept(&v);
         this->result = v.result;
@@ -363,6 +373,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating variable declaration {0}", node->getId()->getName()));
+        context->setCurrentLocation(node->location);
 
         // Check that variable name is available
         context->getChecker()->checkAvailableLocalVariable(node->getId());
@@ -428,6 +439,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating function definition for {0}", node->getId()->getName()));
+        context->setCurrentLocation(node->location);
 
         // Check declaration
         context->getChecker()->checkAllowedFunctionDeclaration(node->getId());
@@ -474,7 +486,7 @@ namespace stark
         else
         {
             returnType = typeOf(*node->getType(), context);
-            
+
             // Array case
             if (node->getType()->isArray()) {
                 returnType = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
@@ -548,6 +560,7 @@ namespace stark
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
         context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
+        context->setCurrentLocation(node->location);
 
         std::string moduleName = context->getModuleName();
         std::string functionName = node->getId()->getName();
@@ -639,6 +652,7 @@ namespace stark
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
         context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
+        context->setCurrentLocation(node->location);
 
         std::string moduleName = context->getModuleName();
         std::string functionName = node->getId()->getName();
@@ -668,6 +682,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
+        context->setCurrentLocation(node->location);
 
         std::string functionName = node->getId()->getName();
         ASTVariableList arguments = node->getArguments();
@@ -680,6 +695,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("generating return code {0}", typeid(node->getExpression()).name()));
+        context->setCurrentLocation(node->location);
 
         if (context->getCurrentBlock()->getTerminator() != nullptr)
         {
@@ -700,6 +716,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, formatv("creating binary operation {0}", node->getOp()));
+        context->setCurrentLocation(node->location);
 
         // Evaluate operands
         CodeGenVisitor vl(context);
@@ -722,13 +739,14 @@ namespace stark
             context->logger.logError(node->location, formatv("binary operation is not supported on type {0}", lhsTypeName));
         }
 
-        this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result, node->location);
+        this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result);
     }
 
     void CodeGenVisitor::visit(ASTComparison *node)
     {
 
         context->logger.logDebug(node->location, formatv("creating comparison {0}", node->getOp()));
+        context->setCurrentLocation(node->location);
 
         IRBuilder<> Builder(context->getLlvmContext());
 
@@ -749,7 +767,7 @@ namespace stark
                 context->logger.logError(node->location, "cannot compare values of diffrent types");
             }
 
-            this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->getOp(), vr.result, node->location);
+            this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->getOp(), vr.result);
         }
         // Complex type
         else
@@ -757,7 +775,7 @@ namespace stark
 
             CodeGenComplexType *complexType = context->isPrimaryType(lhsTypeName) ? context->getComplexType(rhsTypeName) : context->getComplexType(lhsTypeName);
 
-            this->result = complexType->createComparison(vl.result, node->getOp(), vr.result, node->location);
+            this->result = complexType->createComparison(vl.result, node->getOp(), vr.result);
         }
     }
 
@@ -765,6 +783,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, "creating if else statement");
+        context->setCurrentLocation(node->location);
 
         // Used to know if else block should be generated
         bool generateElseBlock = (node->getFalseBlock() != nullptr && node->getFalseBlock()->getStatements().size() > 0);
@@ -873,6 +892,7 @@ namespace stark
     {
 
         context->logger.logDebug(node->location, "creating while statement");
+        context->setCurrentLocation(node->location);
 
         // If no statement in block : nothing to do
         if (node->getBlock()->getStatements().size() == 0)
@@ -946,6 +966,7 @@ namespace stark
     void CodeGenVisitor::visit(ASTStructDeclaration *node)
     {
         context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->getId()->getFullName()));
+        context->setCurrentLocation(node->location);
 
         context->getChecker()->checkAllowedTypeDeclaration(node->getId());
 
@@ -956,13 +977,13 @@ namespace stark
         {
             structType->addMember((**it).getId()->getName(), (**it).getType()->getFullName(), typeOf(*((**it).getType()), context), (**it).isArray());
         }
-        context->setCurrentLocation(node->location);
         context->declareComplexType(structType);
     }
 
     void CodeGenVisitor::visit(ASTTypeConversion *node)
     {
         context->logger.logDebug(node->location, formatv("creating type convertion to type {0}", node->getType()->getFullName()));
+        context->setCurrentLocation(node->location);
 
         // Evaluate expression
         CodeGenVisitor v(context);
@@ -973,11 +994,11 @@ namespace stark
         // Type conversion is not suported on complex types
         if (context->isPrimaryType(exprTypeName))
         {
-            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->getType()->getFullName(), node->location);
+            this->result = context->getPrimaryType(exprTypeName)->convert(v.result, node->getType()->getFullName());
         }
         else
         {
-            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getFullName(), node->location);
+            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getFullName());
         }
     }
 
@@ -985,6 +1006,7 @@ namespace stark
     {
         // Module declaration must be delcared as first statement of a file : it should be never directly visited !
         context->logger.logError(node->location, "module declaration is only supported as first statement of a file");
+        context->setCurrentLocation(node->location);
     }
 
     void CodeGenVisitor::visit(ASTImportDeclaration *node)
@@ -995,6 +1017,8 @@ namespace stark
         // TODO: make sure that the imported module was not already imported !
         // And that identifier format is ok
         // >> add a check
+
+        context->setCurrentLocation(node->location);
 
         // Compiler mode
         if (!context->isInterpreterMode())

@@ -71,7 +71,7 @@ namespace stark
             inputArgs.push_back(context->getLocal(m->name)->getValue());
         }
 
-        Value *newInstance = this->create(inputArgs, context->getCurrentLocation());
+        Value *newInstance = this->create(inputArgs);
 
         // Return new instance
         ReturnInst::Create(context->getLlvmContext(), newInstance, context->getCurrentBlock());
@@ -136,7 +136,7 @@ namespace stark
         return nullptr;
     }
 
-    Value *CodeGenComplexType::create(std::vector<Value *> values, FileLocation location)
+    Value *CodeGenComplexType::create(std::vector<Value *> values)
     {
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -158,12 +158,12 @@ namespace stark
         return structAlloc;
     }
 
-    Value *CodeGenComplexType::create(std::string string, FileLocation location)
+    Value *CodeGenComplexType::create(std::string string)
     {
         return nullptr;
     }
 
-    Value *CodeGenComplexType::convert(Value *value, std::string typeName, FileLocation location)
+    Value *CodeGenComplexType::convert(Value *value, std::string typeName)
     {
         if (typeName.compare("any") == 0)
         {
@@ -171,12 +171,12 @@ namespace stark
         }
         else
         {
-            context->logger.logError(location, formatv("cannot convert type {0} to type {1}", this->name, typeName));
+            context->logger.logError(context->getCurrentLocation(), formatv("cannot convert type {0} to type {1}", this->name, typeName));
             return nullptr;
         }
     }
 
-    Value *CodeGenComplexType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    Value *CodeGenComplexType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs)
     {
         // Complex types can only be compared to null with == or != operators
 
@@ -223,7 +223,7 @@ namespace stark
             }
         }
 
-        context->logger.logError(location, "comparison not supported");
+        context->logger.logError(context->getCurrentLocation(), "comparison not supported");
         return nullptr;
     }
 

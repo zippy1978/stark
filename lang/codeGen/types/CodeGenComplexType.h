@@ -63,10 +63,10 @@ namespace stark
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
         bool isArray() { return array; }
-        virtual Value *create(std::vector<Value *> values, FileLocation location);
-        virtual Value *create(std::string string, FileLocation location);
-        virtual Value *convert(Value *value, std::string typeName, FileLocation location);
-        virtual Value *createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
+        virtual Value *create(std::vector<Value *> values);
+        virtual Value *create(std::string string);
+        virtual Value *convert(Value *value, std::string typeName);
+        virtual Value *createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs);
     };
 
     /**
@@ -76,7 +76,7 @@ namespace stark
     {
     public:
         CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context);
-        Value *create(std::vector<Value *> values, FileLocation location);
+        Value *create(std::vector<Value *> values);
         void defineConstructor();
     };
 
@@ -87,8 +87,8 @@ namespace stark
     {
     public:
         CodeGenStringComplexType(CodeGenFileContext *context);
-        Value *convert(Value *value, std::string typeName, FileLocation location);
-        Value *create(std::string string, FileLocation location);
+        Value *convert(Value *value, std::string typeName);
+        Value *create(std::string string);
         void defineConstructor();
     };
 

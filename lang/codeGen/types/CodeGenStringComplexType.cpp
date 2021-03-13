@@ -17,7 +17,7 @@ namespace stark
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
-    Value *CodeGenStringComplexType::convert(Value *value, std::string typeName, FileLocation location)
+    Value *CodeGenStringComplexType::convert(Value *value, std::string typeName)
     {
         if (typeName.compare(this->name) == 0) {
             return value;
@@ -49,7 +49,7 @@ namespace stark
             Function *function = context->getLlvmModule()->getFunction(runtimeFunctionName);
             if (function == nullptr)
             {
-                context->logger.logError("cannot find runtime function");
+                context->logger.logError(context->getCurrentLocation(), "cannot find runtime function");
             }
             std::vector<Value *> args;
             args.push_back(value);
@@ -57,7 +57,7 @@ namespace stark
         }
         else
         {
-            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            context->logger.logError(context->getCurrentLocation(), formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return nullptr;
         }
     }
@@ -67,7 +67,7 @@ namespace stark
         // string constructor is not supported
     }
 
-    Value *CodeGenStringComplexType::create(std::string string, FileLocation location)
+    Value *CodeGenStringComplexType::create(std::string string)
     {
 
         // Create constant vector of the string size

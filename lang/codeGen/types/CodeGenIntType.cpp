@@ -8,7 +8,7 @@ namespace stark
 {
     CodeGenIntType::CodeGenIntType(CodeGenFileContext *context) : CodeGenPrimaryType("int", context, Type::getInt64Ty(context->getLlvmContext()), "i64") {}
 
-    Value *CodeGenIntType::convert(Value *value, std::string typeName, FileLocation location)
+    Value *CodeGenIntType::convert(Value *value, std::string typeName)
     {
         if (typeName.compare(this->name) == 0) {
             return value;
@@ -39,18 +39,18 @@ namespace stark
         }
         else
         {
-            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            context->logger.logError(context->getCurrentLocation(), formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return nullptr;
         }
     }
 
-    Value *CodeGenIntType::create(long long i, FileLocation location)
+    Value *CodeGenIntType::create(long long i)
     {
 
         return ConstantInt::get(this->getType(), i);
     }
 
-    Value *CodeGenIntType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
+    Value *CodeGenIntType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
     {
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -81,7 +81,7 @@ namespace stark
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
-    Value *CodeGenIntType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    Value *CodeGenIntType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs)
     {
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());

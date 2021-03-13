@@ -24,7 +24,7 @@ namespace stark
         // Array constructor is not supported
     }
 
-    Value *CodeGenArrayComplexType::create(std::vector<Value *> values, FileLocation location)
+    Value *CodeGenArrayComplexType::create(std::vector<Value *> values)
     {
 
         // Get array element type

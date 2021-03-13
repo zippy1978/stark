@@ -8,7 +8,7 @@ namespace stark
 {
     CodeGenAnyType::CodeGenAnyType(CodeGenFileContext *context) : CodeGenPrimaryType("any", context, Type::getInt8PtrTy(context->getLlvmContext()), "i8*") {}
 
-    Value *CodeGenAnyType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    Value *CodeGenAnyType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs)
     {
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -29,7 +29,7 @@ namespace stark
             break;
         }
 
-        context->logger.logError(location, formatv("unsupported comparison for type {0}", this->name));
+        context->logger.logError(context->getCurrentLocation(), formatv("unsupported comparison for type {0}", this->name));
         return nullptr;
     }
 

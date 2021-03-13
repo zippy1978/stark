@@ -8,7 +8,7 @@ namespace stark
 {
     CodeGenDoubleType::CodeGenDoubleType(CodeGenFileContext *context) : CodeGenPrimaryType("double", context, Type::getDoubleTy(context->getLlvmContext()), "double") {}
 
-    Value *CodeGenDoubleType::convert(Value *value, std::string typeName, FileLocation location)
+    Value *CodeGenDoubleType::convert(Value *value, std::string typeName)
     {
         if (typeName.compare(this->name) == 0) {
             return value;
@@ -28,18 +28,18 @@ namespace stark
         }
         else
         {
-            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            context->logger.logError(context->getCurrentLocation(), formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return nullptr;
         }
     }
 
-    Value *CodeGenDoubleType::create(double d, FileLocation location)
+    Value *CodeGenDoubleType::create(double d)
     {
 
         return ConstantFP::get(this->getType(), d);
     }
 
-    Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs, FileLocation location)
+    Value *CodeGenDoubleType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
     {
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
@@ -70,7 +70,7 @@ namespace stark
         return Builder.CreateBinOp(instr, lhs, rhs, "binop");
     }
 
-    Value *CodeGenDoubleType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs, FileLocation location)
+    Value *CodeGenDoubleType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs)
     {
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
