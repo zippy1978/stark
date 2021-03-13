@@ -36,6 +36,7 @@ func main(): int {
     s: Shop = Shop(1, "test")
     println(s.name)
 
+    str: string = null
 
     return  0
 }

@@ -79,7 +79,7 @@ namespace stark
 		}
 
 		// Not found
-		logger.logError(formatv("unknown type {0}", typeName));
+		logger.logError(this->getCurrentLocation(), formatv("unknown type {0}", typeName));
 		return nullptr;
 	}
 

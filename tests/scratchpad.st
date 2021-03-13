@@ -16,4 +16,3 @@ func withArgs(a: int, b: int): int {
 func noReturn() {
 }
 
-println("ok")
