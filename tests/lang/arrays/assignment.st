@@ -28,13 +28,9 @@ assertIntEquals(p[1], 2)
 assertIntEquals(p[2], 3)
 
 // Array with complex types
-s1: Shop
-s1.id = 1
-s1.name = "shop 1"
+s1: Shop = Shop(1, "shop 1")
 
-s2: Shop
-s2.id = 2
-s2.name = "shop 2"
+s2: Shop = Shop(2, "shop 2")
 
 shops: Shop[] = [s1, s2]
 
@@ -47,9 +43,7 @@ assertIntEquals(shops[1].name.len, 6)
 assertStringEquals(shops[1].name, "shop 2")
 
 // Array with complex types, containing arrays
-sg: ShopGroup
-sg.shops = shops
-sg.name = "the shop group"
+sg: ShopGroup = ShopGroup(shops, "the shop group")
 
 shopGroups: ShopGroup[] = [sg]
 assertIntEquals(shopGroups.len, 1)

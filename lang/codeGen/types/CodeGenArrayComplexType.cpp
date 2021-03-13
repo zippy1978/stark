@@ -15,11 +15,6 @@ namespace stark
     {
         Type *t = context->getType(typeName);
 
-        // If element type is a complex type : it is a pointer
-        if (!context->isPrimaryType(typeName)) {
-            t = t->getPointerTo();
-        }
-
         addMember("elements", typeName, t->getPointerTo());
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }

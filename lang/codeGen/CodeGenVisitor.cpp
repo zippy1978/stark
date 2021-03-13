@@ -18,7 +18,6 @@ using namespace stark;
 namespace stark
 {
 
-    /*
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -35,7 +34,7 @@ namespace stark
         value->print(rso);
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
-    }*/
+    }
 
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
@@ -43,9 +42,13 @@ namespace stark
      */
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenFileContext *context)
     {
+        std::cout << "###### in " << std::endl;
+        printDebugType(varValue);
 
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
+
+        printDebugType(varValue);
 
         // Array case : must point to index element
         if (identifier->getIndex() != nullptr)
@@ -94,8 +97,12 @@ namespace stark
             }
 
             // Load member value
+            std::cout << "###### 1 " << std::endl;
+            printDebugType(varValue);
             varValue = Builder.CreateLoad(varValue);
             varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
+            printDebugType(varValue);
+            std::cout << "###### 2 " << std::endl;
 
             // Is member a complex type ?
             // Handle special type lookup for array
@@ -266,9 +273,10 @@ namespace stark
 
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
 
-        std::string typeName = context->getTypeName(varValue->getType());
         Type *type = varValue->getType()->getPointerElementType();
 
+        std::cout << "#### ident " << std::endl;
+        printDebugType(varValue);
         this->result = Builder.CreateLoad(type, varValue, "load");
     }
 
@@ -333,7 +341,7 @@ namespace stark
 
         // Retrieve variable
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node->getLhs(), context);
-
+       
         Value *assignedValue = v.result;
 
         // If assigned value is null : create appropriate constant
@@ -409,10 +417,11 @@ namespace stark
             node->getAssignmentExpr()->accept(&v);
             Type *type = v.result->getType();
             std::string typeName = context->getTypeName(type);
+
             bool isArray = false;
             if (context->isArrayType(typeName))
             {
-                type = context->getArrayComplexType(typeName)->getType();
+                type = context->getArrayComplexType(typeName)->getType()->getPointerTo();
                 isArray = true;
             }
 
@@ -556,7 +565,7 @@ namespace stark
             {
                 function = context->getLlvmModule()->getFunction(context->getMangler()->mangleStructConstructorName(node->getId()->getName(), moduleName).c_str());
             }
-                }
+        }
         else
         {
             // If identifier has a member : then it is module.function

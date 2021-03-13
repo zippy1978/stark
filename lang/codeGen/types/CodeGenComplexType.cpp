@@ -28,12 +28,6 @@ namespace stark
                 type = context->getArrayComplexType(m->typeName)->getType()->getPointerTo();
             }
 
-            // Complex types are pointer variables !
-            if (!context->isPrimaryType(m->typeName) && !m->array)
-            {
-                type = type->getPointerTo();
-            }
-
             argTypes.push_back(type);
         }
 
@@ -60,7 +54,15 @@ namespace stark
 
             argumentValue = &*argsValues++;
             argumentValue->setName(m->name.c_str());
-            inputArgs.push_back(argumentValue);
+            Type *type = m->type;
+            if (!context->isPrimaryType(m->typeName) && !m->array)
+            {
+                type = type->getPointerTo();
+            }
+            // Create local var
+            context->declareLocal(new CodeGenVariable(m->name, m->typeName, m->array, type));
+            new StoreInst(argumentValue, context->getLocal(m->name)->getValue(), false, context->getCurrentBlock());
+            inputArgs.push_back(context->getLocal(m->name)->getValue());
         }
 
         Value *newInstance = this->create(inputArgs, context->getCurrentLocation());
@@ -103,6 +105,16 @@ namespace stark
         this->defineConstructor();
     }
 
+    void CodeGenComplexType::addMember(std::string name, std::string typeName, Type *type, bool array)
+    {
+        // Complex types are pointers !
+        if (!context->isPrimaryType(typeName))
+        {
+            type = type->getPointerTo();
+        }
+        members.push_back(std::make_unique<CodeGenComplexTypeMember>(name, typeName, members.size(), type, array));
+    }
+
     CodeGenComplexTypeMember *CodeGenComplexType::getMember(std::string name)
     {
         for (auto it = std::begin(members); it != std::end(members); ++it)
@@ -131,6 +143,7 @@ namespace stark
         {
             Value *value = *it;
             Value *memberAddress = Builder.CreateStructGEP(structAlloc, i, "structmemberinit");
+            value = Builder.CreateLoad(value);
             Builder.CreateStore(value, memberAddress);
             i++;
         }

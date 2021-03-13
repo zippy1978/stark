@@ -10,9 +10,10 @@ using namespace std;
 
 namespace stark
 {
+
     CodeGenStringComplexType::CodeGenStringComplexType(CodeGenFileContext *context) : CodeGenComplexType("string", context)
     {
-        addMember("data", "-", Type::getInt8PtrTy(context->getLlvmContext()));
+        addMember("data", "any", context->getPrimaryType("any")->getType());
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
@@ -81,7 +82,9 @@ namespace stark
 
         Type *charType = Type::getInt8Ty(context->getLlvmContext());
 
-        Value *innerArrayAlloc = context->createMemoryAllocation(ArrayType::get(charType, chars.size()), ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), chars.size(), true), context->getCurrentBlock());
+        Type *innerArrayType = ArrayType::get(charType, chars.size());
+        Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
+        Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         long index = 0;
         for (auto it = chars.begin(); it != chars.end(); it++)
         {
@@ -96,13 +99,14 @@ namespace stark
         // Create array instance
         Value *arrayAlloc = context->createMemoryAllocation(context->getComplexType("string")->getType(), ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), 1, true), context->getCurrentBlock());
 
+
         // Set len member
         Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "stringleninit");
         Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), chars.size(), true), lenMember);
 
         // Set elements member with inner array
         Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "stringdatainit");
-        Builder.CreateStore(new BitCastInst(innerArrayAlloc, charType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
+        Builder.CreateStore(innerArrayAlloc, elementsMemberPointer);
 
         // Return new instance
         return arrayAlloc;

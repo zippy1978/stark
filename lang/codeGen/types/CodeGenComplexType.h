@@ -58,7 +58,7 @@ namespace stark
 
         /** Returns the complex type llvm::StructType, returns nullptr is complex type is not declared yet */
         StructType *getType() { return type; }
-        void addMember(std::string name, std::string typeName, Type *type, bool array) { members.push_back(std::make_unique<CodeGenComplexTypeMember>(name, typeName, members.size(), type, array)); }
+        void addMember(std::string name, std::string typeName, Type *type, bool array);
         void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false); }
         CodeGenComplexTypeMember *getMember(std::string name);
         std::string getName() { return name; }
