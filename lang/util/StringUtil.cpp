@@ -19,6 +19,13 @@ namespace stark
         return tokens;
     }
 
+    bool endsWith(std::string const &value, std::string const &ending)
+    {
+        if (ending.size() > value.size())
+            return false;
+        return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+    }
+
     std::string ltrim(std::string s)
     {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {

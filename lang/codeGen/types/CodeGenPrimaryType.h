@@ -33,12 +33,12 @@ namespace stark
         std::string getName() { return name; }
         std::string getLLvmTypeName() { return llvmTypeName; }
         /* Convert a value of the current type to a given type */
-        virtual Value* convert(Value* value, std::string typeName, FileLocation location);
-        virtual Value* create(long long i, FileLocation location);
-        virtual Value* create(double d, FileLocation location);
-        virtual Value* create(bool b, FileLocation location);
-        virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
-        virtual Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
+        virtual Value* convert(Value* value, std::string typeName);
+        virtual Value* create(long long i);
+        virtual Value* create(double d);
+        virtual Value* create(bool b);
+        virtual Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        virtual Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs);
     };
 
     /**
@@ -48,10 +48,10 @@ namespace stark
     {
     public:
         CodeGenIntType(CodeGenFileContext *context);
-        Value* convert(Value* value, std::string typeName, FileLocation location);
-        Value* create(long long i, FileLocation location);
-        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
-        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
+        Value* convert(Value* value, std::string typeName);
+        Value* create(long long i);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs);
     };
 
     /**
@@ -61,10 +61,10 @@ namespace stark
     {
     public:
         CodeGenDoubleType(CodeGenFileContext *context);
-        Value* convert(Value* value, std::string typeName, FileLocation location);
-        Value* create(double d, FileLocation location);
-        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
-        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
+        Value* convert(Value* value, std::string typeName);
+        Value* create(double d);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs);
     };
 
     /**
@@ -74,10 +74,10 @@ namespace stark
     {
     public:
         CodeGenBoolType(CodeGenFileContext *context);
-        Value* convert(Value* value, std::string typeName, FileLocation location);
-        Value* create(bool b, FileLocation location);
-        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs, FileLocation location);
-        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
+        Value* convert(Value* value, std::string typeName);
+        Value* create(bool b);
+        Value* createBinaryOperation(Value * lhs, ASTBinaryOperator op, Value *rhs);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs);
     };
 
     /**
@@ -96,7 +96,7 @@ namespace stark
     {
     public:
         CodeGenAnyType(CodeGenFileContext *context);
-        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs, FileLocation location);
+        Value* createComparison(Value * lhs, ASTComparisonOperator op, Value *rhs);
     };
 
 } // namespace stark

@@ -16,7 +16,5 @@
 
  // A funtion returning a Test type
  func returnTest(): Test {
-     t: Test
-     t.name = "this is a test"
-     return t
+     return Test("this is a test")
  }

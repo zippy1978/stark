@@ -10,13 +10,14 @@ using namespace std;
 
 namespace stark
 {
+
     CodeGenStringComplexType::CodeGenStringComplexType(CodeGenFileContext *context) : CodeGenComplexType("string", context)
     {
-        addMember("data", "-", Type::getInt8PtrTy(context->getLlvmContext()));
+        addMember("data", "any", context->getPrimaryType("any")->getType());
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
-    Value *CodeGenStringComplexType::convert(Value *value, std::string typeName, FileLocation location)
+    Value *CodeGenStringComplexType::convert(Value *value, std::string typeName)
     {
         if (typeName.compare(this->name) == 0) {
             return value;
@@ -48,7 +49,7 @@ namespace stark
             Function *function = context->getLlvmModule()->getFunction(runtimeFunctionName);
             if (function == nullptr)
             {
-                context->logger.logError("cannot find runtime function");
+                context->logger.logError(context->getCurrentLocation(), "cannot find runtime function");
             }
             std::vector<Value *> args;
             args.push_back(value);
@@ -56,12 +57,17 @@ namespace stark
         }
         else
         {
-            context->logger.logError(location, formatv("conversion from {0} to {1} is not supported", this->name, typeName));
+            context->logger.logError(context->getCurrentLocation(), formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return nullptr;
         }
     }
 
-    Value *CodeGenStringComplexType::create(std::string string, FileLocation location)
+    void CodeGenStringComplexType::defineConstructor()
+    {
+        // string constructor is not supported
+    }
+
+    Value *CodeGenStringComplexType::create(std::string string)
     {
 
         // Create constant vector of the string size
@@ -76,14 +82,16 @@ namespace stark
 
         Type *charType = Type::getInt8Ty(context->getLlvmContext());
 
-        Value *innerArrayAlloc = context->createMemoryAllocation(ArrayType::get(charType, chars.size()), ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), chars.size(), true), context->getCurrentBlock());
+        Type *innerArrayType = ArrayType::get(charType, chars.size());
+        Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
+        Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         long index = 0;
         for (auto it = chars.begin(); it != chars.end(); it++)
         {
             std::vector<llvm::Value *> indices;
             indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, 0, true)));
             indices.push_back(ConstantInt::get(context->getLlvmContext(), APInt(32, index, true)));
-            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "elementptr");
+            Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "dataptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;
         }
@@ -91,16 +99,17 @@ namespace stark
         // Create array instance
         Value *arrayAlloc = context->createMemoryAllocation(context->getComplexType("string")->getType(), ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), 1, true), context->getCurrentBlock());
 
+
         // Set len member
-        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "arrayleninit");
+        Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "stringleninit");
         Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), chars.size(), true), lenMember);
 
         // Set elements member with inner array
-        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "arrayeleminit");
+        Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "stringdatainit");
         Builder.CreateStore(new BitCastInst(innerArrayAlloc, charType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
 
         // Return new instance
-        return Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
+        return arrayAlloc;
     }
 
 } // namespace stark

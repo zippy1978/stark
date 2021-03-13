@@ -15,8 +15,5 @@
 }
 
 func createEmployee(name: string, age: int): Employee {
-    e: Employee
-    e.name = name
-    e.age = age
-    return e
+    return Employee(name, age)
 }

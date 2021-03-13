@@ -28,13 +28,13 @@ extern "C" void assertDoubleEquals(stark::double_t actual, stark::double_t expec
         exit(1);
     }
 }
-extern "C" void assertStringEquals(stark::string_t actual, stark::string_t expected)
+extern "C" void assertStringEquals(stark::string_t *actual, stark::string_t *expected)
 {
-    char actualCString[actual.len + 1];
-    strcpy(actualCString, actual.data);
+    char actualCString[actual->len + 1];
+    strcpy(actualCString, actual->data);
 
-    char expectedCString[expected.len + 1];
-    strcpy(expectedCString, expected.data);
+    char expectedCString[expected->len + 1];
+    strcpy(expectedCString, expected->data);
 
     if (strcmp(actualCString, expectedCString) != 0)
     {

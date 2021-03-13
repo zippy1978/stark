@@ -19,16 +19,22 @@ namespace stark
         addMember("len", "int", context->getPrimaryType("int")->getType());
     }
 
-    Value *CodeGenArrayComplexType::create(std::vector<Value *> values, FileLocation location)
+    void CodeGenArrayComplexType::defineConstructor()
+    {
+        // Array constructor is not supported
+    }
+
+    Value *CodeGenArrayComplexType::create(std::vector<Value *> values)
     {
 
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
-
+        
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-         // Alloc inner array
+        // Alloc inner array
+        // If element type is a complex type : it is a pointer
         Type *innerArrayType = ArrayType::get(elementType, values.size());
         Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
@@ -59,7 +65,7 @@ namespace stark
         Builder.CreateStore(new BitCastInst(innerArrayAlloc, elementType->getPointerTo(), "", context->getCurrentBlock()), elementsMemberPointer);
 
         // Return new instance
-        return Builder.CreateLoad(arrayAlloc->getType()->getPointerElementType(), arrayAlloc, "load");
+        return arrayAlloc;
     }
 
 } // namespace stark

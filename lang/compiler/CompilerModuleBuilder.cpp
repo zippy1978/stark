@@ -168,7 +168,7 @@ namespace stark
 
         // Main module
         if (name.compare("main") == 0)
-        {
+        {            
 
             // Link main module with all external modules required
             std::vector<CompilerModule *> externalModules = moduleLoader->getModules();

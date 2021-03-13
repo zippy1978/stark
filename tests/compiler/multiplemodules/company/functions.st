@@ -5,14 +5,9 @@
 module company
 
 func createEmployee(name: string, age: int): Employee {
-    e: Employee
-    e.name = name
-    e.age = age
-    return e
+    return Employee(name, age)
 }
 
 func createCompany(name: string): Company {
-    c: Company
-    c.name = name
-    return c
+    return Company(name, null, null)
 }

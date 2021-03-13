@@ -21,6 +21,8 @@ namespace stark
 
     std::vector<std::string> split(const std::string &s, char delimiter);
 
+    bool endsWith(std::string const &value, std::string const &ending);
+
     std::string ltrim(std::string s);
 
     std::string rtrim(std::string s);

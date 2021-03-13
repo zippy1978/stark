@@ -8,10 +8,8 @@ func main(): int {
     tony: Employee  = createEmployee("Tony Stark", 40)
     pepper: Employee = createEmployee("Pepper Pots", 38)
 
-    starkIndustries: Company
-    starkIndustries.name = "Stark Industries"
-    starkIndustries.employees = [tony, pepper]
-
+    starkIndustries := Company("Stark Industries", [tony, pepper])
+    
     print("Company: ")
     println(starkIndustries.name)
 

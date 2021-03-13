@@ -114,13 +114,17 @@ namespace stark
 			}
 		}
 
-		// If not a primary type : must be a comlex type : return llvm type name
+		// If not a primary type : must be a complex type : return llvm type name without the "*" pointer
+
+		if (endsWith(llvmTypeName, "*"))
+		{
+			llvmTypeName = llvmTypeName.substr(0, llvmTypeName.size() - 1);
+		}
 		return llvmTypeName;
 	}
 
 	void CodeGenFileContext::declareComplexType(CodeGenComplexType *complexType)
 	{
-
 		complexType->declare();
 		complexTypes[complexType->getName()] = std::unique_ptr<CodeGenComplexType>(complexType);
 	}
@@ -269,7 +273,7 @@ namespace stark
 		{
 			// Create the top level interpreter function to call as entry
 			vector<Type *> argTypes;
-			argTypes.push_back(getArrayComplexType("string")->getType());
+			argTypes.push_back(getArrayComplexType("string")->getType()->getPointerTo());
 			FunctionType *ftype = FunctionType::get(Type::getInt32Ty(getLlvmContext()), makeArrayRef(argTypes), false);
 			mainFunction = Function::Create(ftype, GlobalValue::ExternalLinkage, MAIN_FUNCTION_NAME, llvmModule);
 			BasicBlock *bblock = BasicBlock::Create(getLlvmContext(), "entry", mainFunction, 0);
@@ -277,11 +281,8 @@ namespace stark
 			// Push a new variable/block context
 			pushBlock(bblock);
 
-			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType());
+			CodeGenVariable *argsVar = new CodeGenVariable("args", "string", true, getArrayComplexType("string")->getType()->getPointerTo());
 			declareLocal(argsVar);
-
-			IRBuilder<> Builder(getLlvmContext());
-			Builder.SetInsertPoint(getCurrentBlock());
 
 			// Get argc and argv values
 			Function::arg_iterator argsValues = mainFunction->arg_begin();

@@ -1,33 +1,19 @@
-// Files
-extern fopen(filename: any, accessMode: any ): any
-extern fprintf(file: any, format: any): int
-extern fclose(file: any): int
+/**
+ *  Function declartions tests.
+ */
 
-// System
-extern system(command: any): int
-extern sleep(t: int): int
-
-//-----------------------------------------------------------
-
-if (args.len < 2) {
-    println("filename is missing")
-    return 1
+// No arg declaration
+func noArg(): void {
 }
 
-filename := args[1]
-file := fopen(toCString(filename), toCString("w"))
-if (file == null) {
-    println("file cannot be opened")
-    return 1
-} else {
-    fprintf(file, toCString("This was witten from stark !"))
-    fclose(file)
-}
-println("finsihed writting file!")
 
-// In seconds
-sleep(1)
-
-if (system(toCString("ls")) != 0) {
-    println("cannot run system command")
+// Declaration with args
+func withArgs(a: int, b: int): int {
+    return a
 }
+
+// Omitted return type
+func noReturn() {
+}
+
+println("ok")
