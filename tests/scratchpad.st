@@ -30,7 +30,13 @@ shopGroups: ShopGroup[] = [sg]
 
 
 // Crash here !!!
-assertIntEquals(shopGroups[0].shops.len, 2)
+// Nested array case !
+shopGroups[0].shops.len
+
+// This works 
+shopGroups[0].shops
+
+//assertIntEquals(shopGroups[0].shops.len, 2)
 
 
 

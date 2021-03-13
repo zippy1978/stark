@@ -91,7 +91,7 @@ namespace stark
             if (m->array)
             {
                 // Array case : must use the matching array complex type
-                memberTypes.push_back(context->getArrayComplexType(m->typeName)->getType());
+                memberTypes.push_back(context->getArrayComplexType(m->typeName)->getType()->getPointerTo());
             }
             else
             {
@@ -107,6 +107,7 @@ namespace stark
 
     void CodeGenComplexType::addMember(std::string name, std::string typeName, Type *type, bool array)
     {
+
         // Complex types are pointers !
         if (!context->isPrimaryType(typeName))
         {

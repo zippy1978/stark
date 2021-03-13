@@ -18,6 +18,7 @@ using namespace stark;
 namespace stark
 {
 
+    /*
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -35,20 +36,17 @@ namespace stark
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
     }
-
+    */
+   
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
      */
     static Value *getComplexTypeMemberValue(CodeGenComplexType *complexType, Value *varValue, ASTIdentifier *identifier, CodeGenFileContext *context)
     {
-        std::cout << "###### in " << std::endl;
-        printDebugType(varValue);
 
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
-
-        printDebugType(varValue);
 
         // Array case : must point to index element
         if (identifier->getIndex() != nullptr)
@@ -97,13 +95,9 @@ namespace stark
             }
 
             // Load member value
-            std::cout << "###### 1 " << std::endl;
-            printDebugType(varValue);
             varValue = Builder.CreateLoad(varValue);
             varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
-            printDebugType(varValue);
-            std::cout << "###### 2 " << std::endl;
-
+            
             // Is member a complex type ?
             // Handle special type lookup for array
             complexType = complexTypeMember->array ? context->getArrayComplexType(complexTypeMember->typeName) : context->getComplexType(complexTypeMember->typeName);
@@ -275,8 +269,6 @@ namespace stark
 
         Type *type = varValue->getType()->getPointerElementType();
 
-        std::cout << "#### ident " << std::endl;
-        printDebugType(varValue);
         this->result = Builder.CreateLoad(type, varValue, "load");
     }
 
