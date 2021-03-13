@@ -1,23 +1,19 @@
 /**
- *  Import with interpreter tests.
+ *  Function declartions tests.
  */
-// Import test module
-import test
 
-extern assertIntEquals(actual: int, expected: int)
-extern assertStringEquals(actual: string, expected: string)
-
-// Call function, calling a module function
-func anotherFunc(): int {
-    return test.addTest(1, 2)
+// No arg declaration
+func noArg(): void {
 }
-assertIntEquals(anotherFunc(), 3)
 
-// Use a type defined in the module
-t: test.Test
-t.name = "ok"
 
-// Call a module function returning a type defined in the module
-t2: test.Test = test.returnTest()
-assertStringEquals(t2.name, "this is a test")
+// Declaration with args
+func withArgs(a: int, b: int): int {
+    return a
+}
 
+// Omitted return type
+func noReturn() {
+}
+
+println("ok")

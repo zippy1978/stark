@@ -14,8 +14,7 @@ func anotherFunc(): int {
 assertIntEquals(anotherFunc(), 3)
 
 // Use a type defined in the module
-t: test.Test
-t.name = "ok"
+t: test.Test("ok")
 
 // Call a module function returning a type defined in the module
 t2: test.Test = test.returnTest()

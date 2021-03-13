@@ -473,7 +473,18 @@ namespace stark
         }
         else
         {
-            returnType = node->getType()->isArray() ? context->getArrayComplexType(node->getType()->getFullName())->getType() : typeOf(*node->getType(), context);
+            returnType = typeOf(*node->getType(), context);
+            
+            // Array case
+            if (node->getType()->isArray()) {
+                returnType = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
+            }
+
+            // Complex types are pointers !
+            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->getType()->isArray()) {
+                returnType = returnType->getPointerTo();    
+            }
+            
         }
 
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);

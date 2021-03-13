@@ -39,9 +39,8 @@ namespace stark
         Type *returnType = this->getType()->getPointerTo();
 
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        // TODO : being able to change function visibility by changing ExternalLinkage
-        // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
+        // A constructor has an internal visibility, this prevents duplicate issues when compilling a multiple file module
+        Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, functionName.c_str(), context->getLlvmModule());
 
         BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
 
