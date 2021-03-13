@@ -5,8 +5,5 @@
 module product
 
 func createProduct(name: string, price: int): Product {
-    p: Product
-    p.name = name
-    p.price = price
-    return p
+    return Product(name, price)
 }
