@@ -66,7 +66,6 @@ namespace stark
             // Create local var
             context->declareLocal(new CodeGenVariable(m->name, m->typeName, m->array, type));
 
-            
             new StoreInst(argumentValue, context->getLocal(m->name)->getValue(), false, context->getCurrentBlock());
             inputArgs.push_back(context->getLocal(m->name)->getValue());
         }
@@ -190,28 +189,17 @@ namespace stark
                 IRBuilder<> Builder(context->getLlvmContext());
                 Builder.SetInsertPoint(context->getCurrentBlock());
 
-                Value *lhsPointer;
-                Value *rhsPointer;
-                // Null is lhs
-                if (context->isPrimaryType(lhsTypeName))
-                {
-                    lhsPointer = lhs;
-                    rhsPointer = Builder.CreateBitCast(rhs, rhs->getType()->getPointerTo());
-                }
-                // Null is rhs
-                else
-                {
-                    lhsPointer = Builder.CreateBitCast(lhs, lhs->getType()->getPointerTo());
-                    rhsPointer = rhs;
-                }
+                // Convert pointer address to int for comparison
+                Value *lhsPointerInt = Builder.CreatePtrToInt(lhs, context->getPrimaryType("int")->getType());
+                Value *rhsPointerInt = Builder.CreatePtrToInt(rhs, context->getPrimaryType("int")->getType());
 
                 switch (op)
                 {
                 case EQ:
-                    return Builder.CreateICmpEQ(lhsPointer, rhsPointer, "cmp");
+                    return Builder.CreateICmpEQ(lhsPointerInt, rhsPointerInt, "cmp");
                     break;
                 case NE:
-                    return Builder.CreateICmpNE(lhsPointer, rhsPointer, "cmp");
+                    return Builder.CreateICmpNE(lhsPointerInt, rhsPointerInt, "cmp");
                     break;
                 case LT:
                 case LE:
