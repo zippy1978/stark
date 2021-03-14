@@ -37,7 +37,7 @@ namespace stark
         cout << ">>>>>> " << llvmTypeName << endl;
     }
     */
-   
+
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
      * Recurse to get the end value in case of a nested identifier.
@@ -97,7 +97,7 @@ namespace stark
             // Load member value
             varValue = Builder.CreateLoad(varValue);
             varValue = Builder.CreateStructGEP(varValue, complexTypeMember->position, "memberptr");
-            
+
             // Is member a complex type ?
             // Handle special type lookup for array
             complexType = complexTypeMember->array ? context->getArrayComplexType(complexTypeMember->typeName) : context->getComplexType(complexTypeMember->typeName);
@@ -342,7 +342,7 @@ namespace stark
 
         // Retrieve variable
         Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node->getLhs(), context);
-       
+
         Value *assignedValue = v.result;
 
         // If assigned value is null : create appropriate constant
@@ -488,15 +488,16 @@ namespace stark
             returnType = typeOf(*node->getType(), context);
 
             // Array case
-            if (node->getType()->isArray()) {
+            if (node->getType()->isArray())
+            {
                 returnType = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
             }
 
             // Complex types are pointers !
-            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->getType()->isArray()) {
-                returnType = returnType->getPointerTo();    
+            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->getType()->isArray())
+            {
+                returnType = returnType->getPointerTo();
             }
-            
         }
 
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
@@ -799,7 +800,7 @@ namespace stark
         CodeGenVisitor vc(context);
         node->getCondition()->accept(&vc);
 
-        // Get the function of the current block fon instertion
+        // Get the function of the current block for insertion
         Function *currentFunction = context->getCurrentBlock()->getParent();
 
         // Create blocks (and insert if block)
@@ -870,17 +871,31 @@ namespace stark
 
         context->pushBlock(mergeBlock, true);
         // Add PHI node (only if function should return something)
+        
         if (!currentFunction->getReturnType()->isVoidTy())
         {
-            PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), 2, "iftmp");
+            bool addPhiIfIncoming = false;
+            bool addPhiElseIncoming = false;
+            
             if (node->getTrueBlock()->getStatements().size() > 0 && vt.result != nullptr && !vt.result->getType()->isVoidTy())
             {
-                PN->addIncoming(vt.result, ifBlock);
+                addPhiIfIncoming = true;
             }
 
             if (generateElseBlock && vf.result != nullptr && !vf.result->getType()->isVoidTy())
-                PN->addIncoming(vf.result, elseBlock);
-            this->result = PN;
+            {
+                addPhiElseIncoming = true;
+            }
+
+            if (addPhiIfIncoming || addPhiElseIncoming)
+            {
+                PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), addPhiIfIncoming && addPhiElseIncoming ? 2 : 1, "iftmp");
+                if (addPhiIfIncoming) PN->addIncoming(vt.result, ifBlock);
+                if (addPhiElseIncoming) PN->addIncoming(vf.result, elseBlock);
+                this->result = PN;
+            } else {
+                this->result = generateElseBlock ? vf.result : vt.result;
+            }
         }
 
         // Mark current block as merge block

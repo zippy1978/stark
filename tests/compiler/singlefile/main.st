@@ -5,38 +5,14 @@
  */
 
 
-/*
+
 func printHello(msg: string) {
-    print("h")
-    //println(msg)
-}*/
-
-
-struct Shop {
-    id: int,
-    name: string
+    print("Hello ")
+    println(msg)
 }
-
-struct ShopGroup {
-    shops: Shop[],
-    name: string
-}
-
-/*
-func test(i: int) {
-
-    if (i > 0) {
-        println("ok")
-    } else {
-        println("ko")
-    }
-}*/
 
 func main(): int {
-    s: Shop = Shop(1, "test")
-    println(s.name)
-
-    str: string = null
-
+    
+    printHello("Tony")
     return  0
 }

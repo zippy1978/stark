@@ -1,18 +1,42 @@
 /**
- *  Function declartions tests.
+ *  If/else statements tests.
  */
 
-// No arg declaration
-func noArg(): void {
+extern assertIntEquals(actual: int, expected: int)
+extern assertDoubleEquals(actual: double, expected: double)
+extern assertTrue(actual: bool)
+extern failure()
+
+
+// BROKEN
+// Nested if / else on main
+
+if (true) {
+    if (false) {
+        failure()
+    } else {
+        // It is ok to land here !
+        assertTrue(true)    
+    }
+} else {
+    failure()
 }
 
 
-// Declaration with args
-func withArgs(a: int, b: int): int {
-    return a
-}
+// BROKEN
+// Nested if / else in a function
+/*func nested(): int {
+    if (false) {
+        failure()
+    } else {
+        if (true) {
+            // It is ok to land here !
+            assertTrue(true)
+        } else {
+            failure()
+        }
 
-// Omitted return type
-func noReturn() {
+    }
+    return 12
 }
-
+assertIntEquals(nested(), 12)*/
