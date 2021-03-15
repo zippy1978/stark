@@ -26,18 +26,22 @@ namespace stark
     {
         std::string valueTypeName = context->getTypeName(value->getType());
 
-        // If value is not null : assignment must be of the same type
-        if (!isNull(value))
+        if (valueTypeName.compare(typeName) != 0)
         {
-            if (valueTypeName.compare(typeName) != 0)
+
+            // If value is not null : assignment must be of the same type
+            if (!isNull(value))
+            {
+                if (valueTypeName.compare(typeName) != 0)
+                {
+                    return false;
+                }
+            }
+            // Null assignment is only allowed for complex types
+            else if (context->isPrimaryType(typeName))
             {
                 return false;
             }
-        }
-        // Null assignment is only allowed for complex types
-        else if (context->isPrimaryType(typeName))
-        {
-            return false;
         }
 
         return true;
@@ -99,7 +103,6 @@ namespace stark
         {
             context->logger.logError(variableId->location, formatv("cannot assign value of type {0} to variable {1} of type {2}", valueTypeName, variableId->getFullName(), varTypeName));
         }
-
     }
 
     void CodeGenChecker::checkAllowedTypeDeclaration(ASTIdentifier *typeId)
