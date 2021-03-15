@@ -8,35 +8,28 @@ extern assertTrue(actual: bool)
 extern failure()
 
 
-// BROKEN
-// Nested if / else on main
 
-if (true) {
-    if (false) {
-        failure()
-    } else {
-        // It is ok to land here !
-        assertTrue(true)    
+// Return in if statement
+func ifReturn(cond: bool): int {
+    if (cond) {
+        return 1
     }
-} else {
-    failure()
+    return 0
 }
+assertIntEquals(ifReturn(true), 1)
+assertIntEquals(ifReturn(false), 0)
 
 
-// BROKEN
-// Nested if / else in a function
-/*func nested(): int {
-    if (false) {
-        failure()
+/*
+// Return in else statement
+func elseReturn(cond: bool): int {
+    if (cond) {
+        assertTrue(true)
     } else {
-        if (true) {
-            // It is ok to land here !
-            assertTrue(true)
-        } else {
-            failure()
-        }
-
+        return 1
     }
-    return 12
+    return 0
 }
-assertIntEquals(nested(), 12)*/
+assertIntEquals(elseReturn(true), 0)
+assertIntEquals(elseReturn(false), 1)
+*/

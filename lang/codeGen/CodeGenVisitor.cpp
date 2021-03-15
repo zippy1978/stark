@@ -822,10 +822,12 @@ namespace stark
         node->getTrueBlock()->accept(&vt);
 
         // Add branch to merge block
+        bool ifBlockReturns = false;
         Builder.SetInsertPoint(context->getCurrentBlock());
         if (context->getReturnValue() != nullptr)
         {
             Builder.CreateRet(context->getReturnValue());
+            ifBlockReturns = true;
         }
         else
         {
@@ -839,6 +841,7 @@ namespace stark
 
         // Generate else block (only if provided)
         CodeGenVisitor vf(context);
+        bool elseBlockReturns = false;
         if (generateElseBlock)
         {
             currentFunction->getBasicBlockList().push_back(elseBlock);
@@ -853,6 +856,7 @@ namespace stark
             if (context->getReturnValue() != nullptr)
             {
                 Builder.CreateRet(context->getReturnValue());
+                elseBlockReturns = true;
             }
             else
             {
@@ -870,19 +874,20 @@ namespace stark
         Builder.SetInsertPoint(mergeBlock);
 
         context->pushBlock(mergeBlock, true);
+
+        // PHI node does not seem to be required !!!!
         // Add PHI node (only if function should return something)
-        
         if (!currentFunction->getReturnType()->isVoidTy())
         {
-            bool addPhiIfIncoming = false;
+            /*bool addPhiIfIncoming = false;
             bool addPhiElseIncoming = false;
-            
-            if (node->getTrueBlock()->getStatements().size() > 0 && vt.result != nullptr && !vt.result->getType()->isVoidTy())
+
+            if (node->getTrueBlock()->getStatements().size() > 0 && vt.result != nullptr && !vt.result->getType()->isVoidTy() && !ifBlockReturns)
             {
                 addPhiIfIncoming = true;
             }
 
-            if (generateElseBlock && vf.result != nullptr && !vf.result->getType()->isVoidTy())
+            if (generateElseBlock && vf.result != nullptr && !vf.result->getType()->isVoidTy() && !elseBlockReturns)
             {
                 addPhiElseIncoming = true;
             }
@@ -890,12 +895,18 @@ namespace stark
             if (addPhiIfIncoming || addPhiElseIncoming)
             {
                 PHINode *PN = Builder.CreatePHI(currentFunction->getReturnType(), addPhiIfIncoming && addPhiElseIncoming ? 2 : 1, "iftmp");
-                if (addPhiIfIncoming) PN->addIncoming(vt.result, ifBlock);
-                if (addPhiElseIncoming) PN->addIncoming(vf.result, elseBlock);
+                if (addPhiIfIncoming)
+                    PN->addIncoming(vt.result, ifBlock);
+                if (addPhiElseIncoming)
+                    PN->addIncoming(vf.result, elseBlock);
                 this->result = PN;
-            } else {
-                this->result = generateElseBlock ? vf.result : vt.result;
             }
+            else
+            {
+                this->result = generateElseBlock ? vf.result : vt.result;
+            }*/
+
+            this->result = generateElseBlock ? vf.result : vt.result;
         }
 
         // Mark current block as merge block
