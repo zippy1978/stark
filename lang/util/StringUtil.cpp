@@ -52,8 +52,17 @@ namespace stark
     std::string unescape(std::string s)
     {
         std::string result;
-        result = std::regex_replace(s, std::regex("\\\\n"), "\n");
+        
+        result = std::regex_replace(s, std::regex("\\\\'"), "\'");
+        result = std::regex_replace(result, std::regex("\\\\a"), "\a");
+        result = std::regex_replace(result, std::regex("\\\\b"), "\b");
+        result = std::regex_replace(result, std::regex("\\\\f"), "\f");
+        result = std::regex_replace(result, std::regex("\\\\n"), "\n");
+        result = std::regex_replace(result, std::regex("\\\\r"), "\r");
         result = std::regex_replace(result, std::regex("\\\\t"), "\t");
+        result = std::regex_replace(result, std::regex("\\\\v"), "\v");
+        result = std::regex_replace(result, std::regex("\\\\\\\\"), "\\");
+        result = std::regex_replace(result, std::regex("\\\\\""), "\"");
         return result;
     }
 

@@ -31,9 +31,10 @@ anotherMessage := "Hello, I'm inferred !"
 ### Assignment
 
 Variables are mutable by default. That means that they can be re-assigned if needed:
+
 ```stark
 // counter variable is initialized with 0
-counter: int = 0
+counter := 0
 // Then reassigned (and is now 5)
 counter = 2 + 3
 ```
@@ -45,7 +46,7 @@ Variables are local to the code block they are declared in: they can be accessed
 In this example, *result* variable is accessible from the *if* block:
 ```stark
 func amIOld(age: int): string {
-    result: string = "No you are young !"
+    result := "No you are young !"
     if (age > 50) {
         result = "Sorry, you are old"
     }
@@ -66,9 +67,9 @@ However, the example bellow will not work because *result* is declared in *if* a
 ```stark
 func amIOld(age: int): string {
     if (age > 50) {
-        result: string = "Sorry, you are old"
+        result := "Sorry, you are old"
     } else {
-        result: string = "No you are young !"
+        result := "No you are young !"
     }
     return result
 }
@@ -163,6 +164,36 @@ It can be initialized with a litteral, and its *len* member can be used to retri
 ```stark
 s: string = "This is my string"
 l: int = s.len
+```
+
+String litterals support escape sequences. Escape sequences are used to represent certain special characters within string literals.
+
+Supported escape sequences are:
+
+| Escape sequence | Description          |
+| --------------- |----------------------|
+| \'              | Single quote         |
+| \"              | Double quote         |
+| \\              | Backslash.           |
+| \a              | Audible bell         |
+| \b              | Backspace            |
+| \f              | Form feed            |
+| \f              | Form feed            |
+| \n              | Line feed - new line |
+| \r              | Carriage return      |
+| \t              | Horizontal tab       |
+| \v              | Vertical tab         |
+
+Some examples:
+
+```stark
+println("line1\nline2")
+// line1
+// line2
+println("trees: \t🌲\t🌲\t🌲")
+// trees: 	🌲	🌲	🌲
+println("beers: \t🍺\t🍺\t🍺")
+// beers: 	🍺	🍺	🍺
 ```
 
 ### Type conversion
