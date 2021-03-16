@@ -1,4 +1,6 @@
 #include <strstream>
+#include <string>
+#include <regex>
 #include <stdlib.h>
 #include <FlexLexer.h>
 #include "../ast/AST.h"
@@ -23,9 +25,11 @@ int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
     }
 
     // On a string : quotes must be removed (first and last char)
+    // Also : unescape string 
     if (token == yy::parser::token::STRING)
     {
-        yylval->string = new std::string(lexer->YYText() + 1, lexer->YYLeng() - 2);
+        std::string s(lexer->YYText() + 1, lexer->YYLeng() - 2); 
+        yylval->string = new std::string(stark::unescape(s));
     }
 
     // Must be set at the end otherwise does not work

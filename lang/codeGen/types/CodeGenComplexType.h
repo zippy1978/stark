@@ -41,6 +41,7 @@ namespace stark
         StructType *type;
         std::string name;
         bool array;
+        bool hasConstructor;
 
     private:
         /** Create function definition for the type construction */
@@ -51,16 +52,21 @@ namespace stark
         {
             type = nullptr;
             array = false;
+            hasConstructor = true;
         }
         CodeGenComplexType(std::string name, CodeGenFileContext *context, bool array) : name(name), context(context), array(array) { type = nullptr; }
+        CodeGenComplexType(std::string name, CodeGenFileContext *context, bool array, bool hasConstructor) : name(name), context(context), array(array) { type = nullptr; }
         /** Generates declaration code of the complex type inside the llvm::LLVMContext */
         void declare();
+        /** Update declaration of an already declared type. Used only for forward dclaration purpose */
+        void updateDeclaration(std::vector<CodeGenComplexTypeMember *> newMembers);
 
         /** Returns the complex type llvm::StructType, returns nullptr is complex type is not declared yet */
         StructType *getType() { return type; }
         void addMember(std::string name, std::string typeName, Type *type, bool array);
         void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false); }
         CodeGenComplexTypeMember *getMember(std::string name);
+        std::vector<CodeGenComplexTypeMember *> getMembers();
         std::string getName() { return name; }
         bool isArray() { return array; }
         virtual Value *create(std::vector<Value *> values);

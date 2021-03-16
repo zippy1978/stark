@@ -13,6 +13,13 @@ namespace stark
 {
     void CodeGenComplexType::defineConstructor()
     {
+
+        // No constructor is defined if the type has no member
+        if (this->members.size() == 0)
+        {
+            return;
+        }
+
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
@@ -78,6 +85,41 @@ namespace stark
         context->popBlock();
     }
 
+    void CodeGenComplexType::updateDeclaration(std::vector<CodeGenComplexTypeMember *> newMembers)
+    {
+        // TODO :
+        // Replace all the members
+        // Update struct body
+
+        // Clear existing members
+        members.clear();
+
+        // Add new members
+        int pos = 0;
+        vector<Type *> memberTypes;
+        for(auto it = newMembers.begin(); it != newMembers.end(); it++)
+        {
+            CodeGenComplexTypeMember *m = *it;
+            members.push_back(std::make_unique<CodeGenComplexTypeMember>(m->name, m->typeName, pos, m->type, m->array));
+            pos++;
+
+            if (m->array)
+            {
+                // Array case : must use the matching array complex type
+                memberTypes.push_back(context->getArrayComplexType(m->typeName)->getType()->getPointerTo());
+            }
+            else
+            {
+                memberTypes.push_back(m->type);
+            }
+        }
+
+        type->setBody(memberTypes);
+
+        this->defineConstructor();
+        
+    }
+
     void CodeGenComplexType::declare()
     {
         // If type already exists
@@ -133,6 +175,19 @@ namespace stark
         }
 
         return nullptr;
+    }
+
+    std::vector<CodeGenComplexTypeMember *> CodeGenComplexType::getMembers()
+    {
+        std::vector<CodeGenComplexTypeMember *> result;
+
+        for(auto it = members.begin(); it != members.end(); it++)
+        {
+            CodeGenComplexTypeMember *m = it->get();
+            result.push_back(m);
+        }
+
+        return result;
     }
 
     Value *CodeGenComplexType::create(std::vector<Value *> values)

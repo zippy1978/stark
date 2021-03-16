@@ -999,11 +999,26 @@ namespace stark
         CodeGenComplexType *structType = new CodeGenComplexType(node->getId()->getFullName(), context);
         ASTVariableList arguments = node->getArguments();
         ASTVariableList::const_iterator it;
+        bool hasNestedType = false;
         for (it = arguments.begin(); it != arguments.end(); it++)
         {
-            structType->addMember((**it).getId()->getName(), (**it).getType()->getFullName(), typeOf(*((**it).getType()), context), (**it).isArray());
+            ASTVariableDeclaration *vd = *it;
+
+            // Nested type declaration
+            // Create a forward declaration (empty type)
+            // That will be redefined at the end of the delcaration
+            if (vd->getType()->getFullName().compare(node->getId()->getFullName()) == 0)
+            {
+                hasNestedType = true;
+                CodeGenComplexType *forwardStructType = new CodeGenComplexType(node->getId()->getFullName(), context);
+                context->declareComplexType(forwardStructType);
+            }
+
+            structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), (**it).isArray());
         }
-        context->declareComplexType(structType);
+
+            context->declareComplexType(structType);
+
     }
 
     void CodeGenVisitor::visit(ASTTypeConversion *node)

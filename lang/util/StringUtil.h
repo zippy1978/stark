@@ -29,4 +29,6 @@ namespace stark
 
     std::string trim(std::string s);
 
+    std::string unescape(std::string s);
+
 } // namespace stark

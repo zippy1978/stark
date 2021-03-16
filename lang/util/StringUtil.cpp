@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <regex>
 #include <algorithm>
 #include <cctype>
 
@@ -46,6 +47,14 @@ namespace stark
     std::string trim(std::string s)
     {
         return ltrim(rtrim(s));
+    }
+
+    std::string unescape(std::string s)
+    {
+        std::string result;
+        result = std::regex_replace(s, std::regex("\\\\n"), "\n");
+        result = std::regex_replace(result, std::regex("\\\\t"), "\t");
+        return result;
     }
 
 } // namespace stark
