@@ -23,6 +23,11 @@ extern "C" void stark_runtime_pub_println(stark::string_t *s)
     printf("%s\n", out);
 }
 
+extern "C" void stark_runtime_pub_printflush()
+{
+    fflush(stdout);
+}
+
 extern "C" stark::any_t stark_runtime_pub_stdout()
 {
     return stdout;
