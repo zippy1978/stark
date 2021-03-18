@@ -46,6 +46,9 @@ namespace stark
                    "extern stark_runtime_pub_fromCString(s: any): string\n"
                    
                    // IO
+                   "extern stark_runtime_pub_stdout(): any\n"
+                   "extern stark_runtime_pub_stdin(): any\n"
+                   "extern stark_runtime_pub_stderr(): any\n"
                    "extern stark_runtime_pub_println(s: string): void\n"
                    "extern stark_runtime_pub_print(s: string): void\n";
         }
