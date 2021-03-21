@@ -97,7 +97,7 @@ namespace stark
         // Add new members
         int pos = 0;
         vector<Type *> memberTypes;
-        for(auto it = newMembers.begin(); it != newMembers.end(); it++)
+        for (auto it = newMembers.begin(); it != newMembers.end(); it++)
         {
             CodeGenComplexTypeMember *m = *it;
             members.push_back(std::make_unique<CodeGenComplexTypeMember>(m->name, m->typeName, pos, m->type, m->array));
@@ -117,7 +117,6 @@ namespace stark
         type->setBody(memberTypes);
 
         this->defineConstructor();
-        
     }
 
     void CodeGenComplexType::declare()
@@ -181,13 +180,19 @@ namespace stark
     {
         std::vector<CodeGenComplexTypeMember *> result;
 
-        for(auto it = members.begin(); it != members.end(); it++)
+        for (auto it = members.begin(); it != members.end(); it++)
         {
             CodeGenComplexTypeMember *m = it->get();
             result.push_back(m);
         }
 
         return result;
+    }
+
+    Value *CodeGenComplexType::createDefaultValue()
+    {
+        // Default value for a complex type is null
+        return ConstantPointerNull::getNullValue(type->getPointerTo());
     }
 
     Value *CodeGenComplexType::create(std::vector<Value *> values)

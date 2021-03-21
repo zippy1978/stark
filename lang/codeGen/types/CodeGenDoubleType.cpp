@@ -10,7 +10,8 @@ namespace stark
 
     Value *CodeGenDoubleType::convert(Value *value, std::string typeName)
     {
-        if (typeName.compare(this->name) == 0) {
+        if (typeName.compare(this->name) == 0)
+        {
             return value;
         }
 
@@ -31,6 +32,11 @@ namespace stark
             context->logger.logError(context->getCurrentLocation(), formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return nullptr;
         }
+    }
+
+    Value *CodeGenDoubleType::createDefaultValue()
+    {
+        return create(0.0);
     }
 
     Value *CodeGenDoubleType::create(double d)

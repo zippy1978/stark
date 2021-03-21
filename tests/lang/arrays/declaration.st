@@ -5,6 +5,7 @@
 extern assertIntEquals(actual: int, expected: int)
 extern assertDoubleEquals(actual: double, expected: double)
 extern assertTrue(actual: bool)
+extern assertNull(actual: any)
 extern failure()
 
 struct Shop {
@@ -18,3 +19,5 @@ p: int[]
 // Array with complex types
 s: Shop[]
 
+// Default array value is null
+assertNull(s as any)

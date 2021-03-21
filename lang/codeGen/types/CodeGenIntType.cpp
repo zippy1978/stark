@@ -10,7 +10,8 @@ namespace stark
 
     Value *CodeGenIntType::convert(Value *value, std::string typeName)
     {
-        if (typeName.compare(this->name) == 0) {
+        if (typeName.compare(this->name) == 0)
+        {
             return value;
         }
 
@@ -48,6 +49,11 @@ namespace stark
     {
 
         return ConstantInt::get(this->getType(), i);
+    }
+
+    Value *CodeGenIntType::createDefaultValue()
+    {
+        return create(0);
     }
 
     Value *CodeGenIntType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)

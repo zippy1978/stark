@@ -39,6 +39,12 @@ namespace stark
         return nullptr;
     }
 
+    Value *CodeGenPrimaryType::createDefaultValue()
+    {
+        context->logger.logError(context->getCurrentLocation(), formatv("cannot create default value for type {0}", this->name));
+        return nullptr;
+    }
+
     Value *CodeGenPrimaryType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
     {
         context->logger.logError(context->getCurrentLocation(), formatv("unsupported binary operation for type {0}", this->name));

@@ -19,3 +19,7 @@ assertStringEquals(s, "hello")
 // Null assignement
 s = null
 assertNull(s as any)
+
+// Default value is null
+uninitString: string
+assertNull(uninitString as any)

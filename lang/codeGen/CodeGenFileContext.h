@@ -126,7 +126,10 @@ namespace stark
     /** Return matching complex type information from a type name */
     CodeGenComplexType *getComplexType(std::string typeName);
 
-    /** Return matching array type (complex type) for a given enclosing type name */
+    /** 
+     * Return matching array type (complex type) for a given enclosing type name.
+     * If type not found, thet it is created.
+     */
     CodeGenArrayComplexType *getArrayComplexType(std::string typeName);
 
     /** Return matching primary type from a type name */

@@ -383,35 +383,45 @@ namespace stark
         {
             // Type selection : based on the value of the declaration
             // Except if it is an array
-            Type *type = context->getType(node->getType()->getFullName());
+            std::string typeName = node->getType()->getFullName();
+            Type *type = context->getType(typeName);
             if (node->isArray())
             {
                 // Array variables are pointers !
-                type = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
+                type = context->getArrayComplexType(typeName)->getType()->getPointerTo();
             }
 
             if (type == nullptr)
             {
-                context->logger.logError(node->location, formatv("unknown type {0}", node->getType()->getFullName()));
+                context->logger.logError(node->location, formatv("unknown type {0}", typeName));
             }
 
             // All complex types are pointer variables (be careful not to process array type once again)
-            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->isArray())
+            if (!context->isPrimaryType(typeName) && !node->isArray())
             {
                 type = type->getPointerTo();
             }
 
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), node->getType()->getFullName(), node->isArray(), type);
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, node->isArray(), type);
             context->declareLocal(var);
 
+            // If assignment expression : assign variable
             if (node->getAssignmentExpr() != nullptr)
             {
                 ASTAssignment assn(node->getId()->clone(), node->getAssignmentExpr()->clone());
                 CodeGenVisitor v(context);
                 assn.accept(&v);
-            }
 
-            this->result = var->getValue();
+                this->result = var->getValue();
+            }
+            // If no assignement : assign default value
+            else
+            {
+                Value *defaultValue = context->isPrimaryType(typeName) ? 
+                context->getPrimaryType(typeName)->createDefaultValue() : 
+                context->isArrayType(typeName) ? context->getArrayComplexType(typeName)->createDefaultValue() : context->getComplexType(typeName)->createDefaultValue();
+                this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
+            }
         }
         // No type: infer it from assignement (var := expr)
         else
@@ -773,8 +783,12 @@ namespace stark
         // Complex type
         else
         {
-
-            CodeGenComplexType *complexType = context->isPrimaryType(lhsTypeName) ? context->getComplexType(rhsTypeName) : context->getComplexType(lhsTypeName);
+            CodeGenComplexType *complexType;
+            if (context->isPrimaryType(lhsTypeName)) {
+                complexType = context->isArrayType(rhsTypeName) ? context->getArrayComplexType(rhsTypeName) : context->getComplexType(rhsTypeName);
+            } else {
+                complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
+            }
 
             this->result = complexType->createComparison(vl.result, node->getOp(), vr.result);
         }
@@ -1017,8 +1031,7 @@ namespace stark
             structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), (**it).isArray());
         }
 
-            context->declareComplexType(structType);
-
+        context->declareComplexType(structType);
     }
 
     void CodeGenVisitor::visit(ASTTypeConversion *node)
@@ -1039,7 +1052,8 @@ namespace stark
         }
         else
         {
-            this->result = context->getComplexType(exprTypeName)->convert(v.result, node->getType()->getFullName());
+            CodeGenComplexType *complexType = context->isArrayType(exprTypeName) ? context->getArrayComplexType(exprTypeName) : context->getComplexType(exprTypeName);
+            this->result = complexType->convert(v.result, node->getType()->getFullName());
         }
     }
 

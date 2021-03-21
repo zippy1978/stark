@@ -11,7 +11,8 @@ namespace stark
 
     Value *CodeGenBoolType::convert(Value *value, std::string typeName)
     {
-        if (typeName.compare(this->name) == 0) {
+        if (typeName.compare(this->name) == 0)
+        {
             return value;
         }
 
@@ -48,6 +49,11 @@ namespace stark
             context->logger.logError(context->getCurrentLocation(), formatv("conversion from {0} to {1} is not supported", this->name, typeName));
             return nullptr;
         }
+    }
+
+    Value *CodeGenBoolType::createDefaultValue()
+    {
+        return create(false);
     }
 
     Value *CodeGenBoolType::create(bool b)

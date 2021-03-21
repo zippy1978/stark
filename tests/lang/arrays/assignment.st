@@ -6,6 +6,7 @@ extern assertIntEquals(actual: int, expected: int)
 extern assertStringEquals(actual: string, expected: string)
 extern assertDoubleEquals(actual: double, expected: double)
 extern assertTrue(actual: bool): void
+extern assertNull(actual: any): void
 extern failure(): void
 
 struct Shop {

@@ -69,6 +69,7 @@ namespace stark
         std::vector<CodeGenComplexTypeMember *> getMembers();
         std::string getName() { return name; }
         bool isArray() { return array; }
+        virtual Value *createDefaultValue();
         virtual Value *create(std::vector<Value *> values);
         virtual Value *create(std::string string);
         virtual Value *convert(Value *value, std::string typeName);

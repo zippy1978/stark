@@ -26,8 +26,6 @@ message: string = "Hello from Stark lang !"
 anotherMessage := "Hello, I'm inferred !"
 ```
 
-!> For the moment, an uninitialized variable has not default value. This will change in the future.
-
 ### Assignment
 
 Variables are mutable by default. That means that they can be re-assigned if needed:
@@ -91,11 +89,13 @@ They are 2 kinds of data types : primary types and complex types.
 
 Primary types are basic builtin types (all numeric). They are allocated on the stack.
 
-| Name          | Description   |
-| ------------- |---------------|
-| int           | Integer value |
-| double        | Decimal value |
-| bool          | Boolean value |
+When uninitialized, a primary type variable always has a default value.
+
+| Name          | Description   | Default value |
+| ------------- |---------------|---------------|
+| int           | Integer value |0              |
+| double        | Decimal value |0.0            |
+| bool          | Boolean value |false          |
 
 
 #### Binary operations
@@ -126,21 +126,6 @@ d: int = 4 - c
 
 ?> In order to support operations with different primary types, use the conversion operator as explained below.
 
-#### Comparisons
-
-Primary types also support comparisons (again both operand must be of the same type).
-
-Available comparisons are :
-
-| Syntax        | Description      |
-| ------------- |------------------|
-| ==            | Equals           |
-| !=            | Not equal        |
-| >             | Greater than     |
-| >=            | Greater or equals|
-| <             | Lower than       |
-| <=            | Lower or equals  |
-
 #### The void type
 
 The *void* type is a special primary type used to mark the absence of value. It cannot be assigned, and is primarly used for functions without a return type.
@@ -148,6 +133,8 @@ The *void* type is a special primary type used to mark the absence of value. It 
 ### Complex types
 
 Complex types are types holding more than one value. They are allocated on the heap, and they can have a null value.
+
+When unitialized a complex type variable is set to null.
 
 Complex types include:
 
@@ -195,6 +182,23 @@ println("trees: \t🌲\t🌲\t🌲")
 println("beers: \t🍺\t🍺\t🍺")
 // beers: 	🍺	🍺	🍺
 ```
+
+#### Comparisons
+
+Values can be compared using comparison operators. Comparisons are only supported when both operand are of the same type.
+
+Primary types support all comparison operators, as complex types can only support some operators.
+
+Available comparisons are :
+
+| Syntax        | Description      | Complex type support           |
+| ------------- |------------------|------------------------------- |
+| ==            | Equals           | Only with null as other operand|
+| !=            | Not equal        | Only with null as other operand|
+| >             | Greater than     | Not supported                  |
+| >=            | Greater or equals| Not supported                  |
+| <             | Lower than       | Not supported                  |
+| <=            | Lower or equals  | Not supported                  |
 
 ### Type conversion
 
