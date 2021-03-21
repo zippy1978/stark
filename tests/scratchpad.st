@@ -4,6 +4,6 @@ struct ShopGroup {
 
 uninitArray: ShopGroup[]
 uninitArray as any
-if (uninitArray == null) {
-    println("is null")
+if (uninitArray != null) {
+    println(uninitArray.len as string)
 }

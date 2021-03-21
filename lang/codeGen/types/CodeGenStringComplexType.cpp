@@ -67,6 +67,11 @@ namespace stark
         // string constructor is not supported
     }
 
+    Value *CodeGenStringComplexType::createDefaultValue()
+    {
+        return create("");
+    }
+
     Value *CodeGenStringComplexType::create(std::string string)
     {
 

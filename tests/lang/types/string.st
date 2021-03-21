@@ -20,6 +20,6 @@ assertStringEquals(s, "hello")
 s = null
 assertNull(s as any)
 
-// Default value is null
+// Default value is an epty string
 uninitString: string
-assertNull(uninitString as any)
+assertIntEquals(uninitString.len, 0)

@@ -24,6 +24,12 @@ namespace stark
         // Array constructor is not supported
     }
 
+    Value *CodeGenArrayComplexType::createDefaultValue()
+    {
+        std::vector<Value *> values;
+        return create(values);
+    }
+
     Value *CodeGenArrayComplexType::create(std::vector<Value *> values)
     {
 

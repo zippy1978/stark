@@ -84,6 +84,7 @@ namespace stark
     public:
         CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context);
         Value *create(std::vector<Value *> values);
+        Value *createDefaultValue();
         void defineConstructor();
     };
 
@@ -96,6 +97,7 @@ namespace stark
         CodeGenStringComplexType(CodeGenFileContext *context);
         Value *convert(Value *value, std::string typeName);
         Value *create(std::string string);
+        Value *createDefaultValue();
         void defineConstructor();
     };
 

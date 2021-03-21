@@ -19,5 +19,5 @@ p: int[]
 // Array with complex types
 s: Shop[]
 
-// Default array value is null
-assertNull(s as any)
+// Default array value is an empty array
+assertIntEquals(s.len, 0)

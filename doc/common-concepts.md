@@ -134,13 +134,13 @@ The *void* type is a special primary type used to mark the absence of value. It 
 
 Complex types are types holding more than one value. They are allocated on the heap, and they can have a null value.
 
-When unitialized a complex type variable is set to null.
-
 Complex types include:
 
-- strings
-- arrays
-- structs (custom types)
+| Name                 | Description     | Default value |
+| -------------------- |-----------------|---------------|
+| string               | String value    |Empty string   |
+| arrays               | Array of values |Empty array    |
+| struct (custom types)| Custom data     |null           |
 
 ### The string type
 

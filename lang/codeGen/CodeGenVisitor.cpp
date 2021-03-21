@@ -419,7 +419,7 @@ namespace stark
             {
                 Value *defaultValue = context->isPrimaryType(typeName) ? 
                 context->getPrimaryType(typeName)->createDefaultValue() : 
-                context->isArrayType(typeName) ? context->getArrayComplexType(typeName)->createDefaultValue() : context->getComplexType(typeName)->createDefaultValue();
+                node->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue() : context->getComplexType(typeName)->createDefaultValue();
                 this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
             }
         }
