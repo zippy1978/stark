@@ -36,6 +36,9 @@ namespace stark
         /** Write module to the given file name (or directory name if it has a header). */
         void write(std::string filename);
 
+        /** Compile and write module to an object file. */
+        void writeObjectCode(std::string filename);
+
         /** Load module from a file name or directory name. */
         void load(std::string filename);
     };

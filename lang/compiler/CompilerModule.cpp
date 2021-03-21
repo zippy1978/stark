@@ -10,6 +10,11 @@
 
 namespace stark
 {
+    void CompilerModule::writeObjectCode(std::string filename)
+    {
+        bitcode.get()->writeObjectCode(filename);
+    }
+
     void CompilerModule::write(std::string filename)
     {
         // Write module to a directory if it has a header
@@ -70,7 +75,7 @@ namespace stark
             headerPath.append("/").append(name).append(".sth");
             std::ifstream t(headerPath);
             std::string str((std::istreambuf_iterator<char>(t)),
-            std::istreambuf_iterator<char>());
+                            std::istreambuf_iterator<char>());
             headerCode = str;
         }
     }

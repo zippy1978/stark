@@ -26,6 +26,9 @@ namespace stark
         /** Writes bitcode to file. */
         void write(std::string filename);
 
+        /** Compile and writes object code to file. */
+        void writeObjectCode(std::string filename);
+
         Module *getLlvmModule() { return llvmModule; }
     };
 

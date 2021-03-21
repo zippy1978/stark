@@ -16,18 +16,13 @@ ifeq ($(LIB_PATH),)
 LIB_PATH := ../../../bin
 endif
 
-ifeq ($(LLC),)
-LLC := /usr/local/opt/llvm/bin/llc
-endif
-
 #SANITIZER_FLAGS:=-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1
 SANITIZER_FLAGS:=
 
 compile:
 	mkdir -p $(OUT_DIR)
 	# Build main with main and functions
-	$(STARKC) -d -o $(OUT_DIR)/main.bc company.st main.st
-	$(LLC) -filetype=obj $(OUT_DIR)/main.bc
+	$(STARKC) -d -o $(OUT_DIR)/main.o company.st main.st
 	# Link code with runtime and create binary
 	#gcc -L$(LIB_PATH) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o -lstark
 	# Static link runtime

@@ -15,7 +15,6 @@
 
 #include "StarkConfig.h"
 
-
 using namespace stark;
 
 typedef struct
@@ -126,7 +125,7 @@ int main(int argc, char *argv[])
     options.error = false;
     options.outputfile = nullptr;
     options.modulePath = nullptr;
-    
+
     // Parse options
     parseOptions(argc, argv);
 
@@ -197,7 +196,16 @@ int main(int argc, char *argv[])
             moduleBuilder.addSourceFiles(moduleSourceFilenames);
 
             CompilerModule *module = moduleBuilder.build();
-            module->write(options.outputfile);
+
+            // If compiling main module : outputs an object file
+            if (containsMainModule)
+            {
+                module->writeObjectCode(options.outputfile);
+            }
+            else
+            {
+                module->write(options.outputfile);
+            }
             delete module;
         }
     }

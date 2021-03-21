@@ -22,10 +22,6 @@ ifeq ($(LIB_PATH),)
 LIB_PATH := ../../../bin
 endif
 
-ifeq ($(LLC),)
-LLC := /usr/local/opt/llvm/bin/llc
-endif
-
 #SANITIZER_FLAGS:=-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1
 SANITIZER_FLAGS:=
 
@@ -43,8 +39,7 @@ company_module: product_module
 	$(STARKC) -d -o $(OUT_DIR)/modules company/functions.st company/types.st
 
 main: company_module
-	$(STARKC) -d -o $(OUT_DIR)/main.bc main.st
-	$(LLC) -filetype=obj $(OUT_DIR)/main.bc
+	$(STARKC) -d -o $(OUT_DIR)/main.o main.st
 	# Link code with runtime and create binary
 	#gcc -L./$(LIB_PATH) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o -lstark
 	# Static link runtime
