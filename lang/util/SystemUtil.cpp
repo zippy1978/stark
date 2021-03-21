@@ -3,11 +3,13 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <cstring>
 #include <array>
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "SystemUtil.h"
 
