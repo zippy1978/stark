@@ -10,7 +10,8 @@
             "name": "Mac",
             "includePath": [
                 "${myDefaultIncludePath}",
-                "/usr/local/opt/llvm/include"
+                "/usr/local/opt/llvm/include",
+                "${workspaceFolder}/build"
             ],
             "macFrameworkPath": [
                 "/System/Library/Frameworks"

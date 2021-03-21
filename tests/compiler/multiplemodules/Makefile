@@ -39,11 +39,7 @@ company_module: product_module
 	$(STARKC) -d -o $(OUT_DIR)/modules company/functions.st company/types.st
 
 main: company_module
-	$(STARKC) -d -o $(OUT_DIR)/main.o main.st
-	# Link code with runtime and create binary
-	#gcc -L./$(LIB_PATH) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o -lstark
-	# Static link runtime
-	gcc -pthread $(SANITIZER_FLAGS) -o $(OUT_DIR)/$(PROGRAM_NAME) $(OUT_DIR)/main.o $(LIB_PATH)/libstark.a
+	$(STARKC) -d -r $(LIB_PATH)/libstark.a -o $(OUT_DIR)/$(PROGRAM_NAME) main.st
 
 test: main
 	$(OUT_DIR)/$(PROGRAM_NAME)

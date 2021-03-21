@@ -24,8 +24,9 @@ typedef struct
     int argc;
     char **argv;
     bool error;
-    char *outputfile;
+    char *outputFile;
     char *modulePath;
+    char *runtimeLib;
 
 } CommandOptions;
 
@@ -40,6 +41,7 @@ void printUsage()
     std::cout << "  -o      Output file name or directory name (for modules)" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
+    std::cout << "  -r      Static Stark runtime (libstark.a) file name to use for compilation. If not provided, used the one defined by STARK_RUNTIME environment variable" << std::endl;
     std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
 }
 
@@ -54,7 +56,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvo:m:")) != -1)
+    while ((c = getopt(argc, argv, "dvo:m:r:")) != -1)
         switch (c)
         {
         case 'd':
@@ -64,13 +66,16 @@ void parseOptions(int argc, char *argv[])
             options.version = true;
             break;
         case 'o':
-            options.outputfile = optarg;
+            options.outputFile = optarg;
+            break;
+        case 'r':
+            options.runtimeLib = optarg;
             break;
         case 'm':
             options.modulePath = optarg;
             break;
         case '?':
-            if (optopt == 'o' || optopt == 'm')
+            if (optopt == 'o' || optopt == 'm' || optopt == 'r')
                 std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
             else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
@@ -103,7 +108,7 @@ void parseOptions(int argc, char *argv[])
             printUsage();
             options.error = true;
         }
-        else if (options.outputfile == nullptr)
+        else if (options.outputFile == nullptr)
         {
             std::cerr << "Option -o is mandatory" << std::endl;
             printUsage();
@@ -123,7 +128,7 @@ int main(int argc, char *argv[])
     options.argc = 0;
     options.argv = nullptr;
     options.error = false;
-    options.outputfile = nullptr;
+    options.outputFile = nullptr;
     options.modulePath = nullptr;
 
     // Parse options
@@ -197,14 +202,34 @@ int main(int argc, char *argv[])
 
             CompilerModule *module = moduleBuilder.build();
 
-            // If compiling main module : outputs an object file
+            // If compiling main module : outputs an executable
             if (containsMainModule)
             {
-                module->writeObjectCode(options.outputfile);
+                // Get runtime static lib
+                std::string runtimeStaticLib = "";
+                if (options.runtimeLib != nullptr)
+                {
+                    runtimeStaticLib = options.runtimeLib;
+                }
+                else
+                {
+                    if (const char *runtimeLibEnv = std::getenv("STARK_RUNTIME"))
+                    {
+                        runtimeStaticLib = runtimeLibEnv;
+                    }
+                    else
+                    {
+                        std::cerr << "No stark runtime static lib provided. Either use the -r option, or set STARK_RUNTIME environment variable" << std::endl;
+                        exit(1);
+                    }
+                }
+
+                CompilerSystemLinker systemLinker;
+                systemLinker.link(module, options.outputFile, runtimeStaticLib);
             }
             else
             {
-                module->write(options.outputfile);
+                module->write(options.outputFile);
             }
             delete module;
         }

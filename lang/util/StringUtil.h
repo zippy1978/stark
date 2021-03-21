@@ -1,3 +1,6 @@
+#ifndef UTIL_STRINGUTIL_H
+#define UTIL_STRINGUTIL_H
+
 #include <string>
 #include <cassert>
 #include <vector>
@@ -32,3 +35,5 @@ namespace stark
     std::string unescape(std::string s);
 
 } // namespace stark
+
+#endif
