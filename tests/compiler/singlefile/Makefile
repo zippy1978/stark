@@ -25,4 +25,4 @@ compile:
 	$(STARKC) -d -r $(LIB_PATH)/libstark.a -o $(OUT_DIR)/$(PROGRAM_NAME) main.st
 
 test: compile
-	$(OUT_DIR)/$(PROGRAM_NAME)
+	$(OUT_DIR)/$(PROGRAM_NAME) Tony

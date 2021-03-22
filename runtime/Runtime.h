@@ -46,6 +46,8 @@ namespace stark
                    "extern stark_runtime_pub_fromCString(s: any): string\n"
                    "extern stark_runtime_pub_toIntPointer(i: int): any\n"
                    
+                   "extern stark_runtime_priv_extract_args(argc: int, argv: any): any\n"
+                   
                    // IO
                    "extern stark_runtime_pub_stdout(): any\n"
                    "extern stark_runtime_pub_stdin(): any\n"

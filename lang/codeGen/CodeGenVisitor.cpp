@@ -417,9 +417,8 @@ namespace stark
             // If no assignement : assign default value
             else
             {
-                Value *defaultValue = context->isPrimaryType(typeName) ? 
-                context->getPrimaryType(typeName)->createDefaultValue() : 
-                node->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue() : context->getComplexType(typeName)->createDefaultValue();
+                Value *defaultValue = context->isPrimaryType(typeName) ? context->getPrimaryType(typeName)->createDefaultValue() : node->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue()
+                                                                                                                                                   : context->getComplexType(typeName)->createDefaultValue();
                 this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
             }
         }
@@ -510,6 +509,26 @@ namespace stark
             }
         }
 
+        // Test if function is main with args: string[] as single parameter
+        bool isMainWithArgs = false;
+        std::string mainArgsParameterName = "args";
+        if (argTypes.size() == 1 && functionName.compare(MAIN_FUNCTION_NAME) == 0)
+        {
+            CodeGenComplexType *stringArrayType = context->getArrayComplexType("string");
+            if (context->getTypeName(stringArrayType->getType()).compare(context->getTypeName(argTypes[0])) == 0)
+            {
+                isMainWithArgs = true;
+
+                mainArgsParameterName = arguments[0]->getId()->getFullName();
+
+                // Replace arg types with argc & argv
+                argTypes.clear();
+                argTypes.push_back(context->getPrimaryType("int")->getType());
+                argTypes.push_back(context->getPrimaryType("any")->getType());
+
+            }
+        }
+
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
@@ -522,14 +541,39 @@ namespace stark
         Function::arg_iterator argsValues = function->arg_begin();
         Value *argumentValue;
 
-        for (it = arguments.begin(); it != arguments.end(); it++)
+        // If main function with args: create args local variable
+        if (isMainWithArgs)
         {
-            CodeGenVisitor v(context);
-            (**it).accept(&v);
+            // Create variable
+            std::string typeName = "string";
+            CodeGenVariable *var = new CodeGenVariable(mainArgsParameterName, typeName, true, context->getArrayComplexType(typeName)->getType()->getPointerTo());
+            context->declareLocal(var);
 
-            argumentValue = &*argsValues++;
-            argumentValue->setName((*it)->getId()->getName().c_str());
-            StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->getId()->getName())->getValue(), false, context->getCurrentBlock());
+            // Call runtime function to create args string[]
+            Function *extractFunction = context->getLlvmModule()->getFunction(STARK_RUNTIME_EXTRACT_ARGS_FUNCTION);
+            if (extractFunction == nullptr)
+            {
+                context->logger.logError("cannot extract main args: cannot find runtime function");
+            }
+            std::vector<Value *> args;
+            args.push_back(&*argsValues++);
+            args.push_back(&*argsValues++);
+            Value *alloc = CallInst::Create(extractFunction, makeArrayRef(args), "argsalloc", context->getCurrentBlock());
+            StoreInst *inst = new StoreInst(alloc, var->getValue(), false, context->getCurrentBlock());
+            //return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
+        }
+        // Create local variables for each argument
+        else
+        {
+            for (it = arguments.begin(); it != arguments.end(); it++)
+            {
+                CodeGenVisitor v(context);
+                (**it).accept(&v);
+
+                argumentValue = &*argsValues++;
+                argumentValue->setName((*it)->getId()->getName().c_str());
+                StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->getId()->getName())->getValue(), false, context->getCurrentBlock());
+            }
         }
 
         // When not running in interpreter mode : try init memory manager
@@ -784,9 +828,12 @@ namespace stark
         else
         {
             CodeGenComplexType *complexType;
-            if (context->isPrimaryType(lhsTypeName)) {
+            if (context->isPrimaryType(lhsTypeName))
+            {
                 complexType = context->isArrayType(rhsTypeName) ? context->getArrayComplexType(rhsTypeName) : context->getComplexType(rhsTypeName);
-            } else {
+            }
+            else
+            {
                 complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
             }
 

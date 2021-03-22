@@ -11,8 +11,10 @@ func printHello(msg: string) {
     println(msg)
 }
 
-func main(): int {
+func main(args: string[]): int {
     
-    printHello("Tony")
+    if (args.len > 2) {
+        printHello(args[1])
+    }
     return  0
 }

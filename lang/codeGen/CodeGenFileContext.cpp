@@ -352,7 +352,7 @@ namespace stark
 		// 1. Runtime function must be already declared
 		// 2. It must be done as soon as possible in the main function
 		Function *parentFunction = getCurrentBlock()->getParent();
-		Function *function = this->getLlvmModule()->getFunction("stark_runtime_priv_mm_init");
+		Function *function = this->getLlvmModule()->getFunction(STARK_RUNTIME_MM_INIT_FUNCTION);
 		if (function != nullptr && (parentFunction->getName().compare(MAIN_FUNCTION_NAME) == 0))
 		{
 
@@ -366,7 +366,7 @@ namespace stark
 
 	Value *CodeGenFileContext::createMemoryAllocation(Type *type, Value *size, BasicBlock *insertAtEnd)
 	{
-		Function *function = this->getLlvmModule()->getFunction("stark_runtime_priv_mm_alloc");
+		Function *function = this->getLlvmModule()->getFunction(STARK_RUNTIME_MM_ALLOC_FUNCTION);
 		if (function == nullptr)
 		{
 			this->logger.logError("cannot allocate memory: cannot find runtime function");
