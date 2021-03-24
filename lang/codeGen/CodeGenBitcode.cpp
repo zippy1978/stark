@@ -43,7 +43,7 @@ namespace stark
         WriteBitcodeToFile(*llvmModule, output);
     }
 
-    void CodeGenBitcode::writeObjectCode(std::string filename)
+    void CodeGenBitcode::writeObjectCode(std::string filename, std::string targetTriple)
     {
         logger.setFilename(filename);
 
@@ -53,7 +53,7 @@ namespace stark
         InitializeAllAsmParsers();
         InitializeAllAsmPrinters();
 
-        auto targetTriple = sys::getDefaultTargetTriple();
+        
 
         std::string error;
         auto target = TargetRegistry::lookupTarget(targetTriple, error);
@@ -93,6 +93,11 @@ namespace stark
         }
         pass.run(*llvmModule);
         dest.flush();
+    }
+
+    void CodeGenBitcode::writeObjectCode(std::string filename)
+    {
+        this->writeObjectCode(filename, sys::getDefaultTargetTriple());
     }
 
 } // namespace stark

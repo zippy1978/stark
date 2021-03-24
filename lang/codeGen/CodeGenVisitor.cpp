@@ -562,7 +562,7 @@ namespace stark
             StoreInst *inst = new StoreInst(alloc, var->getValue(), false, context->getCurrentBlock());
             //return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
         }
-        // Create local variables for each argument
+        // Otherwise: create local variables for each argument
         else
         {
             for (it = arguments.begin(); it != arguments.end(); it++)

@@ -27,6 +27,7 @@ typedef struct
     char *outputFile;
     char *modulePath;
     char *runtimeLib;
+    char *targetTriple;
 
 } CommandOptions;
 
@@ -43,6 +44,7 @@ void printUsage()
     std::cout << "  -v      Print version information" << std::endl;
     std::cout << "  -r      Static Stark runtime (libstark.a) file name to use for compilation. If not provided, used the one defined by STARK_RUNTIME environment variable" << std::endl;
     std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
+    std::cout << "  -t      Target triple to use for cross compilation. Expected format is <arch><sub>-<vendor>-<sys>-<abi>." << std::endl;
 }
 
 void printVersion()
@@ -56,7 +58,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvo:m:r:")) != -1)
+    while ((c = getopt(argc, argv, "dvo:m:r:t:")) != -1)
         switch (c)
         {
         case 'd':
@@ -71,11 +73,14 @@ void parseOptions(int argc, char *argv[])
         case 'r':
             options.runtimeLib = optarg;
             break;
+        case 't':
+            options.targetTriple = optarg;
+            break;
         case 'm':
             options.modulePath = optarg;
             break;
         case '?':
-            if (optopt == 'o' || optopt == 'm' || optopt == 'r')
+            if (optopt == 'o' || optopt == 'm' || optopt == 'r' || optopt == 't')
                 std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
             else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
@@ -130,6 +135,8 @@ int main(int argc, char *argv[])
     options.error = false;
     options.outputFile = nullptr;
     options.modulePath = nullptr;
+    options.runtimeLib = nullptr;
+    options.targetTriple = nullptr;
 
     // Parse options
     parseOptions(argc, argv);
@@ -224,8 +231,20 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                CompilerSystemLinker systemLinker;
-                systemLinker.link(module, options.outputFile, runtimeStaticLib);
+                // Link module with runtime and system libs if no traget triple provided
+                if (options.targetTriple == nullptr)
+                {
+                    CompilerSystemLinker systemLinker;
+                    systemLinker.link(module, options.outputFile, runtimeStaticLib);
+                }
+                // Otherwise : build objectf file, but don't callt he system linker
+                else
+                {
+                    std::string objectFile = options.outputFile;
+                    objectFile.append(".o");
+                    module->writeObjectCode(objectFile);
+                    module->writeObjectCode(objectFile, options.targetTriple);
+                }
             }
             else
             {

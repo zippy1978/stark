@@ -15,6 +15,11 @@ namespace stark
         bitcode.get()->writeObjectCode(filename);
     }
 
+    void CompilerModule::writeObjectCode(std::string filename, std::string targetTriple)
+    {
+        bitcode.get()->writeObjectCode(filename, targetTriple);
+    }
+
     void CompilerModule::write(std::string filename)
     {
         // Write module to a directory if it has a header

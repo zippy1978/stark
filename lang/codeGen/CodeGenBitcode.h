@@ -26,7 +26,14 @@ namespace stark
         /** Writes bitcode to file. */
         void write(std::string filename);
 
-        /** Compile and writes object code to file. */
+        /** 
+         * Compile and writes object code to file for the given target triple
+         */
+        void writeObjectCode(std::string filename, std::string targetTriple);
+
+        /** 
+         * Compile and writes object code to file (uses host system as target triple)
+         */
         void writeObjectCode(std::string filename);
 
         Module *getLlvmModule() { return llvmModule; }
