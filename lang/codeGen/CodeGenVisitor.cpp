@@ -212,7 +212,7 @@ namespace stark
     {
         context->logger.logDebug(node->location, "creating null");
         context->setCurrentLocation(node->location);
-        this->result = ConstantPointerNull::getNullValue(Type::getInt8PtrTy(context->getLlvmContext()));
+        this->result = ConstantPointerNull::getNullValue(context->getPrimaryType("any")->getType());
     }
 
     void CodeGenVisitor::visit(ASTArray *node)

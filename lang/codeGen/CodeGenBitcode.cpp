@@ -66,7 +66,7 @@ namespace stark
 
         // Features: add options support here for tuning !
         auto cpu = "generic";
-        auto features = "";
+        auto features = ""; //+soft-float-abi,+...
 
         TargetOptions opt;
         auto rm = Optional<Reloc::Model>();
