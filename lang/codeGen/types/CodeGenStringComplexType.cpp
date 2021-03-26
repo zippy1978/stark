@@ -79,13 +79,12 @@ namespace stark
         std::vector<llvm::Constant *> chars(string.size());
 
         // Set each char of the string in the vector
+        Type *charType = Type::getInt8Ty(context->getLlvmContext());
         for (unsigned int i = 0; i < string.size(); i++)
-            chars[i] = ConstantInt::get(Type::getInt8Ty(context->getLlvmContext()), string[i]);
+            chars[i] = ConstantInt::get(charType, string[i]);
 
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
-
-        Type *charType = Type::getInt8Ty(context->getLlvmContext());
 
         Type *innerArrayType = ArrayType::get(charType, chars.size());
         Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
@@ -99,6 +98,7 @@ namespace stark
             Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "dataptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;
+
         }
 
         // Create array instance
@@ -107,7 +107,7 @@ namespace stark
 
         // Set len member
         Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "stringleninit");
-        Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), chars.size(), true), lenMember);
+        Builder.CreateStore(ConstantInt::get(context->getPrimaryType("int")->getType(), chars.size(), true), lenMember);
 
         // Set elements member with inner array
         Value *elementsMemberPointer = Builder.CreateStructGEP(arrayAlloc, 0, "stringdatainit");
