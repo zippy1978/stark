@@ -19,11 +19,13 @@ namespace stark
 
     Value *CodeGenStringComplexType::convert(Value *value, std::string typeName)
     {
-        if (typeName.compare(this->name) == 0) {
+        if (typeName.compare(this->name) == 0)
+        {
             return value;
         }
 
-        if (typeName.compare("any") == 0) {
+        if (typeName.compare("any") == 0)
+        {
             return new BitCastInst(value, context->getPrimaryType("any")->getType(), "", context->getCurrentBlock());
         }
 
@@ -87,7 +89,7 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         Type *innerArrayType = ArrayType::get(charType, chars.size());
-        Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
+        Value *innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         long index = 0;
         for (auto it = chars.begin(); it != chars.end(); it++)
@@ -98,12 +100,10 @@ namespace stark
             Value *elementVarValue = Builder.CreateInBoundsGEP(innerArrayAlloc, indices, "dataptr");
             Builder.CreateStore(*it, elementVarValue);
             index++;
-
         }
 
         // Create array instance
-        Value *arrayAlloc = context->createMemoryAllocation(context->getComplexType("string")->getType(), ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), 1, true), context->getCurrentBlock());
-
+        Value *arrayAlloc = context->createMemoryAllocation(this->getType(), ConstantExpr::getSizeOf(this->getType()), context->getCurrentBlock());
 
         // Set len member
         Value *lenMember = Builder.CreateStructGEP(arrayAlloc, 1, "stringleninit");
