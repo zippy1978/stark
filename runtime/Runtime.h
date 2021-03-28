@@ -34,7 +34,7 @@ namespace stark
                    // Conversion
                    "extern stark_runtime_priv_conv_int_string(i: int): string\n"
                    "extern stark_runtime_priv_conv_int_double(i: int): double\n"
-                   "extern stark_runtime_priv_conv_double_string(i: int): string\n"
+                   "extern stark_runtime_priv_conv_double_string(d: double): string\n"
                    "extern stark_runtime_priv_conv_bool_string(b: bool): string\n"
                    "extern stark_runtime_priv_conv_bool_int(b: bool): int\n"
                    "extern stark_runtime_priv_conv_bool_double(b: bool): double\n"
