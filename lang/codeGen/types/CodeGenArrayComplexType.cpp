@@ -59,7 +59,7 @@ namespace stark
 
         // Create array 
         Type *arrayType = context->getArrayComplexType(context->getTypeName(elementType))->getType();
-        Constant* arrayAllocSize = ConstantExpr::getSizeOf(arrayType->getPointerTo());
+        Constant* arrayAllocSize = ConstantExpr::getSizeOf(arrayType);
         Value *arrayAlloc = context->createMemoryAllocation(arrayType, arrayAllocSize, context->getCurrentBlock());
 
         // Set len member
