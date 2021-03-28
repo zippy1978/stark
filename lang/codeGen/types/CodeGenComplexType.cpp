@@ -201,7 +201,7 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Create new instance
-        Value *structAlloc = context->createMemoryAllocation(type, ConstantInt::get(Type::getInt64Ty(context->getLlvmContext()), 1, true), context->getCurrentBlock());
+        Value *structAlloc = context->createMemoryAllocation(type, ConstantExpr::getSizeOf(this->getType()), context->getCurrentBlock());
 
         // Set member values
         int i = 0;
