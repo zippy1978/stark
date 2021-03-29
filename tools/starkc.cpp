@@ -237,12 +237,11 @@ int main(int argc, char *argv[])
                     CompilerSystemLinker systemLinker;
                     systemLinker.link(module, options.outputFile, runtimeStaticLib);
                 }
-                // Otherwise : build objectf file, but don't callt he system linker
+                // Otherwise : build object file, but don't call the system linker
                 else
                 {
                     std::string objectFile = options.outputFile;
                     objectFile.append(".o");
-                    module->writeObjectCode(objectFile);
                     module->writeObjectCode(objectFile, options.targetTriple);
                 }
             }
