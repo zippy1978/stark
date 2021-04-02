@@ -37,6 +37,11 @@ namespace stark
         void writeObjectCode(std::string filename);
 
         Module *getLlvmModule() { return llvmModule; }
+
+        /**
+         * Return host target triple.
+         */
+        static std::string getHostTargetTriple();
     };
 
 } // namespace stark

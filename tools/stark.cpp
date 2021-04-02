@@ -22,6 +22,7 @@ typedef struct
 {
     bool debug;
     bool version;
+    bool help;
     int argc;
     char **argv;
     bool error;
@@ -39,6 +40,7 @@ void printUsage()
               << "OPTIONS:" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
+    std::cout << "  -h      Print help" << std::endl;
     std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
 }
 
@@ -53,11 +55,14 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvm:")) != -1)
+    while ((c = getopt(argc, argv, "dvhm:")) != -1)
         switch (c)
         {
         case 'd':
             options.debug = true;
+            break;
+        case 'h':
+            options.help = true;
             break;
         case 'v':
             options.version = true;
@@ -100,6 +105,7 @@ int main(int argc, char *argv[])
     // Init options
     options.debug = false;
     options.version = false;
+    options.help = false;
     options.argc = 0;
     options.argv = nullptr;
     options.error = false;
@@ -117,6 +123,11 @@ int main(int argc, char *argv[])
     {
         // Print version
         printVersion();
+    }
+    else if (options.help)
+    {
+        // Print help
+        printUsage();
     }
     else if (options.argc == 0)
     {

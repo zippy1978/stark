@@ -19,6 +19,10 @@ using namespace llvm;
 
 namespace stark
 {
+    std::string CodeGenBitcode::getHostTargetTriple()
+    {
+        return sys::getDefaultTargetTriple();
+    }
 
     void CodeGenBitcode::load(std::string filename)
     {
@@ -55,7 +59,11 @@ namespace stark
 
         // Parse target string
         std::vector<std::string> targetParts = split(targetString, ':');
-        std::string targetTriple = targetParts[0];
+        std::string targetTriple = sys::getDefaultTargetTriple();
+        if (targetParts[0].size() > 0)
+        {
+            targetTriple = targetParts[0];
+        }
         // Features: add options support here for tuning !
         std::string cpu = "generic";
         if (targetParts.size() > 1 && targetParts[1].size() > 0)

@@ -21,6 +21,7 @@ typedef struct
 {
     bool debug;
     bool version;
+    bool help;
     int argc;
     char **argv;
     bool error;
@@ -42,6 +43,7 @@ void printUsage()
     std::cout << "  -o      Output file name or directory name (for modules)" << std::endl;
     std::cout << "  -d      Enable debug mode" << std::endl;
     std::cout << "  -v      Print version information" << std::endl;
+    std::cout << "  -h      Print help" << std::endl;
     std::cout << "  -r      Static Stark runtime (libstark.a) file name to use for compilation. If not provided, used the one defined by STARK_RUNTIME environment variable" << std::endl;
     std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
     std::cout << "  -t      Target to use for cross compilation. Expected format is triple:cpu:features." << std::endl;
@@ -50,6 +52,7 @@ void printUsage()
 void printVersion()
 {
     std::cout << stark::format("Stark compiler version %s", Stark_VERSION) << std::endl;
+    std::cout << stark::format("Target: %s", CodeGenBitcode::getHostTargetTriple().c_str()) << std::endl;
 }
 
 void parseOptions(int argc, char *argv[])
@@ -58,7 +61,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvo:m:r:t:")) != -1)
+    while ((c = getopt(argc, argv, "dvho:m:r:t:")) != -1)
         switch (c)
         {
         case 'd':
@@ -66,6 +69,9 @@ void parseOptions(int argc, char *argv[])
             break;
         case 'v':
             options.version = true;
+            break;
+        case 'h':
+            options.help = true;
             break;
         case 'o':
             options.outputFile = optarg;
@@ -105,7 +111,7 @@ void parseOptions(int argc, char *argv[])
     options.argv = otherArgv;
 
     // Check mandatory options
-    if (!options.version)
+    if (!options.version && !options.help)
     {
         if (options.argc == 0)
         {
@@ -130,6 +136,7 @@ int main(int argc, char *argv[])
     // Init options
     options.debug = false;
     options.version = false;
+    options.help = false;
     options.argc = 0;
     options.argv = nullptr;
     options.error = false;
@@ -151,6 +158,11 @@ int main(int argc, char *argv[])
     {
         // Print version
         printVersion();
+    }
+    else if (options.help)
+    {
+        // Print help
+        printUsage();
     }
     else if (options.argc == 0)
     {
