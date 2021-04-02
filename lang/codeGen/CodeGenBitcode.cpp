@@ -43,7 +43,7 @@ namespace stark
         WriteBitcodeToFile(*llvmModule, output);
     }
 
-    void CodeGenBitcode::writeObjectCode(std::string filename, std::string targetTriple)
+    void CodeGenBitcode::writeObjectCode(std::string filename, std::string targetString)
     {
         logger.setFilename(filename);
 
@@ -53,7 +53,20 @@ namespace stark
         InitializeAllAsmParsers();
         InitializeAllAsmPrinters();
 
-        
+        // Parse target string
+        std::vector<std::string> targetParts = split(targetString, ':');
+        std::string targetTriple = targetParts[0];
+        // Features: add options support here for tuning !
+        std::string cpu = "generic";
+        if (targetParts.size() > 1 && targetParts[1].size() > 0)
+        {
+            cpu = targetParts[1];
+        }
+        std::string features = ""; //+vfp2,+...
+        if (targetParts.size() > 2 && targetParts[2].size() > 0)
+        {
+            features = targetParts[2];
+        }
 
         std::string error;
         auto target = TargetRegistry::lookupTarget(targetTriple, error);
@@ -63,10 +76,6 @@ namespace stark
         {
             logger.logError(error);
         }
-
-        // Features: add options support here for tuning !
-        auto cpu = "generic";
-        auto features = ""; //+soft-float-abi,+...
 
         TargetOptions opt;
         auto rm = Optional<Reloc::Model>();

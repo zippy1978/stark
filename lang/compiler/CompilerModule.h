@@ -36,11 +36,11 @@ namespace stark
         /** Write module to the given file name (or directory name if it has a header). */
         void write(std::string filename);
 
-        /** Compile and write module to an object file. Uses the host tragt triple.*/
+        /** Compile and write module to an object file. Uses the host target.*/
         void writeObjectCode(std::string filename);
 
-        /** Compile and write module to an object file for the provided target triple. */
-        void writeObjectCode(std::string filename, std::string targetTriple);
+        /** Compile and write module to an object file for the provided target. */
+        void writeObjectCode(std::string filename, std::string targetString);
 
         /** Load module from a file name or directory name. */
         void load(std::string filename);

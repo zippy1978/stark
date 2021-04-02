@@ -15,9 +15,9 @@ namespace stark
         bitcode.get()->writeObjectCode(filename);
     }
 
-    void CompilerModule::writeObjectCode(std::string filename, std::string targetTriple)
+    void CompilerModule::writeObjectCode(std::string filename, std::string targetString)
     {
-        bitcode.get()->writeObjectCode(filename, targetTriple);
+        bitcode.get()->writeObjectCode(filename, targetString);
     }
 
     void CompilerModule::write(std::string filename)

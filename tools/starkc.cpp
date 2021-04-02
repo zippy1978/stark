@@ -27,7 +27,7 @@ typedef struct
     char *outputFile;
     char *modulePath;
     char *runtimeLib;
-    char *targetTriple;
+    char *target;
 
 } CommandOptions;
 
@@ -44,7 +44,7 @@ void printUsage()
     std::cout << "  -v      Print version information" << std::endl;
     std::cout << "  -r      Static Stark runtime (libstark.a) file name to use for compilation. If not provided, used the one defined by STARK_RUNTIME environment variable" << std::endl;
     std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
-    std::cout << "  -t      Target triple to use for cross compilation. Expected format is <arch><sub>-<vendor>-<sys>-<abi>." << std::endl;
+    std::cout << "  -t      Target to use for cross compilation. Expected format is triple:cpu:features." << std::endl;
 }
 
 void printVersion()
@@ -74,7 +74,7 @@ void parseOptions(int argc, char *argv[])
             options.runtimeLib = optarg;
             break;
         case 't':
-            options.targetTriple = optarg;
+            options.target = optarg;
             break;
         case 'm':
             options.modulePath = optarg;
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
     options.outputFile = nullptr;
     options.modulePath = nullptr;
     options.runtimeLib = nullptr;
-    options.targetTriple = nullptr;
+    options.target = nullptr;
 
     // Parse options
     parseOptions(argc, argv);
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
                 }
 
                 // Link module with runtime and system libs if no traget triple provided
-                if (options.targetTriple == nullptr)
+                if (options.target == nullptr)
                 {
                     CompilerSystemLinker systemLinker;
                     systemLinker.link(module, options.outputFile, runtimeStaticLib);
@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
                 {
                     std::string objectFile = options.outputFile;
                     objectFile.append(".o");
-                    module->writeObjectCode(objectFile, options.targetTriple);
+                    module->writeObjectCode(objectFile, options.target);
                 }
             }
             else

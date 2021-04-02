@@ -27,12 +27,12 @@ namespace stark
         void write(std::string filename);
 
         /** 
-         * Compile and writes object code to file for the given target triple
+         * Compile and writes object code to file for the given target
          */
-        void writeObjectCode(std::string filename, std::string targetTriple);
+        void writeObjectCode(std::string filename, std::string targetString);
 
         /** 
-         * Compile and writes object code to file (uses host system as target triple)
+         * Compile and writes object code to file (uses host system as target)
          */
         void writeObjectCode(std::string filename);
 
