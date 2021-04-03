@@ -20,9 +20,9 @@ The project is written in C++ (C++14) and uses [CMake](https://cmake.org/) as bu
 
 Eventhough conan is used to manage project dependencies, some of them still require to be installed aside, those are:
 
- - llvm 11+
+ - llvm 10+
  - flex 2.6+
- - bison 3.5+
+ - bison 3.0+
 
 For fast building the use of [ninja](https://ninja-build.org/) is recommended.
 
