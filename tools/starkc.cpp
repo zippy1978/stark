@@ -29,6 +29,7 @@ typedef struct
     char *modulePath;
     char *runtimeLib;
     char *target;
+    char *linker;
 
 } CommandOptions;
 
@@ -46,7 +47,8 @@ void printUsage()
     std::cout << "  -h      Print help" << std::endl;
     std::cout << "  -r      Static Stark runtime (libstark.a) file name to use for compilation. If not provided, used the one defined by STARK_RUNTIME environment variable" << std::endl;
     std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
-    std::cout << "  -t      Target to use for cross compilation. Expected format is triple:cpu:features." << std::endl;
+    std::cout << "  -t      Cross compilation target. Expected format is triple:cpu:features. If not provided, uses host target." << std::endl;
+    std::cout << "  -l      Linker settings. Expected format is linker_command:linker_flags. If not provided, uses cc. Use 'none' value to disable linking." << std::endl;
 }
 
 void printVersion()
@@ -61,7 +63,7 @@ void parseOptions(int argc, char *argv[])
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "dvho:m:r:t:")) != -1)
+    while ((c = getopt(argc, argv, "dvho:m:r:t:l:")) != -1)
         switch (c)
         {
         case 'd':
@@ -82,11 +84,14 @@ void parseOptions(int argc, char *argv[])
         case 't':
             options.target = optarg;
             break;
+        case 'l':
+            options.linker = optarg;
+            break;
         case 'm':
             options.modulePath = optarg;
             break;
         case '?':
-            if (optopt == 'o' || optopt == 'm' || optopt == 'r' || optopt == 't')
+            if (optopt == 'o' || optopt == 'm' || optopt == 'r' || optopt == 't' || optopt == 'l')
                 std::cerr << stark::format("Option -%c requires an argument.", optopt) << std::endl;
             else if (isprint(optopt))
                 std::cerr << stark::format("Unknown option `-%c'.", optopt) << std::endl;
@@ -144,6 +149,7 @@ int main(int argc, char *argv[])
     options.modulePath = nullptr;
     options.runtimeLib = nullptr;
     options.target = nullptr;
+    options.linker = nullptr;
 
     // Parse options
     parseOptions(argc, argv);
@@ -243,19 +249,20 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                // Link module with runtime and system libs if no traget triple provided
-                if (options.target == nullptr)
-                {
-                    CompilerSystemLinker systemLinker;
-                    systemLinker.link(module, options.outputFile, runtimeStaticLib);
-                }
-                // Otherwise : build object file, but don't call the system linker
-                else
+                // Compile and link module with runtime and system libs
+                // Link only if linking is not disabled
+                if (options.linker != nullptr && std::string(options.linker).compare("none") == 0)
                 {
                     std::string objectFile = options.outputFile;
                     objectFile.append(".o");
                     module->writeObjectCode(objectFile, options.target);
                 }
+                else
+                {
+                    CompilerSystemLinker systemLinker;
+                    systemLinker.link(module, options.outputFile, runtimeStaticLib, CodeGenBitcode::getHostTargetTriple(), options.linker == nullptr ? "cc:" : options.linker);
+                }
+
             }
             else
             {

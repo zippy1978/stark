@@ -12,7 +12,7 @@ namespace stark
      * In charge of calling the system linking to turn object code to executable.
      */
     class CompilerSystemLinker
-    {        
+    {
         Logger logger;
 
     public:
@@ -20,7 +20,16 @@ namespace stark
 
         /** 
          * Link module to the stytem and write executable to the given filename. 
-         * Also, the runtime static lib filename to use must be provided.
+         * The runtime static lib filename to use must be provided.
+         * targetString is the compilation target: triple:cpu:features.
+         * linkerString is the linker parameter string : linker_commad:linker_flags
+         */
+        void link(CompilerModule *module, std::string filename, std::string runtimeStaticLibFilename, std::string targetString, std::string linkerString);
+
+        /** 
+         * Link module to the stytem and write executable to the given filename. 
+         * The runtime static lib filename to use must be provided.
+         * Default linker paramaters are used (command and flags).
          */
         void link(CompilerModule *module, std::string filename, std::string runtimeStaticLibFilename);
     };
