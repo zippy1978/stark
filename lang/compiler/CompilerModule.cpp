@@ -27,8 +27,10 @@ namespace stark
         {
             std::string moduleDir = filename.append("/").append(name);
 
-            if (mkdir(moduleDir.c_str(), 0700) == -1)
-                logger.logError(format("cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
+            // Create module directory without checking result (may already exist)
+            mkdir(moduleDir.c_str(), 0700);
+            //if (mkdir(moduleDir.c_str(), 0700) == -1)
+            //    logger.logError(format("cannot create directory %s (%s)", moduleDir.c_str(), strerror(errno)));
 
             // Write bitcode
             std::string bitcodeFilename = moduleDir;
