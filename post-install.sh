@@ -5,7 +5,7 @@
 COMMENT_LINE="# Stark environment variables (do not remove this line)"
 
 # Determine profile file
-PROFILE=~/.bash_profile
+PROFILE=~/.bashrc
 ZSHRC_PROFILE=~/.zshrc
 if [ -f $ZSHRC_PROFILE ]; then
     PROFILE=$ZSHRC_PROFILE
