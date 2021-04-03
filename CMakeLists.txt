@@ -100,6 +100,8 @@ add_custom_target(uninstall
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
+install(CODE "execute_process(COMMAND sh ${CMAKE_SOURCE_DIR}/post-install.sh ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIB_DIR})")
+
 add_subdirectory(lang)
 add_subdirectory(runtime)
 add_subdirectory(tools)
