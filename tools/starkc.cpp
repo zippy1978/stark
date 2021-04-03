@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     CompilerSystemLinker systemLinker;
-                    systemLinker.link(module, options.outputFile, runtimeStaticLib, CodeGenBitcode::getHostTargetTriple(), options.linker == nullptr ? "cc:" : options.linker);
+                    systemLinker.link(module, options.outputFile, runtimeStaticLib, options.target == nullptr ? CodeGenBitcode::getHostTargetTriple() : options.target, options.linker == nullptr ? "cc:" : options.linker);
                 }
 
             }
