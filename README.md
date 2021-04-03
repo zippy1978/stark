@@ -1,3 +1,5 @@
+![hello](logo/StarkLogoDark.png)
+
 # The Stark programming language
 
 Welcome to the Stark programming language source code repository.
