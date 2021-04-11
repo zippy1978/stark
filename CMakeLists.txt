@@ -103,12 +103,12 @@ add_custom_target(uninstall
 # Post install script
 install(CODE "execute_process(COMMAND sh ${CMAKE_SOURCE_DIR}/post-install.sh ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIB_DIR})")
 
-# Archive
-file(ARCHIVE_CREATE OUTPUT ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${CMAKE_HOST_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_PROJECT_VERSION}.zip
-        PATHS "bin" "lib"
-        
-        FORMAT zip
+# Archive target
+add_custom_target(archive ALL COMMAND
+    ${CMAKE_COMMAND} -E tar "cvf" "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${CMAKE_HOST_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_PROJECT_VERSION}.zip" --format=zip bin lib
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
+add_dependencies(archive stark starkc static_runtime)
 
 add_subdirectory(lang)
 add_subdirectory(runtime)
