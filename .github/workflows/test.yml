@@ -93,5 +93,5 @@ jobs:
       run: ninja archive  
     - uses: actions/upload-artifact@v2
       with:
-        name: archive
+        name: archive-${{matrix.os}}
         path: ${{github.workspace}}/build/Stark*.zip
