@@ -28,7 +28,7 @@ jobs:
         file: archive-macos-10.15/Stark-*.zip
         tag: 'snapshot'
         overwrite: true
-        body: "Snapshot release for Darwin"
+        body: "Snapshot release"
         file_glob: true
         prerelease: true
     - name: Upload Linux binaries
@@ -38,6 +38,6 @@ jobs:
         file: archive-ubuntu-16.04/Stark-*.zip
         tag: 'snapshot'
         overwrite: true
-        body: "Snapshot release for Linux"
+        body: "Snapshot release"
         file_glob: true
         prerelease: true
