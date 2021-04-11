@@ -25,13 +25,23 @@ jobs:
         run_number: ${{ github.event.inputs.run_number }}
         # Optional, directory where to extract artifact
           #path: extract_here
-    - name: Upload binaries to release
+    - name: Upload Darwin binaries
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: archive-macos-10.15/Stark-*.zip
         tag: ${{ github.ref }}
         overwrite: true
-        body: "This is my release text"
+        body: "Snapshot release for Darwin"
+        file_glob: true
+        prerelease: true
+    - name: Upload Linux binaries
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: archive-ubuntu-16.04/Stark-*.zip
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: "Snapshot release for Linux"
         file_glob: true
         prerelease: true
