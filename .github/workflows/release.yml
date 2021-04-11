@@ -17,12 +17,12 @@ jobs:
     
     steps:
       - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
+      - uses: dawidd6/action-download-artifact@v2
         with:
-        # Required, workflow file name or ID
-        workflow: build.yml
-        workflow_conclusion: success
-        # Optional, run number from the workflow
-        run_number: ${{ github.event.inputs.run_number }}
-        # Optional, directory where to extract artifact
-        #path: extract_here
+          # Required, workflow file name or ID
+          workflow: build.yml
+          workflow_conclusion: success
+          # Optional, run number from the workflow
+          run_number: ${{ github.event.inputs.run_number }}
+          # Optional, directory where to extract artifact
+          #path: extract_here
