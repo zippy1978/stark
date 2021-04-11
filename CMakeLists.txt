@@ -100,7 +100,15 @@ add_custom_target(uninstall
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
+# Post install script
 install(CODE "execute_process(COMMAND sh ${CMAKE_SOURCE_DIR}/post-install.sh ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIB_DIR})")
+
+# Archive
+file(ARCHIVE_CREATE OUTPUT ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${CMAKE_HOST_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_PROJECT_VERSION}.zip
+        PATHS "bin" "lib"
+        
+        FORMAT zip
+)
 
 add_subdirectory(lang)
 add_subdirectory(runtime)
