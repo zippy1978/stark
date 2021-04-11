@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    inputs:
+      run_number:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Build workflow run number to release'
+        # Input has to be provided for the workflow to run
+        required: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  release:
+    runs-on: ubuntu-latest 
+    
+    steps:
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+        # Required, workflow file name or ID
+        workflow: build.yml
+        workflow_conclusion: success
+        # Optional, run number from the workflow
+        run_number: ${{ github.event.inputs.run_number }}
+        # Optional, directory where to extract artifact
+        #path: extract_here
