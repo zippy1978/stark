@@ -18,19 +18,15 @@ jobs:
     - name: Download artifact
       uses: dawidd6/action-download-artifact@v2
       with:
-        # Required, workflow file name or ID
         workflow: build.yml
         workflow_conclusion: success
-        # Optional, run number from the workflow
         run_number: ${{ github.event.inputs.run_number }}
-        # Optional, directory where to extract artifact
-          #path: extract_here
     - name: Upload Darwin binaries
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: archive-macos-10.15/Stark-*.zip
-        tag: ${{ github.ref }}
+        tag: 'snapshot'
         overwrite: true
         body: "Snapshot release for Darwin"
         file_glob: true
@@ -40,7 +36,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: archive-ubuntu-16.04/Stark-*.zip
-        tag: ${{ github.ref }}
+        tag: 'snapshot'
         overwrite: true
         body: "Snapshot release for Linux"
         file_glob: true
