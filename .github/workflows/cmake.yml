@@ -43,7 +43,7 @@ jobs:
               brew install llvm
               brew install flex
               brew install bison
-              brew ninja
+              brew install ninja
          fi
     
     - name: Install conan
