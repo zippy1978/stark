@@ -44,7 +44,7 @@ endforeach()
 file(GLOB_RECURSE TEST_RUNNER_TEST_FILES testrunner/*.st)
 foreach(test_file ${TEST_RUNNER_TEST_FILES})
     add_test(NAME ${test_file}
-            COMMAND ${STARKTEST_BIN} -d -m ${STARK_MODULE_PATH} ${test_file}
+            COMMAND ${STARKTEST_BIN} -i ${STARK_BIN} -d -m ${STARK_MODULE_PATH} ${test_file}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
