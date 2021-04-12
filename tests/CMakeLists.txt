@@ -27,7 +27,7 @@ add_test(NAME delete_test_module
 
 # Build test module for interpreter tests
 add_test(NAME build_interpreter_test_module
-            COMMAND ${STARKC_BIN} -o ${STARK_MODULE_PATH} modules/module.st
+            COMMAND ${STARKC_BIN} -d -o ${STARK_MODULE_PATH} modules/module.st
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Run interpreter tests

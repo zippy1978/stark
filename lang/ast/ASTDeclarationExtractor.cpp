@@ -19,8 +19,12 @@ namespace stark
             }
             else
             {
-                return typeId->clone();
+                result = typeId->clone();
             }
+        }
+        else
+        {
+            result = new ASTIdentifier("void", nullptr, nullptr);
         }
 
         return result;

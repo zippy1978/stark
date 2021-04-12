@@ -18,3 +18,8 @@
  func returnTest(): Test {
      return Test("this is a test")
  }
+
+// Empty function (no return)
+ func empty() {
+
+ }
