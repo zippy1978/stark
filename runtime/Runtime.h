@@ -30,7 +30,7 @@ namespace stark
         {
             return "extern stark_runtime_priv_mm_init(): void\n"
                    "extern stark_runtime_priv_mm_alloc(size: int): any\n"
-                   
+
                    // Conversion
                    "extern stark_runtime_priv_conv_int_string(i: int): string\n"
                    "extern stark_runtime_priv_conv_int_double(i: int): double\n"
@@ -45,9 +45,9 @@ namespace stark
                    "extern stark_runtime_pub_toCString(s: string): any\n"
                    "extern stark_runtime_pub_fromCString(s: any): string\n"
                    "extern stark_runtime_pub_toIntPointer(i: int): any\n"
-                   
+
                    "extern stark_runtime_priv_extract_args(argc: int, argv: any): any\n"
-                   
+
                    // IO
                    "extern stark_runtime_pub_stdout(): any\n"
                    "extern stark_runtime_pub_stdin(): any\n"
@@ -55,6 +55,18 @@ namespace stark
                    "extern stark_runtime_pub_println(s: string)\n"
                    "extern stark_runtime_pub_printflush()\n"
                    "extern stark_runtime_pub_print(s: string)\n";
+        }
+
+        /* Returns runtime declarations available for testing */
+        static std::string getTestDeclarations()
+        {
+            return "extern assertIntEquals(actual: int, expected: int)\n"
+                   "extern assertStringEquals(actual: string, expected: string)\n"
+                   "extern assertDoubleEquals(actual: double, expected: double)\n"
+                   "extern assertTrue(actual: bool): void\n"
+                   "extern assertNull(actual: any): void\n"
+                   "extern failure(): void\n";
+        
         }
     };
 

@@ -4,6 +4,7 @@
 # Parameters
 set(STARK_BIN "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/stark")
 set(STARKC_BIN "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/starkc")
+set(STARKTEST_BIN "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/starktest")
 set(STARK_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}/modules")
 set(LLC "${LLVM_INSTALL_PREFIX}/bin/llc")
 
@@ -36,6 +37,14 @@ file(GLOB_RECURSE INTERPRETER_TEST_FILES interpreter/*.st)
 foreach(test_file ${INTERPRETER_TEST_FILES})
     add_test(NAME ${test_file}
             COMMAND ${STARK_BIN} -d -m ${STARK_MODULE_PATH} ${test_file} arg1 arg2
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
+
+# Run test runner tests
+file(GLOB_RECURSE TEST_RUNNER_TEST_FILES testrunner/*.st)
+foreach(test_file ${TEST_RUNNER_TEST_FILES})
+    add_test(NAME ${test_file}
+            COMMAND ${STARKTEST_BIN} -d -m ${STARK_MODULE_PATH} ${test_file}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
