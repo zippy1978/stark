@@ -129,24 +129,43 @@ int main(int argc, char *argv[])
         // Print help
         printUsage();
     }
-    else if (options.argc == 0)
-    {
-        // If not printing version : filename is required
-        std::cerr << "filename is missing." << std::endl;
-        printUsage();
-        exit(1);
-    }
     else
     {
+        ASTBlock *program = nullptr;
+        std::string filename = "-";
 
-        // Run file...
-        std::string filename = options.argv[0];
-        // Read input file
-        std::ifstream input(filename);
-        if (!input)
+        // No input file provided : read from stdin
+        if (options.argc == 0)
         {
-            std::cerr << "Cannot open input file: " << filename << std::endl;
-            exit(1);
+            filename = "-";
+
+            std::string input = "";
+            std::string line;
+            while (std::getline(std::cin, line))
+            {
+                input.append(line);
+                input.append("\n");
+            }
+
+            // Parse sources
+            StarkParser parser("-");
+            program = parser.parse(input);
+        }
+        // Run file
+        else
+        {
+            filename = options.argv[0];
+            // Read input file
+            std::ifstream input(filename);
+            if (!input)
+            {
+                std::cerr << "Cannot open input file: " << filename << std::endl;
+                exit(1);
+            }
+
+            // Parse sources
+            StarkParser parser(filename);
+            program = parser.parse(&input);
         }
 
         // Get module search paths
@@ -161,10 +180,6 @@ int main(int argc, char *argv[])
             std::vector<std::string> commandSearchPaths = split(options.modulePath, ':');
             searchPaths.insert(std::end(searchPaths), std::begin(commandSearchPaths), std::end(commandSearchPaths));
         }
-
-        // Parse sources
-        StarkParser parser(filename);
-        ASTBlock *program = parser.parse(&input);
 
         // Load imported modules
         CompilerModuleLoader moduleLoader(new CompilerModuleResolver(searchPaths));
