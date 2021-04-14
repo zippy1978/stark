@@ -80,7 +80,7 @@ jobs:
     - name: Read version
       working-directory: ${{github.workspace}}
       shell: bash
-      run: export VERSION=$(cat VERSION)
+      run: echo "stark_version=$(cat VERSION)" >> $GITHUB_ENV
     
     - name: Archive
       working-directory: ${{github.workspace}}/build
@@ -96,7 +96,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{github.workspace}}/build/Stark*.zip
-        tag: ${{env.VERSION}}-SNAPSHOT
+        tag: ${{env.stark_version}}-SNAPSHOT
         overwrite: true
         body: "Snapshot release"
         file_glob: true
