@@ -77,11 +77,10 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ninja test
      
-     
-    - name: Test
+    - name: Read version
       working-directory: ${{github.workspace}}
       shell: bash
-      run: export VERSION = $(cat VERSION)
+      run: export VERSION=$(cat VERSION)
     
     - name: Archive
       working-directory: ${{github.workspace}}/build
