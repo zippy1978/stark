@@ -97,7 +97,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{github.workspace}}/build/Stark*.zip
-        tag: ${{VERSION}}-SNAPSHOT
+        tag: ${{env.VERSION}}-SNAPSHOT
         overwrite: true
         body: "Snapshot release"
         file_glob: true
