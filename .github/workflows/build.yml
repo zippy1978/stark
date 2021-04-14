@@ -67,7 +67,6 @@ jobs:
     - name: Detect version
       shell: bash
       working-directory: ${{github.workspace}}
-      run: VERSION=$(cat VERSION)
 
     - name: Build
       working-directory: ${{github.workspace}}/build
@@ -96,8 +95,10 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{github.workspace}}/build/Stark*.zip
-        tag: '$VERSION-SNAPSHOT'
+        tag: ${{VERSION}}-SNAPSHOT
         overwrite: true
         body: "Snapshot release"
         file_glob: true
         prerelease: true
+        env:
+          VERSION = $(cat VERSION)
