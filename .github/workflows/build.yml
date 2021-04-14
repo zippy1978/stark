@@ -59,9 +59,9 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
-              cmake -GNinja .. -DLLVM_DIR="$(/usr/bin/llvm-config-10 --cmakedir)"
+              cmake -GNinja .. -DVERSION_SUFFIX="SNAPSHOT" -DLLVM_DIR="$(/usr/bin/llvm-config-10 --cmakedir)"
          else
-              cmake -GNinja ..
+              cmake -GNinja .. -DVERSION_SUFFIX="SNAPSHOT"
          fi
 
     - name: Configure CMake
@@ -95,3 +95,14 @@ jobs:
       with:
         name: archive-${{matrix.os}}
         path: ${{github.workspace}}/build/Stark*.zip
+        
+    - name: Upload snapshot binaries
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{github.workspace}}/build/Stark*.zip
+        tag: 'snapshot'
+        overwrite: true
+        body: "Snapshot release"
+        file_glob: true
+        prerelease: true
