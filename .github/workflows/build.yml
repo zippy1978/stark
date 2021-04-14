@@ -85,13 +85,10 @@ jobs:
     - name: Archive
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: ninja archive  
-    - uses: actions/upload-artifact@v2
-      with:
-        name: archive-${{matrix.os}}
-        path: ${{github.workspace}}/build/Stark*.zip
+      run: ninja archive
         
     - name: Upload snapshot binaries
+      if: matrix.os == 'ubuntu-16.04' or matrix.os == 'macos-10.15'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
