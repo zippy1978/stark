@@ -64,10 +64,6 @@ jobs:
               cmake -GNinja .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVERSION_SUFFIX="SNAPSHOT"
          fi
 
-    - name: Detect version
-      shell: bash
-      working-directory: ${{github.workspace}}
-
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
