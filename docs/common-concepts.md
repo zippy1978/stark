@@ -12,7 +12,9 @@ Variables are used to store values during the program execution. They all have a
 
 The variable declaration syntax is:
 
-*name*: *type* [= *value*]
+``name``: ``type`` [= ``value``] 
+
+``name``:= ``value``
 
 Here are some examples :
 
@@ -128,7 +130,7 @@ d: int = 4 - c
 
 #### The void type
 
-The *void* type is a special primary type used to mark the absence of value. It cannot be assigned, and is primarly used for functions without a return type.
+The ``void`` type is a special primary type used to mark the absence of value. It cannot be assigned, and is primarly used for functions without a return type.
 
 ### Complex types
 
@@ -144,7 +146,7 @@ Complex types include:
 
 ### The string type
 
-The *string* type is a specific builtin complex type.
+The ``string`` type is a specific builtin complex type.
 
 It can be initialized with a litteral, and its *len* member can be used to retrieve its length (number of characters):
 
@@ -183,13 +185,13 @@ println("beers: \t🍺\t🍺\t🍺")
 // beers: 	🍺	🍺	🍺
 ```
 
-#### Comparisons
+### Comparisons
 
 Values can be compared using comparison operators. Comparisons are only supported when both operand are of the same type.
 
 Primary types support all comparison operators, as complex types can only support some operators.
 
-Available comparisons are :
+Available comparisons for complex types are :
 
 | Syntax        | Description      | Complex type support           |
 | ------------- |------------------|------------------------------- |
@@ -204,7 +206,7 @@ Available comparisons are :
 
 A value of some type can be converted to antoher type using the *as* operator.
 
-Conversion is only supported on primary types and string, and only if the conversion does not cause a data loss:
+Conversion is only supported on primary types and ``string``, and only if the conversion does not cause a data loss:
 
 ```stark
 i: int
@@ -225,11 +227,11 @@ d = s as double
 
 ```
 
-?> When a string cannot be converted to a primary type, the returned value is 0 (false for a bool)
+?> When a ``string`` cannot be converted to a primary type, the returned value is 0 (false for a ``bool``)
 
 ### The any type
 
-The *any* type is, like void, a special primary type used to represent any kind of complex type. It cannot be created from code, and is mainly used to interract with C functions pointers. Under the hood, *any* is an anonymous pointer.
+The ``any`` type is, like ``void``, a special primary type used to represent any kind of complex type. It cannot be created from code, and is mainly used to interract with C functions pointers. Under the hood, ``any`` is an anonymous pointer.
 
 ```stark
 // Here 'any' is used to materialize C pointers: char* and FILE*
@@ -253,7 +255,7 @@ if (file == null) {
 
 ### Nullability
 
-Complex types can be assigned null values, to mark the abscence of value on a variable.
+Complex types can be assigned ``null`` values, to mark the abscence of value on a variable.
 
 ```stark
 s: string = "A string value"
@@ -263,6 +265,8 @@ if (s == null) {
 }
 ```
 
+!> Be careful when handling ``null`` assigned variables, it may result in unexpected behaviors, or, more often, crashes (SEGFAULT).
+
 ## Functions
 
 Functions are callable code blocks taking values as input (parameters), and outputting a result value.
@@ -271,9 +275,9 @@ Functions are callable code blocks taking values as input (parameters), and outp
 
 The function definition syntax is:
 
-**func** *name*(*paramname*: *type*, *paramname*: *type*, ...): *type* {...}
+func ``name``(``paramname``: ``type``, ``paramname``: ``type``, ...): ``type`` {...}
 
-A *return* statement is expected inside the function body, except if the return type is *void*:
+A ``return`` statement is expected inside the function body, except if the return type is ``void``:
 
 ```stark
 func add(a: int, b: int): int {
@@ -295,7 +299,9 @@ func noReturn() {
 
 Once defined, a function can be called with the syntax:
 
-*name*(*paramname*: *type*, *paramname*: *type*, ...)
+``name``(``param``, ``param``, ...)
+
+Parameters must match the function declaration (count and position).
 
 ```stark
 result: int = add(3, 7)
@@ -319,16 +325,20 @@ i: int = 10
 
 ## Control flow
 
+Stark supports a few control flow instructions.
+
 ### Conditions
 
-Conditions are expressed with if / else blocks, using the syntax:
+Conditions are expressed with ``if`` / ``else`` blocks, using the syntax:
 
-*if*(*condition*) {*...*} [*else* {*...*}]
+if(``condition``) {...} [else {...}]
+
+The condition can be any expression resolving to a ``bool`` value.
 
 Here are a few example:
 
 ```stark
-i: int = 5
+i := 5
 
 // If / else block
 if (i > 4) {
@@ -345,14 +355,16 @@ if (i == 5) {
 
 ### Loops
 
-In Stark loops are defined using a *while* statement:
+In Stark loops are defined using a ``while`` statement:
 
-*while*(*condition*) {*...*}
+while(``condition``) {*...*}
 
-The *while* statement will loop on the block until the condition returns false:
+As for ``if``, condition can be any expression resolving to a ``bool`` value.
+
+The ``while`` statement will loop on the block until the condition returns ``false``:
 
 ```stark
-i: int = 0
+i := 0
 
 // Count from 0 to 9
 while (i < 10) {

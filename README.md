@@ -7,7 +7,8 @@ Welcome to the Stark programming language source code repository.
 This repository contains everything to build:
 
 - The **starkc** compiler command
-- The **stark** interpreted command
+- The **stark** interpreter command
+- The **starktest** test runner command
 - The language runtime (available as a static or shared library)
 
 Stark currently runs on Linux and macOS.

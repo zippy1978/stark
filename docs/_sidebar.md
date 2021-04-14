@@ -8,5 +8,6 @@
 * [Modules](modules.md)
 * [Compiler](compiler.md)
 * [Interpreter](interpreter.md)
+* [Testing](testing.md)
 * [Memory management](memory-management.md)
 

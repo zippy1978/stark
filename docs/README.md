@@ -16,7 +16,7 @@ To do so, Stark is designed with the following concepts in mind : **portability*
 
 Portability means being able to run the exact same code on many different hardware, no matter what their power is.
 
-To do so, Stark tries to rely as less as possible on hardware specific features by using LLVM to generate code. When compiling, Stark outputs .bc files (bitcode file) that will be translated to architecture specific binaries only when needed.
+To do so, Stark tries to rely as less as possible on hardware specific features by using LLVM to generate code. When compiling, Stark outputs .bc files (bitcode file) that will be translated to architecture specific binaries only when needed. This is a principle we call the "late late metal": compiling to machine code as late as possible.
 
 Also, the Stark runtime is kept as minimal as possible, and only relies on widely supported libc (standard C library) features.
 
@@ -24,10 +24,22 @@ Also, the Stark runtime is kept as minimal as possible, and only relies on widel
 
 Performance means running fast, but also not wasting ressources. Instructions do only what they are meant to do.
 
+Also, Stark runtime tries to keep the smallest footprint as possible, to save ressources (memory, and storage).
+
 ### Simplicity
 
-Simplicity means, easy to learn but also keeping things simple : not 100 ways to do the same thing. In the end object code is just a binary with entry points. So let's keep the right balance between that and a syntactic sugar overloaded language.
+Simplicity means, easy to learn but also keeping things simple : not 100 ways to do the same thing. In the end object code is just a binary with entry points. So let's keep the right balance between that and a feature overloaded language.
 
-Stark uses a garbage colletor (GC) to automate memory management.
+## Main features
 
+Writing a new programming language is a long journey (that probably never ends !), but like every journey, it has a start!
 
+Here are the main features of Stark at the moment:
+- Support for primary types (int, double, bool), builtin complex types (string, arrays) and custom complex type (using structs)
+- Managed memory (garbage collector)
+- Code modules
+- Cross-compilation (made very easy !)
+- AOT (Ahead Of Time) compilation
+- JIT (Just In Time) interpreter
+- Test runner
+- C code interfacing

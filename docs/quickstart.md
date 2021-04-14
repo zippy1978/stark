@@ -4,12 +4,16 @@ In this section, we are going to install Stark, write a first "Hello World" prog
 
 ## Installation
 
-!> At the moment, Stark is still in its early developpment stage, no binary package is available.
-
-
 ### Requirements
 
 Stark currently runs on Linux and macOS.
+
+### Binary downloads
+
+Pre-built binaries are available in the [release section of the Github project page](https://github.com/zippy1978/stark/releases).
+
+### Building from sources
+
 In order to compile, some tools are required.
 
 #### macOS setup
@@ -35,7 +39,7 @@ $ apt-get -y install llvm clang git cmake python python3-pip bison libfl-dev fle
 $ pip3 install conan
 ```
 
-### Building
+#### Building
 
 Once all the required tools are installed, use the following commands to generate the project (here with ninja build system):
 
@@ -72,7 +76,9 @@ $ ninja uninstall
 
 ## A first program: "Hello World"
 
-Create a *hello.st* file somewhere on your file system, open it and write:
+### Interpreter usage
+
+Create a ``hello.st`` file somewhere on your file system, open it and write:
 
 ```stark
 println("Hello World")
@@ -84,16 +90,36 @@ That's it, you wrote your first Stark program !
 
 What the program is doing is pretty simple to understand : it uses the println function with a string parameter to output a message to the standard output.
 
-You can now run it like this to see the result:
+You can now run it with the interpreter like this to see the result:
 
 ```bash
 $ stark hello.st
 Hello world
 ```
 
-?> In Stark end of line do not require a *;*: each new line is a new instruction.
-
-?> Note that no import statement is required to use println: this is because this function is part of the Stark runtime.
+?> Note that no import statement is required to use ``println``: this is because this function is part of the Stark runtime.
 
 ?> You can also note that no main function is required: when using the Stark interpreter, there is no need to add one.
+
+### Compiler usage
+
+When using the interpreter, no main function is required. However if we want to compile code to an executable binary file, instructions must be wrapped inside a main function, like this:
+
+```stark
+func main() {
+  println("Hello World")
+}
+```
+
+... And compiled with the ``starkc``compiler command:
+
+```bash
+# Compile hello.st to hello binary
+$ starkc -o hello hello.st
+# Run the binary
+$ ./hello
+Hello world
+```
+
+?> In Stark end of line do not require a ``;``: each new line is a new instruction.
 

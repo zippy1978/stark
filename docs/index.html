@@ -19,7 +19,7 @@
     mermaid.initialize({ startOnLoad: true });
 
     window.$docsify = {
-      name: 'Stark',
+      name: "<img src='https://github.com/zippy1978/stark/raw/main/logo/StarkLogoLight.png'/>",
       repo: 'https://github.com/zippy1978/stark',
       search: 'auto',
       loadSidebar: true,
@@ -38,6 +38,10 @@
           }
         }
       },
+      pagination: {
+        crossChapter: true,
+        crossChapterText: true,
+      },
     }
 
   </script>
@@ -45,6 +49,7 @@
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="//unpkg.com/prismjs/components/prism-bash.min.js"></script>
+  <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
   <script src="prism-stark.js"></script>
 </body>
 
