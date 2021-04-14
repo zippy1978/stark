@@ -51,7 +51,7 @@ void printUsage()
 
 void printVersion()
 {
-    std::cout << stark::format("Stark test runner version %s", Stark_VERSION) << std::endl;
+    std::cout << stark::format("Stark test runner version %s (%s)", Stark_VERSION, BUILD_TIME) << std::endl;
 }
 
 void parseOptions(int argc, char *argv[])

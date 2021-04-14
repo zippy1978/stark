@@ -53,7 +53,7 @@ void printUsage()
 
 void printVersion()
 {
-    std::cout << stark::format("Stark compiler version %s", Stark_VERSION) << std::endl;
+    std::cout << stark::format("Stark compiler version %s (%s)", Stark_VERSION, BUILD_TIME) << std::endl;
     std::cout << stark::format("Target: %s", CodeGenBitcode::getHostTargetTriple().c_str()) << std::endl;
 }
 

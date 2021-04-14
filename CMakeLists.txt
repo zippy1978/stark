@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
+# Options
+option(VERSION_SUFFIX "VERSION_SUFFIX" "")
+
+
 # Project settings
-project(Stark VERSION 0.0.1)
+file (STRINGS "VERSION" VERSION)
+project(Stark VERSION "${VERSION}")
 enable_testing()
 add_definitions("-std=c++14")
 add_definitions(-fPIC)
@@ -104,8 +109,11 @@ add_custom_target(uninstall
 install(CODE "execute_process(COMMAND sh ${CMAKE_SOURCE_DIR}/post-install.sh ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIB_DIR})")
 
 # Archive target
+if(DEFINED VERSION_SUFFIX)
+    set(SUFFIX_STRING "-${VERSION_SUFFIX}")
+endif()
 add_custom_target(archive COMMAND
-    ${CMAKE_COMMAND} -E tar "cvf" "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${CMAKE_HOST_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_PROJECT_VERSION}.zip" --format=zip bin lib
+    ${CMAKE_COMMAND} -E tar "cvf" "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${CMAKE_HOST_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_PROJECT_VERSION}${SUFFIX_STRING}.zip" --format=zip bin lib
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 add_dependencies(archive stark starkc static_runtime)
