@@ -11,10 +11,6 @@ env:
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -67,14 +63,11 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: ninja
 
     - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
-      # Execute tests defined by the CMake configuration.  
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ninja test
      
     - name: Read version
@@ -99,3 +92,37 @@ jobs:
         file_glob: true
         prerelease: true
 
+  build-runtimes:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: docker-practice/actions-setup-docker@master
+
+      - name: Checkout cross compilation project
+        run: git clone https://github.com/zippy1978/stark-cross-compilation.git
+
+      - name: Build runtimes
+        working-directory: ${{github.workspace}}/stark-cross-compilation/runtime
+        run: make
+          
+      - name: Read Stark version
+        working-directory: ${{github.workspace}}/stark-cross-compilation/runtime/build/stark
+        shell: bash
+        run: echo "stark_version=$(cat VERSION)" >> $GITHUB_ENV
+        
+      - name: Rename archive
+        working-directory: ${{github.workspace}}/stark-cross-compilation/runtime/build
+        shell: bash
+        run: mv archive.zip Stark-Runtimes-${{env.stark_version}}-SNAPSHOT.zip
+          
+      - name: Upload runtime snapshot binaries
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{github.workspace}}/stark-cross-compilation/runtime/build/Stark*.zip
+          tag: ${{env.stark_version}}-SNAPSHOT
+          overwrite: true
+          body: "Snapshot release"
+          file_glob: true
+          prerelease: true
