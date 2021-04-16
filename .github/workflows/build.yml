@@ -17,6 +17,7 @@ jobs:
         os: [ubuntu-20.04, ubuntu-18.04, ubuntu-16.04, macos-10.15]
 
     steps:
+    
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
@@ -100,11 +101,13 @@ jobs:
       - uses: docker-practice/actions-setup-docker@master
 
       - name: Checkout cross compilation project
+        shell: bash
         run: git clone https://github.com/zippy1978/stark-cross-compilation.git
-
+        
       - name: Build runtimes
         working-directory: ${{github.workspace}}/stark-cross-compilation/runtime
-        run: make
+        shell: bash
+        run: make STARK_BRANCH=${GITHUB_REF#refs/heads/}
           
       - name: Read Stark version
         working-directory: ${{github.workspace}}/stark-cross-compilation/runtime/build/stark
