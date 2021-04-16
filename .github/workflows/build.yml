@@ -101,21 +101,23 @@ jobs:
       - uses: docker-practice/actions-setup-docker@master
 
       - name: Checkout cross compilation project
-        shell: bash
-        run: git clone https://github.com/zippy1978/stark-cross-compilation.git
+        uses: actions/checkout@master
+        with:
+          repository: zippy1978/stark-cross-compilation
+
         
       - name: Build runtimes
-        working-directory: ${{github.workspace}}/stark-cross-compilation/runtime
+        working-directory: ${{github.workspace}}/runtime
         shell: bash
         run: make STARK_BRANCH=${GITHUB_REF#refs/heads/}
           
       - name: Read Stark version
-        working-directory: ${{github.workspace}}/stark-cross-compilation/runtime/build/stark
+        working-directory: ${{github.workspace}}/runtime/build/stark
         shell: bash
         run: echo "stark_version=$(cat VERSION)" >> $GITHUB_ENV
         
       - name: Rename archive
-        working-directory: ${{github.workspace}}/stark-cross-compilation/runtime/build
+        working-directory: ${{github.workspace}}/runtime/build
         shell: bash
         run: mv archive.zip Stark-Runtimes-${{env.stark_version}}-SNAPSHOT.zip
           
@@ -123,7 +125,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{github.workspace}}/stark-cross-compilation/runtime/build/Stark*.zip
+          file: ${{github.workspace}}/runtime/build/Stark*.zip
           tag: ${{env.stark_version}}-SNAPSHOT
           overwrite: true
           body: "Snapshot release"
