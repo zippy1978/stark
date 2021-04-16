@@ -95,6 +95,7 @@ jobs:
 
   build-runtimes:
     runs-on: ubuntu-latest
+    needs: build
 
     steps:
 
@@ -110,11 +111,6 @@ jobs:
         working-directory: ${{github.workspace}}/runtime
         shell: bash
         run: make STARK_BRANCH=${GITHUB_REF#refs/heads/}
-          
-      - name: Read Stark version
-        working-directory: ${{github.workspace}}/runtime/build/stark
-        shell: bash
-        run: echo "stark_version=$(cat VERSION)" >> $GITHUB_ENV
         
       - name: Rename archive
         working-directory: ${{github.workspace}}/runtime/build
