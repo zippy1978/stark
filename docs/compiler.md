@@ -6,7 +6,33 @@ It is used to build native binaries, or Stark modules.
 
 ## Usage
 
-TBD
+starkc [``options``] ``files...``
+
+``starkc``command require a file, or list of files to compile. Usage of wildcard is also suported thanks to the shell. Also ``-o`` (output file) option is mandatory for compilation.
+
+```bash
+# Compile hello.st to hello binary
+$ starkc -o hello hello.st
+# Compile hello.st and goodby.st to helloGoodbye binary
+$ starkc -o helloGoodbye hello.st goodbye.st
+# Compile source files of the src directory to all binary
+$ starkc -o all src/*.st
+```
+
+Other options exist for a more advanced usage:
+
+| Option        | Description                                                                                                                                     |
+| ------------- |------------------------------------------------------------------------------------------------------------------------------------------------ |
+| -o            | Output file name or directory name (for modules).                                                                                               |
+| -d            | Enable debug mode (for the compiler itself).                                                                                                    |
+| -v            | Print version information.                                                                                                                      |
+| -h            | Print help.                                                                                                                                     |
+| -r            | Static Stark runtime (libstark.a) file name to use for compilation. If not provided, used the one defined by STARK_RUNTIME environment variable.|
+| -m            | Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable).                       |
+| -t            | Cross compilation target. Expected format is triple:cpu:features. If not provided, uses host target.                                            |
+| -l            | Linker settings. Expected format is linker_command:linker_flags. If not provided, uses cc. Use 'none' value to disable linking.                 |
+
+``-r``, ``-t``and ``-l`` options are mostly used from cross compilation, as explained later in this section.
 
 ## Binary compilation
 
@@ -28,10 +54,24 @@ Hello world
 
 ### Disable linking
 
-In some cases, it may be useful to disable the linking phase. Because you may want to 
+In some cases, it may be useful to disable the linking phase and only get the compiled object file to link it later with the tool of your choice.
 
-TBC
+To disable linking, pass ``none``to the linker switch:
 
+```bash
+$ starkc -l none -o hello hello.st
+```
+
+### Linking with native libraries
+
+Thanks to extern functions, Stark can call plain C functions. 
+
+However if those functions are part of an external static or dynamic library, they must be linked explicitly.
+
+```bash
+# Link curl library
+$ starkc -l "cc:-lcurl" -o hello hello.st
+```
 
 ## Module compilation
 
@@ -90,3 +130,5 @@ Note, that both can be used at the same time.
 
 
 ## Cross compilation
+
+TBC

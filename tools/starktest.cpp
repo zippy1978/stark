@@ -41,10 +41,10 @@ void printUsage()
               << "USAGE: starktest [options] filename [args]" << std::endl;
     std::cout << std::endl
               << "OPTIONS:" << std::endl;
-    std::cout << "  -d      Enable debug mode" << std::endl;
-    std::cout << "  -v      Print version information" << std::endl;
-    std::cout << "  -h      Print help" << std::endl;
-    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)" << std::endl;
+    std::cout << "  -d      Enable debug mode." << std::endl;
+    std::cout << "  -v      Print version information." << std::endl;
+    std::cout << "  -h      Print help." << std::endl;
+    std::cout << "  -m      Module search path: paths separated with colons (in addition to paths defined by STARK_MODULE_PATH environment variable)." << std::endl;
     std::cout << "  -i      Stark interpreter used to run tests. Default is 'stark'." << std::endl;
     std::cout << "  -p      Test function prefix. Default is 'test'." << std::endl;
 }
