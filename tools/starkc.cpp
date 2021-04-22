@@ -251,16 +251,17 @@ int main(int argc, char *argv[])
 
                 // Compile and link module with runtime and system libs
                 // Link only if linking is not disabled
+                std::string target = options.target == nullptr ? CodeGenBitcode::getHostTargetTriple() : options.target;
                 if (options.linker != nullptr && std::string(options.linker).compare("none") == 0)
                 {
                     std::string objectFile = options.outputFile;
                     objectFile.append(".o");
-                    module->writeObjectCode(objectFile, options.target);
+                    module->writeObjectCode(objectFile, target);
                 }
                 else
                 {
                     CompilerSystemLinker systemLinker;
-                    systemLinker.link(module, options.outputFile, runtimeStaticLib, options.target == nullptr ? CodeGenBitcode::getHostTargetTriple() : options.target, options.linker == nullptr ? "cc:" : options.linker);
+                    systemLinker.link(module, options.outputFile, runtimeStaticLib, target, options.linker == nullptr ? "cc:" : options.linker);
                 }
 
             }
