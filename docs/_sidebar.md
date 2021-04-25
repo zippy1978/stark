@@ -10,4 +10,5 @@
 * [Interpreter](interpreter.md)
 * [Testing](testing.md)
 * [Memory management](memory-management.md)
+* [External tools](external-tools.md)
 

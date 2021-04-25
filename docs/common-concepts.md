@@ -204,7 +204,7 @@ Available comparisons for complex types are :
 
 ### Type conversion
 
-A value of some type can be converted to antoher type using the *as* operator.
+A value of some type can be converted to antoher type using the ``as`` operator.
 
 Conversion is only supported on primary types and ``string``, and only if the conversion does not cause a data loss:
 

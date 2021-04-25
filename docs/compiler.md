@@ -131,4 +131,62 @@ Note, that both can be used at the same time.
 
 ## Cross compilation
 
+Cross compilation is the ability to compile binary code for a target machine which is different from the host machine.
+
+Stark compiler is able to cross compile, and to do it, it needs:
+- the specification of the target machine
+- the appropriate cross linker
+- the appropriate runtime
+
+### Specify the target machine
+
+Stark compiler is able to cross compile by specifying the target machine with the ``-t`` option.
+
+This option expects target to be defined like this:
+
+```triple```:```cpu```:```features```
+
+The ```triple```also known as "target triple" is a format used by LLVM / Clang (and many other languages) to specify a target architecture, with the following format:
+
+```arch``` ```sub```-```vendor```-```sys```-```abi```, where:
+
+- ```arch```: x86_64, i386, arm, thumb, mips, etc.
+- ```sub```: for ex. on ARM: v5, v6m, v7a, v7m, etc.
+- ```vendor```: pc, apple, nvidia, ibm, etc.
+- ```sys```: none, linux, win32, darwin, cuda, etc.
+- ```abi```: eabi, gnu, android, macho, elf, etc.
+
+The ```cpu```is used to define a specific cpu (like x86-64, swift, cortex-a15, ...). If not defined, ```generic```value is used. 
+
+The ```features```is a comma separated list of target architecture specific features to enable (with a ```+``` prefix) or to disable (with a ```-``` prefix)
+
+Here is an example:
+
+```bash
+# Cross compile for a generic arm target 
+# with the vfp2 feature enabled (vector floating point v2 instructions)
+$ starkc -t arm-unknown-linux-gnueabihf::+vfp2 -o hello hello.st
+```
+
+?> Note that ```cpu```and ```features``` part of the target can be omitted. In this case they can be left blank like this: ```armv6k-linux-gnueabi::```
+
+If you try to cross compile with the example above, you should get a linker error that looks like:
+
+```bash
+linker:0:0 error: ld: warning: ignoring file hello.o, building for macOS-x86_64 but attempting to link with file built for unknown-unsupported file format ( 0x7F 0x45 0x4C 0x46 0x01 0x01 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 )
+Undefined symbols for architecture x86_64:
+  "_main", referenced from:
+     implicit entry/start for main executable
+ld: symbol(s) not found for architecture x86_64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+
+This is because Stark compiler uses the default system linker to link the generated binary. But of course, this fails when the generated object code does not match the host system architecture (in the message above: the linker is expecting a macOS-x86_64 object file).
+
+### Use the appropriate cross linker
+
+To make the linking work, a cross linker must be used.
+
+Getting the right cross linker depends on the target selected
+
 TBC
