@@ -187,6 +187,99 @@ This is because Stark compiler uses the default system linker to link the genera
 
 To make the linking work, a cross linker must be used.
 
-Getting the right cross linker depends on the target selected
+Getting the right cross linker depends on the target selected, it also depends on the host platform.
 
-TBC
+To get arm cross compilation tools on Linux (Ubuntu) you can install:
+
+```bash
+$ sudo apt-get install gcc-arm-linux-gnueabihf
+```
+
+On macOS with brew you can install cross compilation tools with:
+
+```bash
+$ brew tap SergioBenitez/osxct
+# Install arm cross compiler / linker
+# This may take a few minutes as tools are built from sources
+$ brew install FiloSottile/musl-cross/musl-cross --without-x86_64 --with-arm-hf
+```
+
+Once appropriate tools are installed, the linker configuration can be passed to ``starkc`` using the ``-l``option.
+
+``-l`` option expects linker options as:
+
+``linker``:``linker flags``
+
+If you consider compiling for an arm Linux target (such as a Raspberry Pi computer), from a Linux host, you can use (tested on Ubuntu):
+
+```bash
+$ starkc -t arm-unknown-linux-gnueabihf::+vfp2 -l "arm-linux-gnueabihf-gcc:-lpthread -lrt" -o hello hello.st
+```
+
+On macOS, use:
+
+```bash
+# On macOS it is recommanded to cross compile using a musl compiler / linker (a statically linked libc implemntation) 
+$ starkc -t arm-unknown-linux-musleabihf::+vfp2 -l "arm-linux-musleabihf-gcc:-static -lpthread -lrt" -o hello hello.st
+```
+
+?> When linker is defined manually, ``pthrad``and ``rt``libs must be linked explicitly using linker flags. This is because, those libs are required by the Stark runtime.
+
+If you try to run example commands above, you will notie once again that it still does not work, and you will get an error message like this one:
+
+```bash
+linker:0:0 error: /usr/local/Cellar/musl-cross/0.9.9_1/libexec/bin/../lib/gcc/arm-linux-musleabihf/9.2.0/../../../../arm-linux-musleabihf/bin/ld: hello.o: in function `main':
+main:(.text+0x4): undefined reference to `stark_runtime_priv_mm_init'
+/usr/local/Cellar/musl-cross/0.9.9_1/libexec/bin/../lib/gcc/arm-linux-musleabihf/9.2.0/../../../../arm-linux-musleabihf/bin/ld: main:(.text+0x18): undefined reference to `stark_runtime_priv_mm_alloc'
+/usr/local/Cellar/musl-cross/0.9.9_1/libexec/bin/../lib/gcc/arm-linux-musleabihf/9.2.0/../../../../arm-linux-musleabihf/bin/ld: main:(.text+0x4c): undefined reference to `stark_runtime_priv_mm_alloc'
+/usr/local/Cellar/musl-cross/0.9.9_1/libexec/bin/../lib/gcc/arm-linux-musleabihf/9.2.0/../../../../arm-linux-musleabihf/bin/ld: main:(.text+0x5c): undefined reference to `stark_runtime_pub_println'
+collect2: error: ld returned 1 exit status
+```
+
+This is happing because, we are missing the final step in the cross compilation process: providing the right Stark runtime to the compiler.
+
+### Link with the appropriate runtime
+
+In order to run properly a Stark program must be linked with a runtime.
+
+The runtime is a native library that provide lo livel mechanism to make Stark program work. For example, the Garbage Collector is part of the runtime.
+
+As other native libraries, the runtime must be compiled for the appropriate target to support cross compilation.
+
+By default, the ``starkc``command uses the runtime for the host machine, but when cross compiling, an approriate runtime must be explicitly provided using the ``-r``option.
+
+Pre-compiled versions of the Stark runtime are available in the release section of the [Stark Github repository](https://github.com/zippy1978/stark/releases).
+
+Here is the final (working) cross compilation command.
+
+On Linux (Ubuntu):
+
+```bash
+# Donwload and unzip runtimes
+$ wget https://github.com/zippy1978/stark/releases/download/0.0.1-SNAPSHOT/Stark-Runtimes-0.0.1-SNAPSHOT.zip
+$ unzip Stark-Runtimes-0.0.1-SNAPSHOT.zip
+# Cross compile for arm target
+$ starkc -t arm-unknown-linux-gnueabihf::+vfp2 -r arm-unknown-linux-gnueabihf/libstark.a-l "arm-linux-gnueabihf-gcc:-lpthread -lrt" -o hello hello.st
+```
+
+On macOS:
+
+```bash
+# Donwload and unzip runtimes
+$ wget https://github.com/zippy1978/stark/releases/download/0.0.1-SNAPSHOT/Stark-Runtimes-0.0.1-SNAPSHOT.zip
+$ unzip Stark-Runtimes-0.0.1-SNAPSHOT.zip
+# Cross compile for arm target
+$ starkc -t arm-unknown-linux-musleabihf::+vfp2 -r arm-unknown-linux-musleabihf/libstark.a -l "arm-linux-musleabihf-gcc:-static -lpthread -lrt" -o hello hello.st
+```
+
+Once compiled the ``hello`` binary will not run on the host machine
+
+```bash
+$ ./hello
+zsh: exec format error: ./hello
+# Check hello format with the 'file' command
+$ file hello
+hello: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, with debug_info, not stripped
+```
+
+?> Add ``-s``to the linker flags to strip debug symbols while linking.
