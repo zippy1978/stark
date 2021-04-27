@@ -33,4 +33,10 @@ namespace stark
         return nullptr;
     }
 
+    Value *CodeGenAnyType::createDefaultValue()
+    {
+        // Default value for any type is null
+        return ConstantPointerNull::getNullValue(type->getPointerTo());
+    }
+
 } // namespace stark
