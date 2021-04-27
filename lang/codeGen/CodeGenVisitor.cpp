@@ -617,53 +617,8 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
         context->setCurrentLocation(node->location);
 
-        std::string moduleName = context->getModuleName();
-        std::string functionName = node->getId()->getName();
-
-        int memberCount = node->getId()->countNestedMembers();
-        Function *function = nullptr;
-
-        // If id matched a type : look for its constructor
-        if (context->getComplexType(node->getId()->getFullName()) != nullptr)
-        {
-            // If identifier has a member : then it is module.function
-            if (memberCount == 1)
-            {
-                moduleName = node->getId()->getName();
-                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleStructConstructorName(node->getId()->getMember()->getName(), moduleName).c_str());
-            }
-            else
-            {
-                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleStructConstructorName(node->getId()->getName(), moduleName).c_str());
-            }
-        }
-        else
-        {
-            // If identifier has a member : then it is module.function
-            if (memberCount == 1)
-            {
-                moduleName = node->getId()->getName();
-                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getMember()->getName(), moduleName).c_str());
-            }
-            else
-            {
-                // Local module stark function
-                function = context->getLlvmModule()->getFunction(context->getMangler()->mangleFunctionName(node->getId()->getName(), moduleName).c_str());
-
-                // Try to find a runtime function
-                if (function == nullptr)
-                {
-                    function = context->getLlvmModule()->getFunction(context->getMangler()->manglePublicRuntimeFunctionName(node->getId()->getName()).c_str());
-                }
-
-                // Finally : look for an unmangled function
-                if (function == nullptr)
-                {
-                    function = context->getLlvmModule()->getFunction(node->getId()->getName().c_str());
-                }
-            }
-        }
-
+        // Resolve function
+        Function *function = context->getIdentifierResolver()->resolveFunction(node->getId());
         if (function == nullptr)
         {
             context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));

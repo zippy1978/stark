@@ -5,7 +5,7 @@ option(VERSION_SUFFIX "VERSION_SUFFIX" "")
 
 
 # Project settings
-file (STRINGS "VERSION" VERSION)
+file (STRINGS "CURRENT_VERSION" VERSION)
 project(Stark VERSION "${VERSION}")
 enable_testing()
 add_definitions("-std=c++14")

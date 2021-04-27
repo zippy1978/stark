@@ -19,6 +19,7 @@
 #include "CodeGenMangler.h"
 #include "CodeGenBitcode.h"
 #include "CodeGenChecker.h"
+#include "CodeGenIdentifierResolver.h"
 
 using namespace llvm;
 
@@ -96,6 +97,9 @@ namespace stark
     /** Checker */
     std::unique_ptr<CodeGenChecker> checker;
 
+    /** Identifier resolver */
+    std::unique_ptr<CodeGenIdentifierResolver> identifierResolver;
+
     FileLocation currentLocation;
 
   private:
@@ -112,10 +116,12 @@ namespace stark
     {
       mangler = std::make_unique<CodeGenMangler>();
       checker = std::make_unique<CodeGenChecker>(this);
+      identifierResolver = std::make_unique<CodeGenIdentifierResolver>(this);
     }
 
     CodeGenMangler *getMangler() { return mangler.get(); }
     CodeGenChecker *getChecker() { return checker.get(); }
+    CodeGenIdentifierResolver *getIdentifierResolver() { return identifierResolver.get(); }
 
     /** Generate llvm program code */
     CodeGenBitcode *generateCode(ASTBlock *root);

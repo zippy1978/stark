@@ -74,7 +74,7 @@ jobs:
     - name: Read version
       working-directory: ${{github.workspace}}
       shell: bash
-      run: echo "stark_version=$(cat VERSION)" >> $GITHUB_ENV
+      run: echo "stark_version=$(cat CURRENT_VERSION)" >> $GITHUB_ENV
     
     - name: Archive
       working-directory: ${{github.workspace}}/build
@@ -115,7 +115,7 @@ jobs:
       - name: Read Stark version
         working-directory: ${{github.workspace}}/runtime/build/stark
         shell: bash
-        run: echo "stark_version=$(cat VERSION)" >> $GITHUB_ENV
+        run: echo "stark_version=$(cat CURRENT_VERSION)" >> $GITHUB_ENV
         
       - name: Archive
         working-directory: ${{github.workspace}}/runtime
