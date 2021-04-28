@@ -64,6 +64,29 @@ namespace stark
         }
     }
 
+    Value *CodeGenStringComplexType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        if (op == ADD)
+        {
+            // Concat
+            Function *function = context->getLlvmModule()->getFunction("stark_runtime_priv_concat_string");
+            if (function == nullptr)
+            {
+                context->logger.logError(context->getCurrentLocation(), "cannot find runtime function");
+                return nullptr;
+            }
+            std::vector<Value *> args;
+            args.push_back(lhs);
+            args.push_back(rhs);
+            return CallInst::Create(function, makeArrayRef(args), "concat", context->getCurrentBlock());
+        }
+        else
+        {
+            context->logger.logError(context->getCurrentLocation(), formatv("unsupported binary operation for type {0}", this->name));
+            return nullptr;
+        }
+    }
+
     void CodeGenStringComplexType::defineConstructor()
     {
         // string constructor is not supported

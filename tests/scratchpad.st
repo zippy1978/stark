@@ -1,13 +1,7 @@
-/**
- * External functions tests.
- */
- 
-extern assertIntEquals(actual: int, expected: int)
-extern assertDoubleEquals(actual: double, expected: double)
-extern assertTrue(actual: bool)
 
-// Declaration
-extern atoi(s: any): int
-
-// Usage
-assertIntEquals(atoi(toCString("12")), 12)
+if (args.len > 1) {
+    concat := "hello " + args[1]
+    println(concat + " (" + concat.len as string + ")")
+} else {
+    println("unkown")
+}

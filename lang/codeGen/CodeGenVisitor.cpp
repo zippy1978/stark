@@ -525,7 +525,6 @@ namespace stark
                 argTypes.clear();
                 argTypes.push_back(context->getPrimaryType("int")->getType());
                 argTypes.push_back(context->getPrimaryType("any")->getType());
-
             }
         }
 
@@ -743,13 +742,18 @@ namespace stark
             context->logger.logError(node->location, formatv("operands must be of same type for binary operations"));
         }
 
-        // Binary operation are supported on primary types only
+        // Complex type
         if (!context->isPrimaryType(lhsTypeName))
         {
-            context->logger.logError(node->location, formatv("binary operation is not supported on type {0}", lhsTypeName));
+            this->result = this->context->getComplexType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result);
+        }
+        // Primary type
+        else
+        {
+            this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result);
         }
 
-        this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result);
+        
     }
 
     void CodeGenVisitor::visit(ASTComparison *node)

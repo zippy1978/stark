@@ -99,35 +99,6 @@ When uninitialized, a primary type variable always has a default value.
 | double        | Decimal value |0.0            |
 | bool          | Boolean value |false          |
 
-
-#### Binary operations
-
-Primary types support binary operations when operand are of the same type:
-
-Available operators are :
-
-| Syntax        | Description   |
-| ------------- |---------------|
-| +             | Addition      |
-| -             | Substraction  |
-| *             | Multiplication|
-| /             | Division      |
-| &&            | And           |
-| ||            | or            |
-
-
-```stark
-// This works
-a: int = 3
-b: int = 2 * a
-
-// This does not work
-c: double = 10.0
-d: int = 4 - c
-```
-
-?> In order to support operations with different primary types, use the conversion operator as explained below.
-
 #### The void type
 
 The ``void`` type is a special primary type used to mark the absence of value. It cannot be assigned, and is primarly used for functions without a return type.
@@ -184,6 +155,42 @@ println("trees: \t🌲\t🌲\t🌲")
 println("beers: \t🍺\t🍺\t🍺")
 // beers: 	🍺	🍺	🍺
 ```
+
+#### Binary operations
+
+Binary operations are supported for primary types when operand are of the same type.
+
+Complex types (some of them) also support some of them.
+
+Available operators are :
+
+| Syntax        | Description   | Complex type support           |
+| ------------- |---------------| -------------------------------|
+| +             | Addition      | string only: concatenation     |
+| -             | Substraction  | Not supported                  |
+| *             | Multiplication| Not supported                  |
+| /             | Division      | Not supported                  |
+| &&            | And           | Not supported                  |
+| ||            | or            | Not supported                  |
+
+
+```stark
+// This works
+a: int = 3
+b: int = 2 * a
+
+// This does not work
+c: double = 10.0
+d: int = 4 - c
+
+// string concatenation
+s1 := "hello"
+s2 := "world"
+concat := s1 + " " + s2
+```
+
+?> In order to support operations with different primary types, use the conversion operator ``as`` explained below.
+
 
 ### Comparisons
 

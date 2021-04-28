@@ -25,3 +25,15 @@ extern "C" stark::bool_t stark_runtime_priv_conv_string_bool(stark::string_t *s)
 {
     return (stark::bool_t)(strcmp(s->data, "true") == 0);
 }
+
+extern "C" stark::string_t *stark_runtime_priv_concat_string(stark::string_t *s1, stark::string_t *s2)
+{
+    char *dest = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (s1->len + s2->len));
+    strcpy(dest, s1->data);
+    strcat(dest, s2->data);
+
+    stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
+    result->len = strlen((char *)dest);
+    result->data = dest;
+    return result;
+}

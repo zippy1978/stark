@@ -275,4 +275,10 @@ namespace stark
         return nullptr;
     }
 
+    Value *CodeGenComplexType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        context->logger.logError(context->getCurrentLocation(), formatv("unsupported binary operation for type {0}", this->name));
+        return nullptr;
+    }
+
 } // namespace stark

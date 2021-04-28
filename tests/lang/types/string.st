@@ -11,8 +11,6 @@ extern failure()
 
 // Assignment 
 s: string = "hello"
-
-// Tests length
 assertIntEquals(s.len, 5)
 assertStringEquals(s, "hello")
 
@@ -20,6 +18,13 @@ assertStringEquals(s, "hello")
 s = null
 assertNull(s as any)
 
-// Default value is an epty string
+// Default value is an empty string
 uninitString: string
 assertIntEquals(uninitString.len, 0)
+
+// Concatenation
+s1 := "hello "
+s2 := "world !"
+concat := s1 + s2
+assertStringEquals(concat, "hello world !")
+assertIntEquals(concat.len, 13)

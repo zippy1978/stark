@@ -28,6 +28,7 @@ namespace stark
                 "extern stark_runtime_priv_conv_string_int(s: string): int\n"
                 "extern stark_runtime_priv_conv_string_double(s: string): double\n"
                 "extern stark_runtime_priv_conv_string_bool(s: string): bool\n"
+                "extern stark_runtime_priv_concat_string(s1: string, s2: string): string\n"
 
                 // CInterop
                 "extern stark_runtime_pub_toCString(s: string): any\n"

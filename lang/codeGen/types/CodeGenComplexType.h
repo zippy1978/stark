@@ -74,6 +74,7 @@ namespace stark
         virtual Value *create(std::string string);
         virtual Value *convert(Value *value, std::string typeName);
         virtual Value *createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs);
+        virtual Value *createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs);
     };
 
     /**
@@ -99,6 +100,7 @@ namespace stark
         Value *create(std::string string);
         Value *createDefaultValue();
         void defineConstructor();
+        Value *createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs);
     };
 
 } // namespace stark
