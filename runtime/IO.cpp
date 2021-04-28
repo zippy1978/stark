@@ -1,10 +1,10 @@
 #include <cstdio>
 #include <string.h>
 
-#include "Runtime.h"
+#include "RuntimeTypes.h"
 
 /**
- * IO primitive functions for runtime.
+ * Set of built-in functions related to I/O.
  */
 
 extern "C" void stark_runtime_pub_print(stark::string_t *s)

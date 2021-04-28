@@ -1,9 +1,13 @@
-struct ShopGroup {
-    name: string
-}
+/**
+ * External functions tests.
+ */
+ 
+extern assertIntEquals(actual: int, expected: int)
+extern assertDoubleEquals(actual: double, expected: double)
+extern assertTrue(actual: bool)
 
-uninitArray: ShopGroup[]
-uninitArray as any
-if (uninitArray != null) {
-    println(uninitArray.len as string)
-}
+// Declaration
+extern atoi(s: any): int
+
+// Usage
+assertIntEquals(atoi(toCString("12")), 12)
