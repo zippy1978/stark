@@ -101,6 +101,7 @@ namespace stark
         Value *createDefaultValue();
         void defineConstructor();
         Value *createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs);
+        Value *createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs);
     };
 
 } // namespace stark

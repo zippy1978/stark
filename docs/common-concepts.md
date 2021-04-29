@@ -200,14 +200,29 @@ Primary types support all comparison operators, as complex types can only suppor
 
 Available comparisons for complex types are :
 
-| Syntax        | Description      | Complex type support           |
-| ------------- |------------------|------------------------------- |
-| ==            | Equals           | Only with null as other operand|
-| !=            | Not equal        | Only with null as other operand|
-| >             | Greater than     | Not supported                  |
-| >=            | Greater or equals| Not supported                  |
-| <             | Lower than       | Not supported                  |
-| <=            | Lower or equals  | Not supported                  |
+| Syntax        | Description      | Complex type support                              |
+| ------------- |------------------|-------------------------------------------------- |
+| ==            | Equals           | Only with null as other operand, or with 2 strings|
+| !=            | Not equal        | Only with null as other operand, or with 2 strings|
+| >             | Greater than     | Not supported                                     |
+| >=            | Greater or equals| Not supported                                     |
+| <             | Lower than       | Not supported                                     |
+| <=            | Lower or equals  | Not supported                                     |
+
+```stark
+// Returns true
+r := 2 > 1
+
+// Returns false
+s: string
+r2 := (s != null)
+
+// Returns true
+s1 := "same"
+s2 := "same"
+r3 := (s1 == s2)
+
+```
 
 ### Type conversion
 

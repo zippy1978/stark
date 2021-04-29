@@ -36,3 +36,9 @@ assertTrue(null == s)
 s = "not null"
 assertTrue(s != null)
 assertTrue(null != s)
+
+// String comparison
+s1 := "same"
+s2 := "same"
+assertTrue(s1 == s2)
+assertFalse(s1 != s2)

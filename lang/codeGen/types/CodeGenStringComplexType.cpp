@@ -64,6 +64,48 @@ namespace stark
         }
     }
 
+    Value *CodeGenStringComplexType::createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs)
+    {
+        std::string lhsTypeName = context->getTypeName(lhs->getType());
+        std::string rhsTypeName = context->getTypeName(rhs->getType());
+
+        // If both operands are string and not null: == and != are supported
+        if ((lhsTypeName.compare(this->getName()) == 0 && lhsTypeName.compare(this->getName()) == 0) &&
+            (!context->getChecker()->isNull(lhs) && !context->getChecker()->isNull(rhs)))
+        {
+
+            std::string runtimeFunction = "";
+            switch (op)
+            {
+            case EQ:
+                runtimeFunction = "stark_runtime_priv_eq_string";
+                break;
+
+            case NE:
+                runtimeFunction = "stark_runtime_priv_neq_string";
+                break;
+            default:
+                break;
+            }
+            if (runtimeFunction.length() > 0)
+            {
+                Function *function = context->getLlvmModule()->getFunction(runtimeFunction);
+                if (function == nullptr)
+                {
+                    context->logger.logError(context->getCurrentLocation(), "cannot find runtime function");
+                    return nullptr;
+                }
+                std::vector<Value *> args;
+                args.push_back(lhs);
+                args.push_back(rhs);
+                return CallInst::Create(function, makeArrayRef(args), "comp", context->getCurrentBlock());
+            }
+        }
+
+        // Falls back to generic behavior
+        return CodeGenComplexType::createComparison(lhs, op, rhs);
+    }
+
     Value *CodeGenStringComplexType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
     {
         if (op == ADD)

@@ -4,6 +4,7 @@
 
 extern assertIntEquals(actual: int, expected: int)
 extern assertDoubleEquals(actual: double, expected: double)
+extern assertStringEquals(actual: string, expected: string)
 extern assertTrue(actual: bool)
 extern assertFalse(actual: bool)
 
@@ -40,3 +41,10 @@ assertTrue(true && true)
 assertFalse(true && false)
 assertTrue(true || false)
 assertFalse(false || false)
+
+// String concatenation
+s1 := "hello "
+s2 := "world !"
+concat := s1 + s2
+assertStringEquals(concat, "hello world !")
+assertIntEquals(concat.len, 13)
