@@ -8,7 +8,7 @@ It is used to build native binaries, or Stark modules.
 
 starkc [``options``] ``files...``
 
-``starkc``command require a file, or list of files to compile. Usage of wildcard is also suported thanks to the shell. Also ``-o`` (output file) option is mandatory for compilation.
+``starkc``command requires a file, or list of files to compile. Usage of wildcard is also suported thanks to the shell. Also ``-o`` (output file) option is mandatory for compilation.
 
 ```bash
 # Compile hello.st to hello binary
@@ -33,6 +33,43 @@ Other options exist for a more advanced usage:
 | -l            | Linker settings. Expected format is linker_command:linker_flags. If not provided, uses cc. Use 'none' value to disable linking.                 |
 
 ``-r``, ``-t``and ``-l`` options are mostly used from cross compilation, as explained later in this section.
+
+## Main function
+
+A runnable Stark binary must contain the infamous ``main``function as an entry point.
+
+A simple main function:
+
+```stark
+func main() {
+  println("Hello")
+}
+```
+
+It is also responsible to return exit / error code for the program. In this case, it must return a `ìnt``:
+
+```stark
+func main(): int {
+  println("Hello")
+  // Everything is fine: return 0
+  return 0
+}
+```
+
+Arguments of the program can be retrieved by adding a ``string[]``paramter to the funciton:
+
+```stark
+func main(args: string[]): int {
+  if (args.len < 2) {
+    println("missing parameter: program is expecting a name as parameter")
+    return 1
+  } else {
+    println("Hello " + args[1])
+    return 0
+  }
+}
+```
+
 
 ## Binary compilation
 
