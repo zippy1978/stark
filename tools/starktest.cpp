@@ -38,7 +38,7 @@ CommandOptions options;
 void printUsage()
 {
     std::cout << std::endl
-              << "USAGE: starktest [options] filename [args]" << std::endl;
+              << "USAGE: starktest [options] filename" << std::endl;
     std::cout << std::endl
               << "OPTIONS:" << std::endl;
     std::cout << "  -d      Enable debug mode." << std::endl;
