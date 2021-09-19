@@ -25,6 +25,21 @@ struct Node {
     name: string,
     parent: Node
 }
+
 parent := Node("parent", null)
 child := Node("child", parent)
 assertStringEquals(child.parent.name, "parent")
+
+// Forward declaration
+struct ForwardType
+
+struct UseForwardType {
+    type: ForwardType
+}
+
+struct ForwardType {
+    name: string
+}
+
+uft := UseForwardType(ForwardType("test"))
+assertStringEquals(uft.type.name, "test")
