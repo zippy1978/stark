@@ -356,6 +356,17 @@ namespace stark
         return clone;
     }
 
+    // ASTModifierOperation
+
+    void ASTModifierOperation::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTModifierOperation *ASTModifierOperation::clone()
+    {
+        ASTModifierOperation *clone = new ASTModifierOperation(this->getId()->clone(), this->getOp(), this->getExpression()->clone());
+        clone->location = this->location;
+        return clone;
+    }
+
     // ASTComparison
 
     void ASTComparison::accept(ASTVisitor *visitor) { visitor->visit(this); }

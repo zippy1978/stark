@@ -43,6 +43,9 @@ null                    return parser::token::NULL_VALUE;
 [0-9]+                  return parser::token::INTEGER;
 \"(\\.|[^"\\])*\"       return parser::token::STRING;
 
+"<<"				    return parser::token::APPEND;
+">>"			        return parser::token::REMOVE;
+
 "=="				    return parser::token::COMP_EQ;
 "!="			        return parser::token::COMP_NE;
 "<"				        return parser::token::COMP_LT;

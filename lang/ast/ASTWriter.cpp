@@ -185,6 +185,24 @@ namespace stark
         node->getRhs()->accept(this);
     }
 
+    void ASTWriter::visit(ASTModifierOperation *node)
+    {
+        node->getId()->accept(this);
+        ASTModifierOperator op = node->getOp();
+        switch (op)
+        {
+        case APPEND:
+            output << " << ";
+            break;
+        case REMOVE:
+            output << " >> ";
+            break;
+        default:
+            break;
+        }
+        node->getExpression()->accept(this);
+    }
+
     void ASTWriter::visit(ASTComparison *node)
     {
         node->getLhs()->accept(this);

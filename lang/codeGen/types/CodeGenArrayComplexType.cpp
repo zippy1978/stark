@@ -35,14 +35,14 @@ namespace stark
 
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
-        
+
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Alloc inner array
         // If element type is a complex type : it is a pointer
         Type *innerArrayType = ArrayType::get(elementType, values.size());
-        Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
+        Value *innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         // Initialize inner array with elements
         // TODO : there is probably a way to write the whole content in a single instruction !!!
@@ -57,9 +57,9 @@ namespace stark
             index++;
         }
 
-        // Create array 
+        // Create array
         Type *arrayType = context->getArrayComplexType(context->getTypeName(elementType))->getType();
-        Constant* arrayAllocSize = ConstantExpr::getSizeOf(arrayType);
+        Constant *arrayAllocSize = ConstantExpr::getSizeOf(arrayType);
         Value *arrayAlloc = context->createMemoryAllocation(arrayType, arrayAllocSize, context->getCurrentBlock());
 
         // Set len member
@@ -73,5 +73,19 @@ namespace stark
         // Return new instance
         return arrayAlloc;
     }
+
+    Value *CodeGenArrayComplexType::createModifierOperation(Value *lhs, ASTModifierOperator op, Value *rhs)
+    {
+        // TODO
+        // check types on left and right (must be same)
+        // perform appending and ref update !
+
+
+        std::cout << "##### complex in createModifierOperation" << std::endl;
+        context->logger.logError(context->getCurrentLocation(), formatv("unsupported modifier operation for type {0}", this->name));
+        return nullptr;
+    }
+
+    
 
 } // namespace stark

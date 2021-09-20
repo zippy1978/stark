@@ -80,6 +80,7 @@ namespace stark
     void visit(ASTExternDeclaration *node);
     void visit(ASTReturnStatement *node);
     void visit(ASTBinaryOperation *node);
+    void visit(ASTModifierOperation *node);
     void visit(ASTComparison *node);
     void visit(ASTIfElseStatement *node);
     void visit(ASTWhileStatement *node);

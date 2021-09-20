@@ -48,6 +48,12 @@ namespace stark
     GE
   };
 
+  enum ASTModifierOperator
+  {
+    APPEND,
+    REMOVE
+  };
+
   class ASTNode
   {
   public:
@@ -333,6 +339,21 @@ namespace stark
     ASTBinaryOperation *clone();
   };
 
+  class ASTModifierOperation : public ASTExpression
+  {
+    ASTModifierOperator op;
+    std::unique_ptr<ASTIdentifier> id;
+    std::unique_ptr<ASTExpression> expression;
+
+  public:
+    ASTModifierOperation(ASTIdentifier *id, ASTModifierOperator op, ASTExpression *expression) : id(id), op(op), expression(expression) {}
+    ASTIdentifier *getId() { return id.get(); }
+    ASTExpression *getExpression() { return expression.get(); }
+    ASTModifierOperator getOp() { return op; }
+    void accept(ASTVisitor *visitor);
+    ASTModifierOperation *clone();
+  };
+
   class ASTComparison : public ASTExpression
   {
     ASTComparisonOperator op;
@@ -448,6 +469,7 @@ namespace stark
     virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperation *node) = 0;
+    virtual void visit(ASTModifierOperation *node) = 0;
     virtual void visit(ASTComparison *node) = 0;
     virtual void visit(ASTIfElseStatement *node) = 0;
     virtual void visit(ASTWhileStatement *node) = 0;

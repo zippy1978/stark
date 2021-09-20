@@ -756,6 +756,35 @@ namespace stark
         
     }
 
+    void CodeGenVisitor::visit(ASTModifierOperation *node)
+    {
+        context->logger.logDebug(node->location, formatv("creating modifier operation {0}", node->getOp()));
+        context->setCurrentLocation(node->location);
+
+        IRBuilder<> Builder(context->getLlvmContext());
+
+        CodeGenVisitor v(context);
+        node->getExpression()->accept(&v);
+
+        // Retrieve variable
+        context->getChecker()->checkAllowedVariableDeclaration(node->getId());
+        CodeGenVariable *var = context->getLocal(node->getId()->getName());
+
+        // Primary type
+        if (context->isPrimaryType(var->getTypeName()))
+        {
+            this->result = context->getPrimaryType(var->getTypeName())->createModifierOperation(var->getValue(), node->getOp(), v.result);
+        }
+        // Complex type
+        else
+        {
+            // Array case
+            CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
+            
+            this->result = complexType->createModifierOperation(var->getValue(), node->getOp(), v.result);
+        }
+    }
+
     void CodeGenVisitor::visit(ASTComparison *node)
     {
 

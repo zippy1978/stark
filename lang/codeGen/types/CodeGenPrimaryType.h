@@ -39,6 +39,7 @@ namespace stark
         virtual Value *create(bool b);
         virtual Value *createDefaultValue();
         virtual Value *createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs);
+        virtual Value *createModifierOperation(Value *lhs, ASTModifierOperator op, Value *rhs);
         virtual Value *createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs);
     };
 

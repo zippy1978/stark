@@ -96,6 +96,7 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTExternDeclaration *node) {}
     void ASTDeclarationExtractor::visit(ASTReturnStatement *node) {}
     void ASTDeclarationExtractor::visit(ASTBinaryOperation *node) {}
+    void ASTDeclarationExtractor::visit(ASTModifierOperation *node) {}
     void ASTDeclarationExtractor::visit(ASTComparison *node) {}
     void ASTDeclarationExtractor::visit(ASTIfElseStatement *node) {}
     void ASTDeclarationExtractor::visit(ASTWhileStatement *node) {}

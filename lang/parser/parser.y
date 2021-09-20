@@ -40,6 +40,7 @@
 %token DOT
 %token FUNC EXTERN RETURN STRUCT DECLARE
 %token PLUS MINUS MUL DIV OR AND
+%token APPEND REMOVE
 %token TRUE FALSE
 %token COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
 %token IF ELSE
@@ -59,6 +60,7 @@
 /* Operator precedence */
 %left PLUS MINUS MUL DIV OR AND
 %left COMP_EQ COMP_NE COMP_LT COMP_LE COMP_GT COMP_GE
+%left APPEND REMOVE
 
 %start program
 
@@ -577,7 +579,21 @@ expr:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
-|     
+|    
+      ident APPEND expr 
+      { 
+            $$ = new stark::ASTModifierOperation($1, stark::APPEND, $3);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+|      
+      ident REMOVE expr 
+      { 
+            $$ = new stark::ASTModifierOperation($1, stark::REMOVE, $3);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+|
       LPAREN expr RPAREN 
       { 
             $$ = $2; 

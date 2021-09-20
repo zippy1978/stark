@@ -75,6 +75,7 @@ namespace stark
         virtual Value *convert(Value *value, std::string typeName);
         virtual Value *createComparison(Value *lhs, ASTComparisonOperator op, Value *rhs);
         virtual Value *createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs);
+        virtual Value *createModifierOperation(Value *lhs, ASTModifierOperator op, Value *rhs);
     };
 
     /**
@@ -86,6 +87,7 @@ namespace stark
         CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context);
         Value *create(std::vector<Value *> values);
         Value *createDefaultValue();
+        Value *createModifierOperation(Value *lhs, ASTModifierOperator op, Value *rhs);
         void defineConstructor();
     };
 

@@ -281,4 +281,10 @@ namespace stark
         return nullptr;
     }
 
+    Value *CodeGenComplexType::createModifierOperation(Value *lhs, ASTModifierOperator op, Value *rhs)
+    {
+        context->logger.logError(context->getCurrentLocation(), formatv("unsupported modifier operation for type {0}", this->name));
+        return nullptr;
+    }
+
 } // namespace stark
