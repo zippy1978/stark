@@ -35,6 +35,7 @@ namespace stark
                 // CInterop
                 "extern stark_runtime_pub_toCString(s: string): any\n"
                 "extern stark_runtime_pub_fromCString(s: any): string\n"
+                "extern stark_runtime_pub_fromCSubString(s: any, start: int, end: int): string\n"
                 "extern stark_runtime_pub_toIntPointer(i: int): any\n"
 
                 // Util

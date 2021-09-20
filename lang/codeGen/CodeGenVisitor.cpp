@@ -752,8 +752,6 @@ namespace stark
         {
             this->result = this->context->getPrimaryType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result);
         }
-
-        
     }
 
     void CodeGenVisitor::visit(ASTModifierOperation *node)
@@ -1043,7 +1041,13 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating struct declaration {0}", node->getId()->getFullName()));
         context->setCurrentLocation(node->location);
 
-        context->getChecker()->checkAllowedTypeDeclaration(node->getId());
+        // A struct declaration with no member is considered as a forward declaration
+        // So it is allowed to delcared the same struct afertward to implement it
+        CodeGenComplexType *existingType = context->getComplexType(node->getId()->getFullName());
+        if (node->getArguments().size() > 0 && (existingType != nullptr && existingType->getMembers().size() > 0))
+        {
+            context->getChecker()->checkAllowedTypeDeclaration(node->getId());
+        }
 
         CodeGenComplexType *structType = new CodeGenComplexType(node->getId()->getFullName(), context);
         ASTVariableList arguments = node->getArguments();

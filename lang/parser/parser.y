@@ -316,6 +316,14 @@ struct_decl:
             $$->location.column = @1.begin.column;
             delete $4; 
       }
+|
+      STRUCT ident
+      { 
+            stark::ASTVariableList arguments; // Empty arguments
+            $$ = new stark::ASTStructDeclaration($2, arguments);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
 ;
 
 ident: 
