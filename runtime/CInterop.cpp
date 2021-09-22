@@ -29,7 +29,6 @@ extern "C" stark::string_t *stark_runtime_pub_fromCSubString(stark::any_t s, sta
 {
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = 0;
-    int originalSize = strlen((char *)s);
     result->len = end - start;
     result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len);
     memcpy(result->data, ((char *)s) + start, result->len);
