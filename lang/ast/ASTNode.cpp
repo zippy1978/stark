@@ -213,6 +213,7 @@ namespace stark
         if (this->getMember() != nullptr)
             clone->member = std::unique_ptr<ASTIdentifier>(this->getMember()->clone());
         clone->location = this->location;
+        clone->setArray(this->isArray());
         return clone;
     }
 

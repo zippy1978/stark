@@ -494,6 +494,7 @@ namespace stark
         }
         else
         {
+
             returnType = typeOf(*node->getType(), context);
 
             // Array case
@@ -683,7 +684,7 @@ namespace stark
         std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
 
         // Create external
-        // TODO : get rid of this : create and evaluate ASTExternDeclaration nde instead
+        // TODO : get rid of this : create and evaluate ASTExternDeclaration node instead
         this->result = createExternalDeclaration(mangledName, node->getArguments(), node->getType());
     }
 

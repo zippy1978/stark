@@ -19,4 +19,9 @@ func test(): string[] {
 //res := test()
 ++println(res[0] + res[1])*/
 
-["dddd"] + ["dddd"]
+func test(): string[] {
+    return ["ddd"]
+}
+
+arr := ["string"]
+println(arr[0])
