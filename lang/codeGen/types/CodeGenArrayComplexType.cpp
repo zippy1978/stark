@@ -88,8 +88,8 @@ namespace stark
             CodeGenArrayComplexType *arrayType = context->getArrayComplexType(context->getTypeName(lhs->getType()));
             CodeGenComplexTypeMember *elementsMember = arrayType->getMember("elements");
             std::vector<Value *> args;
-            args.push_back(lhs);
-            args.push_back(rhs);
+            args.push_back(new BitCastInst(lhs, context->getPrimaryType("any")->getType(), "", context->getCurrentBlock()));
+            args.push_back(new BitCastInst(rhs, context->getPrimaryType("any")->getType(), "", context->getCurrentBlock()));
             args.push_back(ConstantExpr::getSizeOf(elementsMember->type));
             Value *call = CallInst::Create(function, makeArrayRef(args), "concat", context->getCurrentBlock());
             
