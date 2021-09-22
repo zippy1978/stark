@@ -130,23 +130,25 @@ namespace stark
 
         for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
-            ASTVariableDeclaration *vd = *it;
-            std::string typeName = vd->getType()->getFullName();
-            Type *varType = context->getType(typeName);
-
-            // Array case
-            if (vd->getType()->isArray())
+            ASTVariableDeclaration *v = *it;
+            Type *type = context->getType(v->getType()->getFullName());
+            if (v->isArray())
             {
-                varType = context->getArrayComplexType(typeName)->getType()->getPointerTo();
+                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
             }
 
-            // Complex types are pointers !
-            if (!context->isPrimaryType(typeName) && !vd->getType()->isArray())
+            if (type == nullptr)
             {
-                varType = varType->getPointerTo();
+                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
             }
 
-            argTypes.push_back(varType);
+            // Complex types are pointer variables !
+            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+            {
+                type = type->getPointerTo();
+            }
+
+            argTypes.push_back(type);
         }
 
         Type *returnType;
@@ -610,6 +612,15 @@ namespace stark
         context->popBlock();
 
         this->result = function;
+    }
+
+    static void printDebugType(Value *value)
+    {
+        std::string typeStr;
+        llvm::raw_string_ostream rso(typeStr);
+        value->getType()->print(rso);
+        std::string llvmTypeName = rso.str();
+        cout << ">>>>>> " << llvmTypeName << endl;
     }
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)

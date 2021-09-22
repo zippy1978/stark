@@ -142,7 +142,7 @@ namespace stark
         // Check args count
         if (function->arg_size() != args.size())
         {
-            context->logger.logError(functionId->location, formatv("function {0} is expecting {1} argument(s), not {2}", functionId->getName(), function->arg_size(), args.size()));
+            context->logger.logError(functionId->location, formatv("function {0} is expecting {1} argument(s), not {2}", functionId->getFullName(), function->arg_size(), args.size()));
         }
 
         // Check args
@@ -154,7 +154,7 @@ namespace stark
             std::string valueTypeName = context->getTypeName(argValue->getType());
             if (!canAssign(argValue, argTypeName))
             {
-                context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->getName(), argTypeName, i, valueTypeName));
+                context->logger.logError(functionId->location, formatv("function {0} is expecting a {1} type for argument number {2}, instead of {3} type", functionId->getFullName(), argTypeName, i, valueTypeName));
             }
             i++;
         }

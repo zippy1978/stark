@@ -22,3 +22,10 @@ func arrayReturn(): string[] {
 }
 arrayResult := arrayReturn()
 assertStringEquals(arrayResult[1], "2")
+
+// Declaration with array as parameter
+func arrayParam(param: string[]): string {
+    return param[0]
+}
+arrayParamResult := arrayParam(["hello"])
+assertStringEquals(arrayParamResult, "hello")

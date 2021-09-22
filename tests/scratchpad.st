@@ -1,23 +1,14 @@
 extern strtok(str: any, delim: any): any
 
-func split(value: string, separator: string): string[] {
-    separatorAsCString := toCString(separator)
-    result: string[] = null
-    ptr := strtok(toCString(value), separatorAsCString)
-    while(ptr != null) {
-        if (result == null) {
-            result = [fromCString(ptr)]
-        } else {
-            result = result + [fromCString(ptr)]
+func join(parts: string[], separator: string): string {
+    result := ""
+    /*if (parts != null) {
+        i := 0
+        while (i < parts.len) {
+            result = result + parts[i]
+            i = i + 1
         }
-        ptr = strtok(null, separatorAsCString)
-    }
+    }*/
     return result
 }
-
-res := split("hello,world", ",")
-i := 0
-while (i < res.len) {
-    println(res[i])
-    i = i +1
-}
+r := join(["gg", "dd"], "ff")
