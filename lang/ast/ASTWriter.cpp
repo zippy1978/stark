@@ -25,7 +25,9 @@ namespace stark
         if (node->isArray())
         {
             output << "[";
-            node->getIndex()->accept(this);
+            if (node->getIndex() != nullptr) {
+                node->getIndex()->accept(this);
+            }
             output << "]";
         }
 

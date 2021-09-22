@@ -1,27 +1,23 @@
+extern strtok(str: any, delim: any): any
 
-// Array concatenation
-/*a1 := [1, 2]
-a2 := [3, 4]
-arrayConcat : int[] = a1 + a2
-println("concat size is = " + arrayConcat.len as string)
-println(arrayConcat[0] as string)
-strArray := ["hello" , "world"] + ["gilles", "grousset"]
-println(strArray[2])
-
-func test(): string[] {
-    
-    arr: string[] = null
-    arr = ["ff"]
-    arr = arr + ["gg"]
-    return arr
+func split(value: string, separator: string): string[] {
+    separatorAsCString := toCString(separator)
+    result: string[] = null
+    ptr := strtok(toCString(value), separatorAsCString)
+    while(ptr != null) {
+        if (result == null) {
+            result = [fromCString(ptr)]
+        } else {
+            result = result + [fromCString(ptr)]
+        }
+        ptr = strtok(null, separatorAsCString)
+    }
+    return result
 }
 
-//res := test()
-++println(res[0] + res[1])*/
-
-func test(): string[] {
-    return ["ddd"]
+res := split("hello,world", ",")
+i := 0
+while (i < res.len) {
+    println(res[i])
+    i = i +1
 }
-
-arr := ["string"]
-println(arr[0])
