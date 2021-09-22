@@ -35,14 +35,14 @@ namespace stark
 
         // Get array element type
         Type *elementType = this->members[0]->type->getPointerElementType();
-        
+
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Alloc inner array
         // If element type is a complex type : it is a pointer
         Type *innerArrayType = ArrayType::get(elementType, values.size());
-        Value* innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
+        Value *innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());
         // Initialize inner array with elements
         // TODO : there is probably a way to write the whole content in a single instruction !!!
@@ -57,9 +57,9 @@ namespace stark
             index++;
         }
 
-        // Create array 
+        // Create array
         Type *arrayType = context->getArrayComplexType(context->getTypeName(elementType))->getType();
-        Constant* arrayAllocSize = ConstantExpr::getSizeOf(arrayType);
+        Constant *arrayAllocSize = ConstantExpr::getSizeOf(arrayType);
         Value *arrayAlloc = context->createMemoryAllocation(arrayType, arrayAllocSize, context->getCurrentBlock());
 
         // Set len member
@@ -72,6 +72,34 @@ namespace stark
 
         // Return new instance
         return arrayAlloc;
+    }
+
+    Value *CodeGenArrayComplexType::createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs)
+    {
+        if (op == ADD)
+        {
+            // Concat
+            Function *function = context->getLlvmModule()->getFunction("stark_runtime_priv_concat_array");
+            if (function == nullptr)
+            {
+                context->logger.logError(context->getCurrentLocation(), "cannot find runtime function");
+                return nullptr;
+            }
+            CodeGenArrayComplexType *arrayType = context->getArrayComplexType(context->getTypeName(lhs->getType()));
+            CodeGenComplexTypeMember *elementsMember = arrayType->getMember("elements");
+            std::vector<Value *> args;
+            args.push_back(lhs);
+            args.push_back(rhs);
+            args.push_back(ConstantExpr::getSizeOf(elementsMember->type));
+            Value *call = CallInst::Create(function, makeArrayRef(args), "concat", context->getCurrentBlock());
+            
+            return new BitCastInst(call, arrayType->getType()->getPointerTo(), "", context->getCurrentBlock());
+        }
+        else
+        {
+            context->logger.logError(context->getCurrentLocation(), formatv("unsupported binary operation for type {0}", this->name));
+            return nullptr;
+        }
     }
 
 } // namespace stark

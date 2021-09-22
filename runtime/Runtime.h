@@ -32,6 +32,9 @@ namespace stark
                 "extern stark_runtime_priv_eq_string(ls: string, rs: string): bool\n"
                 "extern stark_runtime_priv_neq_string(ls: string, rs: string): bool\n"
 
+                // Array
+                "extern stark_runtime_priv_concat_array(ls: any, rs: any, elementSize: int): any\n"
+
                 // CInterop
                 "extern stark_runtime_pub_toCString(s: string): any\n"
                 "extern stark_runtime_pub_fromCString(s: any): string\n"

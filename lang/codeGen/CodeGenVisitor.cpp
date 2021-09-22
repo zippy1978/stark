@@ -745,7 +745,9 @@ namespace stark
         // Complex type
         if (!context->isPrimaryType(lhsTypeName))
         {
-            this->result = this->context->getComplexType(lhsTypeName)->createBinaryOperation(vl.result, node->getOp(), vr.result);
+            // Special case for array : if it is an array, use the array type
+            CodeGenComplexType *complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
+            this->result = complexType->createBinaryOperation(vl.result, node->getOp(), vr.result);
         }
         // Primary type
         else

@@ -45,6 +45,18 @@ assertFalse(false || false)
 // String concatenation
 s1 := "hello "
 s2 := "world !"
-concat := s1 + s2
-assertStringEquals(concat, "hello world !")
-assertIntEquals(concat.len, 13)
+stringConcat := s1 + s2
+assertStringEquals(stringConcat, "hello world !")
+assertIntEquals(stringConcat.len, 13)
+
+// Array concatenation
+a1 := [1, 2]
+a2 := [3, 4]
+arrayConcat := a1 + a2
+assertIntEquals(arrayConcat[2], 3)
+assertIntEquals(arrayConcat.len, 4)
+sa1 := ["hello", "world"]
+sa2 := ["be", "happy"]
+stringArrayConcat := sa1 + sa2
+assertStringEquals(stringArrayConcat[3], "happy")
+assertIntEquals(stringArrayConcat.len, 4)

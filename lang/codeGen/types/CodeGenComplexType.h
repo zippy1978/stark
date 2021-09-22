@@ -86,6 +86,7 @@ namespace stark
         CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context);
         Value *create(std::vector<Value *> values);
         Value *createDefaultValue();
+        Value *createBinaryOperation(Value *lhs, ASTBinaryOperator op, Value *rhs);
         void defineConstructor();
     };
 
