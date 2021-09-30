@@ -561,22 +561,34 @@ namespace stark
         ASTVariableList::const_iterator it;
         for (it = arguments.begin(); it != arguments.end(); it++)
         {
+            Type *type = nullptr;
+
             ASTVariableDeclaration *v = *it;
-            Type *type = context->getType(v->getType()->getFullName());
-            if (v->isArray())
-            {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-            }
 
-            if (type == nullptr)
+            // Types
+            if (v->getType() != nullptr)
             {
-                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-            }
+                type = context->getType(v->getType()->getFullName());
+                if (v->isArray())
+                {
+                    type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
+                }
 
-            // Complex types are pointer variables !
-            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+                if (type == nullptr)
+                {
+                    context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
+                }
+
+                // Complex types are pointer variables !
+                if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+                {
+                    type = type->getPointerTo();
+                }
+            }
+            // Function signature
+            else
             {
-                type = type->getPointerTo();
+                type = createFunctionType(v->getFunctionSignature())->getPointerTo();
             }
 
             argTypes.push_back(type);

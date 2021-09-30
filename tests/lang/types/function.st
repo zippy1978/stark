@@ -18,3 +18,9 @@ fn = classical
 
 // Call
 assertIntEquals(fn(1, 2), 3)
+
+// Function as parameter to another function
+func caller(called: (a: int, b: int) => int): int {
+    return called(1, 2)
+}
+assertIntEquals(caller(fn), 3)
