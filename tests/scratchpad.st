@@ -3,8 +3,11 @@
     println("null")
 }*/
 
-func toto(): () => int {
-    
+test: () => void
+//test: string
+test = null
+if (test == null) {
+    println("test is null")
 }
 
 

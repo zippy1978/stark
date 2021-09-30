@@ -144,6 +144,10 @@ namespace stark
     /** Check if the given type name is a primary type */
     bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }
 
+  /** Check if the given type name is a function signature */
+    bool isFunctionSignature(std::string typeName) { return (typeName.rfind("(") == 0); }
+
+    /** Check if the given type name is an array type */
     bool isArrayType(std::string typeName) { return (typeName.rfind("array.") == 0); }
 
     /** Return LLVM type from a type name */

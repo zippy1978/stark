@@ -120,6 +120,13 @@ namespace stark
 		{
 			llvmTypeName = llvmTypeName.substr(0, llvmTypeName.size() - 1);
 		}
+
+		// If it ends with a ')' it is a function signature
+		if (endsWith(llvmTypeName, ")"))
+		{
+			return "funcsig";	
+		}
+
 		return llvmTypeName;
 	}
 

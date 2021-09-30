@@ -24,3 +24,12 @@ func caller(called: (a: int, b: int) => int): int {
     return called(1, 2)
 }
 assertIntEquals(caller(fn), 3)
+
+// Null assignment and testing
+fnnull: (a: int, b: int) => int 
+fnnull = null
+assertTrue(fnnull == null)
+assertFalse(fnnull != null)
+fnnull = classical
+assertFalse(fnnull == null)
+assertTrue(fnnull != null)

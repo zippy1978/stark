@@ -916,6 +916,7 @@ namespace stark
         context->setCurrentLocation(node->location);
 
         IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
         CodeGenVisitor vl(context);
         node->getLhs()->accept(&vl);
@@ -924,6 +925,8 @@ namespace stark
 
         std::string lhsTypeName = context->getTypeName(vl.result->getType());
         std::string rhsTypeName = context->getTypeName(vr.result->getType());
+
+        this->result = nullptr;
 
         // Primary type
         if (context->isPrimaryType(lhsTypeName) && context->isPrimaryType(rhsTypeName))
@@ -936,10 +939,9 @@ namespace stark
 
             this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->getOp(), vr.result);
         }
-        // Complex type
         else
         {
-            CodeGenComplexType *complexType;
+            CodeGenComplexType *complexType = nullptr;
             if (context->isPrimaryType(lhsTypeName))
             {
                 complexType = context->isArrayType(rhsTypeName) ? context->getArrayComplexType(rhsTypeName) : context->getComplexType(rhsTypeName);
@@ -949,7 +951,44 @@ namespace stark
                 complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
             }
 
-            this->result = complexType->createComparison(vl.result, node->getOp(), vr.result);
+            // Complex type
+            if (complexType != nullptr)
+            {
+                this->result = complexType->createComparison(vl.result, node->getOp(), vr.result);
+            }
+            // Function signature
+            else
+            {
+                if (context->getChecker()->isNull(vl.result) || context->getChecker()->isNull(vr.result))
+                {
+
+                    // Convert pointer address to int for comparison
+                    Value *lhsPointerInt = Builder.CreatePtrToInt(vl.result, context->getPrimaryType("int")->getType());
+                    Value *rhsPointerInt = Builder.CreatePtrToInt(vr.result, context->getPrimaryType("int")->getType());
+
+                    switch (node->getOp())
+                    {
+                    case EQ:
+                        this->result = Builder.CreateICmpEQ(lhsPointerInt, rhsPointerInt, "cmp");
+                        break;
+                    case NE:
+                        this->result = Builder.CreateICmpNE(lhsPointerInt, rhsPointerInt, "cmp");
+                        break;
+                    case LT:
+                    case LE:
+                    case GT:
+                    case GE:
+                    default:
+
+                        break;
+                    }
+                }
+
+                if (this->result == nullptr)
+                {
+                    context->logger.logError(node->location, "comparison not supported");
+                }
+            }
         }
     }
 
