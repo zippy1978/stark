@@ -25,7 +25,8 @@ namespace stark
         if (node->isArray())
         {
             output << "[";
-            if (node->getIndex() != nullptr) {
+            if (node->getIndex() != nullptr)
+            {
                 node->getIndex()->accept(this);
             }
             output << "]";
@@ -71,7 +72,14 @@ namespace stark
     {
         node->getId()->accept(this);
         output << ": ";
-        node->getType()->accept(this);
+        if (node->getType() != nullptr)
+        {
+            node->getType()->accept(this);
+        }
+        if (node->getFunctionSignature() != nullptr)
+        {
+            node->getFunctionSignature()->accept(this);
+        }
 
         if (node->isArray())
         {
@@ -82,6 +90,25 @@ namespace stark
         {
             node->getAssignmentExpr()->accept(this);
         }
+    }
+
+    void ASTWriter::visit(ASTFunctionSignature *node)
+    {
+        output << "(";
+        ASTVariableList args = node->getArguments();
+        int i = 0;
+        for (auto it = args.begin(); it != args.end(); it++)
+        {
+            ASTVariableDeclaration *v = *it;
+            v->accept(this);
+            if (i < (args.size() - 1))
+            {
+                output << ", ";
+            }
+            i++;
+        }
+        output << ") => ";
+        node->getType()->accept(this);
     }
 
     void ASTWriter::visit(ASTFunctionDefinition *node)

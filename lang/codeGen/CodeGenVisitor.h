@@ -19,6 +19,10 @@ namespace stark
      * Generic external function declaration.
      */
     Function* createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
+    /**
+     * Create function type from signature
+     */
+    FunctionType *createFunctionType(ASTFunctionSignature *signature);
 
   public:
     CodeGenVisitor(CodeGenFileContext *context) : context(context) {}
@@ -32,6 +36,7 @@ namespace stark
     void visit(ASTAssignment *node);
     void visit(ASTExpressionStatement *node);
     void visit(ASTVariableDeclaration *node);
+    void visit(ASTFunctionSignature *node);
     void visit(ASTFunctionDefinition *node);
     void visit(ASTFunctionCall *node);
     void visit(ASTExternDeclaration *node);

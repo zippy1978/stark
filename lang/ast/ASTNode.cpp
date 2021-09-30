@@ -284,7 +284,24 @@ namespace stark
 
     ASTVariableDeclaration *ASTVariableDeclaration::clone()
     {
-        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getFunctionSignature() != nullptr ? this->getFunctionSignature()->clone() : nullptr,this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        clone->location = this->location;
+        return clone;
+    }
+
+    // ASTFunctionSignature
+
+    void ASTFunctionSignature::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTFunctionSignature::~ASTFunctionSignature()
+    {
+        deleteList(arguments);
+    }
+
+    ASTFunctionSignature *ASTFunctionSignature::clone()
+    {
+        ASTVariableList arguments = cloneList(this->getArguments());
+        ASTFunctionSignature *clone = new ASTFunctionSignature(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments);
         clone->location = this->location;
         return clone;
     }

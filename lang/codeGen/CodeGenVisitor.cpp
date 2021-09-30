@@ -17,7 +17,6 @@ using namespace stark;
 
 namespace stark
 {
-
     /*
     static void printDebugType(Value *value)
     {
@@ -180,6 +179,63 @@ namespace stark
         return function;
     }
 
+    FunctionType *CodeGenVisitor::createFunctionType(ASTFunctionSignature *signature)
+    {
+
+        // If no return type : void is assumed
+        Type *returnType;
+        if (signature->getType() == nullptr)
+        {
+            returnType = context->getPrimaryType("void")->getType();
+        }
+        else
+        {
+
+            returnType = typeOf(*signature->getType(), context);
+
+            // Array case
+            if (signature->getType()->isArray())
+            {
+                returnType = context->getArrayComplexType(signature->getType()->getFullName())->getType()->getPointerTo();
+            }
+
+            // Complex types are pointers !
+            if (!context->isPrimaryType(signature->getType()->getFullName()) && !signature->getType()->isArray())
+            {
+                returnType = returnType->getPointerTo();
+            }
+        }
+
+        // Build parameters
+        ASTVariableList arguments = signature->getArguments();
+        vector<Type *> argTypes;
+        ASTVariableList::const_iterator it;
+        for (it = arguments.begin(); it != arguments.end(); it++)
+        {
+            ASTVariableDeclaration *v = *it;
+            Type *type = context->getType(v->getType()->getFullName());
+            if (v->isArray())
+            {
+                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
+            }
+
+            if (type == nullptr)
+            {
+                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
+            }
+
+            // Complex types are pointer variables !
+            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+            {
+                type = type->getPointerTo();
+            }
+
+            argTypes.push_back(type);
+        }
+
+        return FunctionType::get(returnType, makeArrayRef(argTypes), false);
+    }
+
     void CodeGenVisitor::visit(ASTInteger *node)
     {
 
@@ -261,24 +317,37 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->getFullName()));
         context->setCurrentLocation(node->location);
 
-        CodeGenVariable *var = context->getLocal(node->getName());
-        if (var == nullptr)
-        {
-            context->logger.logError(node->location, formatv("undeclared identifier {0}", node->getName()));
-        }
-
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-        // Retrieve variable complex type
-        // Special case for array : if it is an array, use the array type
-        CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
+        // Look for a variable
+        CodeGenVariable *var = context->getLocal(node->getName());
+        if (var != nullptr)
+        {
+            // Retrieve variable complex type
+            // Special case for array : if it is an array, use the array type
+            CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
 
-        Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
+            Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
 
-        Type *type = varValue->getType()->getPointerElementType();
+            Type *type = varValue->getType()->getPointerElementType();
 
-        this->result = Builder.CreateLoad(type, varValue, "load");
+            this->result = Builder.CreateLoad(type, varValue, "load");
+            return;
+        }
+        else
+        {
+            // Look for a function
+            Function *function = context->getIdentifierResolver()->resolveFunction(node);
+            if (function != nullptr)
+            {
+                Function *function = context->getIdentifierResolver()->resolveFunction(node);
+                this->result = function;
+                return;
+            }
+        }
+
+        context->logger.logError(node->location, formatv("undeclared identifier {0}", node->getName()));
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -424,6 +493,28 @@ namespace stark
                 this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
             }
         }
+        // var:() => void [= function]
+        else if (node->getFunctionSignature() != nullptr)
+        {
+            FunctionType *ftype = createFunctionType(node->getFunctionSignature());
+            ASTWriter w;
+            w.visit(node->getFunctionSignature());
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), w.getSourceCode(), node->isArray(), ftype->getPointerTo());
+            var->setFunction(true);
+            context->declareLocal(var);
+
+            // TODO : handle assignement
+            if (node->getAssignmentExpr() != nullptr)
+            {
+                context->logger.logError("function assignement not implemented yet");
+            }
+            // If no assignement : assign null as default value
+            else
+            {
+                Value *defaultValue = ConstantPointerNull::getNullValue(ftype->getPointerTo());
+                this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
+            }
+        }
         // No type: infer it from assignement (var := expr)
         else
         {
@@ -444,6 +535,11 @@ namespace stark
 
             this->result = new StoreInst(v.result, var->getValue(), false, context->getCurrentBlock());
         }
+    }
+
+    void CodeGenVisitor::visit(ASTFunctionSignature *node)
+    {
+        // Nothing to generate here
     }
 
     void CodeGenVisitor::visit(ASTFunctionDefinition *node)
@@ -614,40 +710,48 @@ namespace stark
         this->result = function;
     }
 
-    static void printDebugType(Value *value)
-    {
-        std::string typeStr;
-        llvm::raw_string_ostream rso(typeStr);
-        value->getType()->print(rso);
-        std::string llvmTypeName = rso.str();
-        cout << ">>>>>> " << llvmTypeName << endl;
-    }
-
     void CodeGenVisitor::visit(ASTFunctionCall *node)
     {
         context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
         context->setCurrentLocation(node->location);
 
-        // Resolve function
+        // Look for a function
         Function *function = context->getIdentifierResolver()->resolveFunction(node->getId());
+        CodeGenVariable *var = nullptr;
         if (function == nullptr)
         {
-            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
+            // Look for a variable holding a function
+            CodeGenVariable *v = context->getLocal(node->getId()->getName());
+            if (v != nullptr && v->isFunction())
+            {
+                var = v;
+            }
         }
+
+        if (function == nullptr && var == nullptr)
+        {
+            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
+            return;
+        }
+
+        FunctionType *varFunctionType = var != nullptr ? static_cast<FunctionType *>(var->getType()->getPointerElementType()) : nullptr;
+
+        // Get function argument count
+        size_t argSize = function != nullptr ? function->arg_size() : varFunctionType->getNumParams();
 
         // Generate argument values
         std::vector<Value *> args;
         ASTExpressionList arguments = node->getArguments();
 
-        if (function->arg_size() != node->getArguments().size())
+        if (argSize != arguments.size())
         {
-            context->logger.logError(node->location, formatv("function {0} is expecting {1} argument(s), not {2}", node->getId()->getFullName(), function->arg_size(), args.size()));
+            context->logger.logError(node->location, formatv("function {0} is expecting {1} argument(s), not {2}", node->getId()->getFullName(), argSize, arguments.size()));
         }
 
         int i = 0;
         for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
-            Value *argVar = function->getArg(i);
+            Type *argType = function != nullptr ? function->getArg(i)->getType() : varFunctionType->getParamType(i);
             CodeGenVisitor v(context);
             (**it).accept(&v);
 
@@ -655,7 +759,7 @@ namespace stark
             Value *assignedValue = v.result;
             if (context->getChecker()->isNull(v.result))
             {
-                assignedValue = ConstantPointerNull::getNullValue(argVar->getType());
+                assignedValue = ConstantPointerNull::getNullValue(argType);
             }
 
             args.push_back(assignedValue);
@@ -663,10 +767,24 @@ namespace stark
         }
 
         // Check that function can be called
-        context->getChecker()->checkAllowedFunctionCall(node->getId(), function, args);
+        if (function != nullptr)
+        {
+            context->getChecker()->checkAllowedFunctionCall(node->getId(), function, args);
+        }
 
         // Create call
-        CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());
+        CallInst *call = nullptr;
+        if (function != nullptr)
+        {
+            call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());
+        }
+        else
+        {
+            IRBuilder<> Builder(context->getLlvmContext());
+            Builder.SetInsertPoint(context->getCurrentBlock());
+            call = CallInst::Create(varFunctionType, Builder.CreateLoad(var->getValue()), makeArrayRef(args), "", context->getCurrentBlock());
+        }
+
         this->result = call;
     }
 

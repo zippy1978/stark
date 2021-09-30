@@ -19,6 +19,7 @@
     stark::ASTExpression *expr;
     stark::ASTStatement *stmt;
     stark::ASTIdentifier *ident;
+    stark::ASTFunctionSignature *func_signature;
     stark::ASTVariableDeclaration *var_decl;
     std::vector<stark::ASTVariableDeclaration*> *varvec;
     std::vector<stark::ASTExpression*> *exprvec;
@@ -38,6 +39,7 @@
 %token COMMA
 %token COLON
 %token DOT
+%token ARROW
 %token FUNC EXTERN RETURN STRUCT DECLARE
 %token PLUS MINUS MUL DIV OR AND
 %token TRUE FALSE
@@ -49,10 +51,11 @@
 %token NULL_VALUE
 
 %type <ident> ident
+%type <func_signature> func_signature
 %type <identvec> chained_ident
 %type <expr> numeric expr str comparison array type_conversion null_value
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl module_import
+%type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl module_import return_stmt
 %type <varvec> decl_args
 %type <exprvec> expr_args
 
@@ -109,6 +112,17 @@ stmt:
       if_else_stmt
 |
       while_stmt
+|
+      return_stmt
+;
+
+return_stmt:
+      RETURN expr 
+      { 
+            $$ = new stark::ASTReturnStatement($2);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
 ;
 
 while_stmt:
@@ -166,6 +180,13 @@ var_decl:
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
+|
+      ident COLON func_signature 
+      {
+            $$ = new stark::ASTVariableDeclaration(nullptr, $3, $1, false, nullptr);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
 | 
       ident COLON ident EQUAL expr 
       { 
@@ -177,13 +198,6 @@ var_decl:
       ident COLON EQUAL expr 
       { 
             $$ = new stark::ASTVariableDeclaration(nullptr, $1, false, $4);
-            $$->location.line = @1.begin.line;
-            $$->location.column = @1.begin.column;
-      }
-|
-      RETURN expr 
-      { 
-            $$ = new stark::ASTReturnStatement($2);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -319,6 +333,15 @@ struct_decl:
       { 
             stark::ASTVariableList arguments; // Empty arguments
             $$ = new stark::ASTStructDeclaration($2, arguments);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+;
+
+func_signature: 
+      LPAREN decl_args RPAREN ARROW ident
+      {
+            $$ = new stark::ASTFunctionSignature($5, *$2);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }

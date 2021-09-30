@@ -15,6 +15,7 @@ namespace stark
   class ASTExpression;
   class ASTVariableDeclaration;
   class ASTIdentifier;
+  class ASTFunctionSignature;
 
   typedef std::vector<ASTStatement *> ASTStatementList;
   typedef std::vector<ASTExpression *> ASTExpressionList;
@@ -214,18 +215,35 @@ namespace stark
   class ASTVariableDeclaration : public ASTStatement
   {
     std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignature;
     std::unique_ptr<ASTIdentifier> id;
     std::unique_ptr<ASTExpression> assignmentExpr;
     bool array;
 
   public:
     ASTVariableDeclaration(ASTIdentifier *type, ASTIdentifier *id, bool array, ASTExpression *assignmentExpr) : type(type), id(id), array(array), assignmentExpr(assignmentExpr) {}
+    ASTVariableDeclaration(ASTIdentifier *type, ASTFunctionSignature *functionSignature, ASTIdentifier *id, bool array, ASTExpression *assignmentExpr) : type(type), functionSignature(functionSignature), id(id), array(array), assignmentExpr(assignmentExpr) {}
     ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignature() { return functionSignature.get(); }
     ASTIdentifier *getId() { return id.get(); }
     ASTExpression *getAssignmentExpr() { return assignmentExpr.get(); }
     bool isArray() { return array; }
     void accept(ASTVisitor *visitor);
     ASTVariableDeclaration *clone();
+  };
+
+  class ASTFunctionSignature : public ASTExpression
+  {
+    std::unique_ptr<ASTIdentifier> type;
+    ASTVariableList arguments;
+
+  public:
+    ASTFunctionSignature(ASTIdentifier *type, ASTVariableList &arguments) : type(type), arguments(arguments) {}
+    ~ASTFunctionSignature();
+    ASTIdentifier *getType() { return type.get(); }
+    ASTVariableList getArguments() { return arguments; }
+    void accept(ASTVisitor *visitor);
+    ASTFunctionSignature *clone();
   };
 
   class ASTFunctionDefinition : public ASTStatement
@@ -443,6 +461,7 @@ namespace stark
     virtual void visit(ASTAssignment *node) = 0;
     virtual void visit(ASTExpressionStatement *node) = 0;
     virtual void visit(ASTVariableDeclaration *node) = 0;
+    virtual void visit(ASTFunctionSignature *node) = 0;
     virtual void visit(ASTFunctionDefinition *node) = 0;
     virtual void visit(ASTFunctionCall *node) = 0;
     virtual void visit(ASTExternDeclaration *node) = 0;
