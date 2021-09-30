@@ -895,12 +895,21 @@ namespace stark
             context->logger.logError(node->location, formatv("operands must be of same type for binary operations"));
         }
 
-        // Complex type
         if (!context->isPrimaryType(lhsTypeName))
         {
             // Special case for array : if it is an array, use the array type
             CodeGenComplexType *complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
-            this->result = complexType->createBinaryOperation(vl.result, node->getOp(), vr.result);
+            
+            // Complex type
+            if (complexType != nullptr)
+            {
+                this->result = complexType->createBinaryOperation(vl.result, node->getOp(), vr.result);
+            }
+            // Function signature
+            else
+            {
+                context->logger.logError(node->location, formatv("binary operations are not supported on functions"));
+            }
         }
         // Primary type
         else
