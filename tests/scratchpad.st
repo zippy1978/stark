@@ -3,8 +3,9 @@
     println("null")
 }*/
 
-struct test {
-    cb: () => int
+func toto(): () => int {
+    
 }
+
 
 

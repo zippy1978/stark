@@ -130,21 +130,32 @@ namespace stark
         for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
             ASTVariableDeclaration *v = *it;
-            Type *type = context->getType(v->getType()->getFullName());
-            if (v->isArray())
-            {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-            }
+            Type *type = nullptr;
 
-            if (type == nullptr)
+            // Types
+            if (v->getType() != nullptr)
             {
-                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-            }
+                type = context->getType(v->getType()->getFullName());
+                if (v->isArray())
+                {
+                    type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
+                }
 
-            // Complex types are pointer variables !
-            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+                if (type == nullptr)
+                {
+                    context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
+                }
+
+                // Complex types are pointer variables !
+                if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+                {
+                    type = type->getPointerTo();
+                }
+            }
+            // Function signatures
+            else
             {
-                type = type->getPointerTo();
+                type = createFunctionType(v->getFunctionSignature())->getPointerTo();
             }
 
             argTypes.push_back(type);
@@ -585,7 +596,7 @@ namespace stark
                     type = type->getPointerTo();
                 }
             }
-            // Function signature
+            // Function signatures
             else
             {
                 type = createFunctionType(v->getFunctionSignature())->getPointerTo();
@@ -1172,18 +1183,31 @@ namespace stark
         {
             ASTVariableDeclaration *vd = *it;
 
-            // Nested type declaration
-            // Create a forward declaration (empty type)
-            // That will be redefined at the end of the delcaration
-            if (vd->getType()->getFullName().compare(node->getId()->getFullName()) == 0)
+            // Types
+            if (vd->getType() != nullptr)
             {
-                hasNestedType = true;
-                CodeGenComplexType *forwardStructType = new CodeGenComplexType(node->getId()->getFullName(), context);
-                context->declareComplexType(forwardStructType);
-            }
+                // Nested type declaration
+                // Create a forward declaration (empty type)
+                // That will be redefined at the end of the delcaration
+                if (vd->getType()->getFullName().compare(node->getId()->getFullName()) == 0)
+                {
+                    hasNestedType = true;
+                    CodeGenComplexType *forwardStructType = new CodeGenComplexType(node->getId()->getFullName(), context);
+                    context->declareComplexType(forwardStructType);
+                }
 
-            structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), (**it).isArray());
+                structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), (**it).isArray(), false);
+            }
+            // Function signatures
+            else
+            {
+                ASTWriter w;
+                w.visit(vd->getFunctionSignature());
+                structType->addMember(vd->getId()->getName(), w.getSourceCode(), createFunctionType(vd->getFunctionSignature()), false, true);
+            }
         }
+
+        context->logger.logDebug("#>>>>");
 
         context->declareComplexType(structType);
     }
