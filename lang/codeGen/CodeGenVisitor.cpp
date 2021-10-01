@@ -738,26 +738,48 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
         context->setCurrentLocation(node->location);
 
+        IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
         // Look for a function
         Function *function = context->getIdentifierResolver()->resolveFunction(node->getId());
         CodeGenVariable *var = nullptr;
+        FunctionType *varFunctionType = nullptr;
+        Value *functionPtrValue = nullptr;
         if (function == nullptr)
         {
-            // Look for a variable holding a function
-            CodeGenVariable *v = context->getLocal(node->getId()->getName());
-            if (v != nullptr && v->isFunction())
+            // Look for a variable
+            var = context->getLocal(node->getId()->getName());
+            if (var != nullptr)
             {
-                var = v;
+                // Variable is a function
+                if (var->isFunction())
+                {
+                    varFunctionType = static_cast<FunctionType *>(var->getType()->getPointerElementType());
+                    functionPtrValue = var->getValue();
+                }
+                // Identifier has nested members
+                else if (node->getId()->countNestedMembers() > 0)
+                {
+                    CodeGenComplexType *complexType = context->getComplexType(var->getTypeName());
+                    if (complexType != nullptr)
+                    {
+                        functionPtrValue = getComplexTypeMemberValue(complexType, var->getValue(), node->getId(), context);
+
+                        if (functionPtrValue->getType()->getPointerElementType()->getPointerElementType()->isFunctionTy())
+                        {
+                            varFunctionType = static_cast<FunctionType *>(functionPtrValue->getType()->getPointerElementType()->getPointerElementType());
+                        }
+                    }
+                }
             }
         }
 
-        if (function == nullptr && var == nullptr)
+        if (function == nullptr && varFunctionType == nullptr)
         {
             context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
             return;
         }
-
-        FunctionType *varFunctionType = var != nullptr ? static_cast<FunctionType *>(var->getType()->getPointerElementType()) : nullptr;
 
         // Get function argument count
         size_t argSize = function != nullptr ? function->arg_size() : varFunctionType->getNumParams();
@@ -803,9 +825,7 @@ namespace stark
         }
         else
         {
-            IRBuilder<> Builder(context->getLlvmContext());
-            Builder.SetInsertPoint(context->getCurrentBlock());
-            call = CallInst::Create(varFunctionType, Builder.CreateLoad(var->getValue()), makeArrayRef(args), "", context->getCurrentBlock());
+            call = CallInst::Create(varFunctionType, Builder.CreateLoad(functionPtrValue), makeArrayRef(args), "", context->getCurrentBlock());
         }
 
         this->result = call;
@@ -899,7 +919,7 @@ namespace stark
         {
             // Special case for array : if it is an array, use the array type
             CodeGenComplexType *complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
-            
+
             // Complex type
             if (complexType != nullptr)
             {
@@ -1254,8 +1274,6 @@ namespace stark
                 structType->addMember(vd->getId()->getName(), w.getSourceCode(), createFunctionType(vd->getFunctionSignature()), false, true);
             }
         }
-
-        context->logger.logDebug("#>>>>");
 
         context->declareComplexType(structType);
     }

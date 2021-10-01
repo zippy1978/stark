@@ -25,7 +25,7 @@ func caller(called: (a: int, b: int) => int): int {
 }
 assertIntEquals(caller(fn), 3)
 
-// Null assignment and testing
+// Null assignment
 fnnull: (a: int, b: int) => int 
 fnnull = null
 assertTrue(fnnull == null)
@@ -33,3 +33,10 @@ assertFalse(fnnull != null)
 fnnull = classical
 assertFalse(fnnull == null)
 assertTrue(fnnull != null)
+
+// Nested call
+struct Struct {
+    function: (a: int, b: int) => int
+}
+s := Struct(classical)
+assertIntEquals(s.function(1, 2), 3)
