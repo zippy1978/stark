@@ -8,7 +8,7 @@ extern assertTrue(actual: bool)
 extern assertFalse(actual: bool)
 
 // Declaration
-fn: (a: int, b: int) => int 
+fn: (int, int) => int 
 
 // Assignement
 func classical(a: int, b: int): int {
@@ -20,13 +20,13 @@ fn = classical
 assertIntEquals(fn(1, 2), 3)
 
 // Function as parameter to another function
-func caller(called: (a: int, b: int) => int): int {
+func caller(called: (int, int) => int): int {
     return called(1, 2)
 }
 assertIntEquals(caller(fn), 3)
 
 // Null assignment
-fnnull: (a: int, b: int) => int 
+fnnull: (int, int) => int 
 fnnull = null
 assertTrue(fnnull == null)
 assertFalse(fnnull != null)

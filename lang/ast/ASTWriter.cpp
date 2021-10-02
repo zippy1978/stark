@@ -95,12 +95,12 @@ namespace stark
     void ASTWriter::visit(ASTFunctionSignature *node)
     {
         output << "(";
-        ASTVariableList args = node->getArguments();
+        ASTIdentifierList args = node->getArguments();
         int i = 0;
         for (auto it = args.begin(); it != args.end(); it++)
         {
-            ASTVariableDeclaration *v = *it;
-            v->accept(this);
+            ASTIdentifier *id = *it;
+            id->accept(this);
             if (i < (args.size() - 1))
             {
                 output << ", ";

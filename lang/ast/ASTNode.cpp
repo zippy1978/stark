@@ -58,6 +58,27 @@ namespace stark
             delete list[i];
     }
 
+    /** Creates a deep copy of a ASTIdentifierList */
+    ASTIdentifierList cloneList(ASTIdentifierList list)
+    {
+        ASTIdentifierList clone;
+
+        for (auto it = list.begin(); it != list.end(); it++)
+        {
+            ASTIdentifier *s = *it;
+            clone.push_back(s->clone());
+        }
+
+        return clone;
+    }
+
+    /** Deletes an ASTIdentifierList */
+    void deleteList(ASTIdentifierList list)
+    {
+        for (int i = 0; i < list.size(); i++)
+            delete list[i];
+    }
+
     /** Creates a deep copy of a ASTExpressionList */
     ASTExpressionList cloneList(ASTExpressionList list)
     {
@@ -300,7 +321,7 @@ namespace stark
 
     ASTFunctionSignature *ASTFunctionSignature::clone()
     {
-        ASTVariableList arguments = cloneList(this->getArguments());
+        ASTIdentifierList arguments = cloneList(this->getArguments());
         ASTFunctionSignature *clone = new ASTFunctionSignature(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments);
         clone->location = this->location;
         return clone;

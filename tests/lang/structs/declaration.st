@@ -27,8 +27,9 @@ struct Shop {
 
 // Struct with function types
 struct Operations {
-    add: (a: int, b: int) => int,
-    sub: (a: int, b: int) => int
+    add: (int, int) => int,
+    sub: (int, int) => int,
+    sum: (int[]) => int
 }
 
 // Nested type declaration

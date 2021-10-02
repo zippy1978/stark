@@ -34,8 +34,8 @@ assertStringEquals(superMarket.name, "super discount")
 
 // Struct with function types
 struct Operations {
-    add: (a: int, b: int) => int,
-    sub: (a: int, b: int) => int
+    add: (int, int) => int,
+    sub: (int, int) => int
 }
 
 func add(a: int, b:int): int {

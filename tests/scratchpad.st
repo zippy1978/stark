@@ -1,35 +1,23 @@
-func meth(): int {
-    println("called")
-    return 1
-}
+/*
+s: (int, int) => int
 
-t : () => int[]
-t = [meth]
-t = t + [meth]
-
-
-f : () => int
-f = t[0] 
-t[0]()
-
-struct Parent {
-    m : () => int[]
-}
-
-p := Parent(t)
-p.m[0]()
-
-// FIXME
-// store a function into an array
-// call a function from an array (nested members)
-
-func classical(a: int, b: int): int {
+func add(a: int, b: int): int {
     return a + b
 }
 
-// Nested call
-struct Struct {
-    function: (a: int, b: int) => int
+s = add
+
+println(s(1, 2) as string)
+*/
+
+s: (int[], string) => int
+
+func t(a: int[], b: string): int {
+    println(b)
 }
-s := Struct(classical)
-s.function(1, 2)
+
+s = t
+s([1, 2], "f")
+/*{
+    println("hello")
+}*/

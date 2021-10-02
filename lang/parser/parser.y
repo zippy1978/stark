@@ -58,6 +58,7 @@
 %type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl module_import return_stmt
 %type <varvec> decl_args
 %type <exprvec> expr_args
+%type <identvec> ident_args
 
 /* Operator precedence */
 %left PLUS MINUS MUL DIV OR AND
@@ -346,7 +347,7 @@ struct_decl:
 ;
 
 func_signature: 
-      LPAREN decl_args RPAREN ARROW ident
+      LPAREN ident_args RPAREN ARROW ident
       {
             $$ = new stark::ASTFunctionSignature($5, *$2);
             $$->location.line = @1.begin.line;
@@ -635,6 +636,31 @@ expr_args:
       }
 | 
       expr_args COMMA expr  
+      {
+            $1->push_back($3); 
+      }
+;
+
+ident_args: 
+      /*blank*/  
+      { 
+            $$ = new stark::ASTIdentifierList(); 
+      }
+| 
+      ident 
+      { 
+            $$ = new stark::ASTIdentifierList(); 
+            $$->push_back($1); 
+      }
+| 
+      ident EMPTYBRACKETS
+      { 
+            $$ = new stark::ASTIdentifierList(); 
+            $1->setArray(true);
+            $$->push_back($1); 
+      }
+| 
+      ident_args COMMA ident  
       {
             $1->push_back($3); 
       }

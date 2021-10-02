@@ -34,25 +34,24 @@ namespace stark
         }
 
         // Build parameters
-        ASTVariableList arguments = signature->getArguments();
-        vector<Type *> argTypes;
-        ASTVariableList::const_iterator it;
-        for (it = arguments.begin(); it != arguments.end(); it++)
+        ASTIdentifierList arguments = signature->getArguments();
+        vector<Type *> argTypes; 
+        for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
-            ASTVariableDeclaration *v = *it;
-            Type *type = context->getType(v->getType()->getFullName());
-            if (v->isArray())
+            ASTIdentifier *id = *it;
+            Type *type = context->getType(id->getFullName());
+            if (id->isArray())
             {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
+                type = context->getArrayComplexType(id->getFullName())->getType()->getPointerTo();
             }
 
             if (type == nullptr)
             {
-                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
+                context->logger.logError(id->location, formatv("unknown type {0}", id->getFullName()));
             }
 
             // Complex types are pointer variables !
-            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+            if (!context->isPrimaryType(id->getFullName()) && !id->isArray())
             {
                 type = type->getPointerTo();
             }

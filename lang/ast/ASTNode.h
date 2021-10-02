@@ -235,13 +235,13 @@ namespace stark
   class ASTFunctionSignature : public ASTExpression
   {
     std::unique_ptr<ASTIdentifier> type;
-    ASTVariableList arguments;
+    ASTIdentifierList arguments;
 
   public:
-    ASTFunctionSignature(ASTIdentifier *type, ASTVariableList &arguments) : type(type), arguments(arguments) {}
+    ASTFunctionSignature(ASTIdentifier *type, ASTIdentifierList &arguments) : type(type), arguments(arguments) {}
     ~ASTFunctionSignature();
     ASTIdentifier *getType() { return type.get(); }
-    ASTVariableList getArguments() { return arguments; }
+    ASTIdentifierList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     ASTFunctionSignature *clone();
   };
