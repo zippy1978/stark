@@ -15,7 +15,7 @@ struct Prices {
     beer: int
 }
 
-superMarketPrices: Prices = Prices(10, 5)
+superMarketPrices := Prices(10, 5)
 
 assertIntEquals(superMarketPrices.wine, 10)
 assertIntEquals(superMarketPrices.beer, 5)
@@ -26,11 +26,29 @@ struct Shop {
     prices: Prices
 }
 
-superMarket: Shop = Shop("super discount", superMarketPrices)
+superMarket := Shop("super discount", superMarketPrices)
 
 assertIntEquals(superMarket.name.len, 14)
 assertIntEquals(superMarket.prices.wine, 10)
 assertStringEquals(superMarket.name, "super discount")
+
+// Struct with function types
+struct Operations {
+    add: (a: int, b: int) => int,
+    sub: (a: int, b: int) => int
+}
+
+func add(a: int, b:int): int {
+    return a + b
+}
+func sub(a: int, b:int): int {
+    return a - b
+}
+
+op := Operations(add, sub)
+
+assertIntEquals(op.add(1, 2), 3)
+assertIntEquals(op.sub(1, 2), -1)
 
 // Null assignement
 superMarket.name = null

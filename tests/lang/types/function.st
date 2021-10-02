@@ -33,10 +33,3 @@ assertFalse(fnnull != null)
 fnnull = classical
 assertFalse(fnnull == null)
 assertTrue(fnnull != null)
-
-// Nested call
-struct Struct {
-    function: (a: int, b: int) => int
-}
-s := Struct(classical)
-assertIntEquals(s.function(1, 2), 3)

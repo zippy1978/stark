@@ -61,3 +61,11 @@ assertIntEquals(oneLineInt.len, 2)
 oneLineShops := shops
 assertIntEquals(oneLineShops.len, 2)
 assertStringEquals(oneLineShops[0].name, "shop 1")
+
+// Array with functions types
+func nestedFunc(): int {
+    return 1
+}
+f : () => int []
+f = [nestedFunc]
+assertIntEquals(f[0](), 1)

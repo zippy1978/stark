@@ -21,3 +21,6 @@ s: Shop[]
 
 // Default array value is an empty array
 assertIntEquals(s.len, 0)
+
+// Array with function types
+f: (a: int) => void
