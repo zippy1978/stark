@@ -397,10 +397,15 @@ namespace stark
             var->setFunction(true);
             context->declareLocal(var);
 
-            // TODO : handle assignement
+            // TODO : duplaced block with above, consider refactoring
+            // If assignment expression : assign variable
             if (node->getAssignmentExpr() != nullptr)
             {
-                context->logger.logError("function assignement not implemented yet");
+                ASTAssignment assn(node->getId()->clone(), node->getAssignmentExpr()->clone());
+                CodeGenVisitor v(context);
+                assn.accept(&v);
+
+                this->result = var->getValue();
             }
             // If no assignement : assign null as default value
             else
@@ -417,6 +422,8 @@ namespace stark
             Type *type = v.result->getType();
             std::string typeName = context->getTypeName(type);
 
+            context->logger.logWarn(typeName);
+
             bool isArray = false;
             if (context->isArrayType(typeName))
             {
@@ -424,7 +431,12 @@ namespace stark
                 isArray = true;
             }
 
+            // Detected if it is a function type
+            // That is : function type is already known or if unkown LLVM tyme : ends with ")"
+            bool isFunction = (endsWith(typeName, ")") || context->getFunctionType(typeName) != nullptr);
+
             CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, isArray, type);
+            var->setFunction(isFunction);
             context->declareLocal(var);
 
             this->result = new StoreInst(v.result, var->getValue(), false, context->getCurrentBlock());
@@ -629,7 +641,7 @@ namespace stark
         Function *function = context->getIdentifierResolver()->resolveFunction(node->getId());
         CodeGenVariable *var = nullptr;
         FunctionType *varFunctionType = nullptr;
-        Value *functionPtrValue = nullptr; 
+        Value *functionPtrValue = nullptr;
         if (function == nullptr)
         {
             // Look for a variable
@@ -643,7 +655,7 @@ namespace stark
                     functionPtrValue = var->getValue();
                 }
                 // Not a function: need to resolve members /array
-                else 
+                else
                 {
                     CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
                     if (complexType != nullptr)

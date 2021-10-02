@@ -196,6 +196,20 @@ var_decl:
             $$->location.column = @1.begin.column;
       }
 | 
+      ident COLON func_signature EQUAL expr
+      {
+            $$ = new stark::ASTVariableDeclaration(nullptr, $3, $1, false, $5);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+| 
+      ident COLON func_signature EMPTYBRACKETS EQUAL expr
+      {
+            $$ = new stark::ASTVariableDeclaration(nullptr, $3, $1, true, $6);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+| 
       ident COLON ident EQUAL expr 
       { 
             $$ = new stark::ASTVariableDeclaration($3, $1, false, $5);

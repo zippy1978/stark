@@ -15,6 +15,7 @@ func classical(a: int, b: int): int {
     return a + b
 }
 fn = classical
+fn2 := classical
 
 // Call
 assertIntEquals(fn(1, 2), 3)
