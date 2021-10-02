@@ -64,6 +64,8 @@ namespace stark
 
 	Type *CodeGenFileContext::getType(std::string typeName)
 	{
+		logger.logDebug(typeName);
+
 		// Primary types
 		CodeGenPrimaryType *primaryType = getPrimaryType(typeName);
 		if (primaryType != nullptr)

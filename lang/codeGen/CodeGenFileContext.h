@@ -20,6 +20,7 @@
 #include "CodeGenBitcode.h"
 #include "CodeGenChecker.h"
 #include "CodeGenIdentifierResolver.h"
+#include "CodeGenFunctionHelper.h"
 
 using namespace llvm;
 
@@ -100,6 +101,9 @@ namespace stark
     /** Identifier resolver */
     std::unique_ptr<CodeGenIdentifierResolver> identifierResolver;
 
+    /** Function helper */
+    std::unique_ptr<CodeGenFunctionHelper> functionHelper;
+
     FileLocation currentLocation;
 
   private:
@@ -117,10 +121,12 @@ namespace stark
       mangler = std::make_unique<CodeGenMangler>();
       checker = std::make_unique<CodeGenChecker>(this);
       identifierResolver = std::make_unique<CodeGenIdentifierResolver>(this);
+      functionHelper = std::make_unique<CodeGenFunctionHelper>(this);
     }
 
     CodeGenMangler *getMangler() { return mangler.get(); }
     CodeGenChecker *getChecker() { return checker.get(); }
+    CodeGenFunctionHelper *getFunctionHelper() { return functionHelper.get(); }
     CodeGenIdentifierResolver *getIdentifierResolver() { return identifierResolver.get(); }
 
     /** Generate llvm program code */
@@ -144,7 +150,7 @@ namespace stark
     /** Check if the given type name is a primary type */
     bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }
 
-  /** Check if the given type name is a function signature */
+    /** Check if the given type name is a function signature */
     bool isFunctionSignature(std::string typeName) { return (typeName.rfind("(") == 0); }
 
     /** Check if the given type name is an array type */

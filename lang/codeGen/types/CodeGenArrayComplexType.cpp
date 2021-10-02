@@ -40,7 +40,6 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Alloc inner array
-        // If element type is a complex type : it is a pointer
         Type *innerArrayType = ArrayType::get(elementType, values.size());
         Value *innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());

@@ -123,130 +123,6 @@ namespace stark
 
     // Code generation
 
-    Function *CodeGenVisitor::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
-    {
-        vector<Type *> argTypes;
-
-        for (auto it = arguments.begin(); it != arguments.end(); it++)
-        {
-            ASTVariableDeclaration *v = *it;
-            Type *type = nullptr;
-
-            // Types
-            if (v->getType() != nullptr)
-            {
-                type = context->getType(v->getType()->getFullName());
-                if (v->isArray())
-                {
-                    type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-                }
-
-                if (type == nullptr)
-                {
-                    context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-                }
-
-                // Complex types are pointer variables !
-                if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
-                {
-                    type = type->getPointerTo();
-                }
-            }
-            // Function signatures
-            else
-            {
-                type = createFunctionType(v->getFunctionSignature())->getPointerTo();
-            }
-
-            argTypes.push_back(type);
-        }
-
-        Type *returnType;
-        if (type == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType()->getPointerTo() : typeOf(*type, context);
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(type->getFullName()) && !type->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
-
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
-
-        // If in interpreter mode : try to init the memory manager
-        // as soon as the required runtime function is declared
-        if (context->isInterpreterMode())
-        {
-            context->initMemoryManager();
-        }
-
-        return function;
-    }
-
-    FunctionType *CodeGenVisitor::createFunctionType(ASTFunctionSignature *signature)
-    {
-
-        // If no return type : void is assumed
-        Type *returnType;
-        if (signature->getType() == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-
-            returnType = typeOf(*signature->getType(), context);
-
-            // Array case
-            if (signature->getType()->isArray())
-            {
-                returnType = context->getArrayComplexType(signature->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(signature->getType()->getFullName()) && !signature->getType()->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
-
-        // Build parameters
-        ASTVariableList arguments = signature->getArguments();
-        vector<Type *> argTypes;
-        ASTVariableList::const_iterator it;
-        for (it = arguments.begin(); it != arguments.end(); it++)
-        {
-            ASTVariableDeclaration *v = *it;
-            Type *type = context->getType(v->getType()->getFullName());
-            if (v->isArray())
-            {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            if (type == nullptr)
-            {
-                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-            }
-
-            // Complex types are pointer variables !
-            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
-            {
-                type = type->getPointerTo();
-            }
-
-            argTypes.push_back(type);
-        }
-
-        return FunctionType::get(returnType, makeArrayRef(argTypes), false);
-    }
-
     void CodeGenVisitor::visit(ASTInteger *node)
     {
 
@@ -507,7 +383,7 @@ namespace stark
         // var:() => void [= function]
         else if (node->getFunctionSignature() != nullptr)
         {
-            FunctionType *ftype = createFunctionType(node->getFunctionSignature());
+            FunctionType *ftype = context->getFunctionHelper()->createFunctionType(node->getFunctionSignature());
             ASTWriter w;
             w.visit(node->getFunctionSignature());
             CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), w.getSourceCode(), node->isArray(), ftype->getPointerTo());
@@ -599,7 +475,7 @@ namespace stark
             // Function signatures
             else
             {
-                type = createFunctionType(v->getFunctionSignature())->getPointerTo();
+                type = context->getFunctionHelper()->createFunctionType(v->getFunctionSignature())->getPointerTo();
             }
 
             argTypes.push_back(type);
@@ -857,7 +733,7 @@ namespace stark
 
         // Create external
         // TODO : get rid of this : create and evaluate ASTExternDeclaration node instead
-        this->result = createExternalDeclaration(mangledName, node->getArguments(), node->getType());
+        this->result = context->getFunctionHelper()->createExternalDeclaration(mangledName, node->getArguments(), node->getType());
     }
 
     void CodeGenVisitor::visit(ASTExternDeclaration *node)
@@ -870,7 +746,7 @@ namespace stark
         ASTVariableList arguments = node->getArguments();
 
         // Create external
-        this->result = createExternalDeclaration(functionName, arguments, node->getType());
+        this->result = context->getFunctionHelper()->createExternalDeclaration(functionName, arguments, node->getType());
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)
@@ -1271,7 +1147,8 @@ namespace stark
             {
                 ASTWriter w;
                 w.visit(vd->getFunctionSignature());
-                structType->addMember(vd->getId()->getName(), w.getSourceCode(), createFunctionType(vd->getFunctionSignature()), false, true);
+                FunctionType *ft = context->getFunctionHelper()->createFunctionType(vd->getFunctionSignature());
+                structType->addMember(vd->getId()->getName(), w.getSourceCode(), ft, false, true);
             }
         }
 
