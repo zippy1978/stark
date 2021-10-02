@@ -64,7 +64,6 @@ namespace stark
 
 	Type *CodeGenFileContext::getType(std::string typeName)
 	{
-		logger.logDebug(typeName);
 
 		// Primary types
 		CodeGenPrimaryType *primaryType = getPrimaryType(typeName);
@@ -78,6 +77,13 @@ namespace stark
 		if (complexType != nullptr)
 		{
 			return complexType->getType();
+		}
+
+		// Function types
+		CodeGenFunctionType *functionType = getFunctionType(typeName);
+		if (functionType != nullptr)
+		{
+			return functionType->getType();
 		}
 
 		// Not found
@@ -116,19 +122,27 @@ namespace stark
 			}
 		}
 
-		// If not a primary type : must be a complex type : return llvm type name without the "*" pointer
 
+		// If not a primary type: drop pointer symbol
 		if (endsWith(llvmTypeName, "*"))
 		{
 			llvmTypeName = llvmTypeName.substr(0, llvmTypeName.size() - 1);
 		}
 
-		// If it ends with a ')' it is a function signature
+		// Look for a function type
 		if (endsWith(llvmTypeName, ")"))
 		{
-			return "funcsig";	
+			for (auto it = functionTypes.begin(); it != functionTypes.end(); it++)
+			{
+				CodeGenFunctionType *functionType = it->second.get();
+				if (functionType->getLLvmTypeName().compare(llvmTypeName) == 0)
+				{
+					return functionType->getName();
+				}
+			}
 		}
 
+		// If not a primary type or a function type : must be a complex type : return llvm type name
 		return llvmTypeName;
 	}
 
@@ -148,6 +162,30 @@ namespace stark
 			complexType->declare();
 			complexTypes[complexType->getName()] = std::unique_ptr<CodeGenComplexType>(complexType);
 		}
+	}
+
+	CodeGenFunctionType *CodeGenFileContext::declareFunctionType(ASTFunctionSignature *signature)
+	{
+		FunctionType *ft = getFunctionHelper()->createFunctionType(signature);
+		// Get a string version of the type from the signature
+		ASTWriter w;
+		w.visit(signature);
+		std::string typeName = w.getSourceCode();
+
+		// Remove spaces to avoid LLVM naming issues 
+		std::replace( typeName.begin(), typeName.end(), '(', '_');
+		std::replace( typeName.begin(), typeName.end(), ')', '_');
+		std::replace( typeName.begin(), typeName.end(), '=', '_');
+		std::replace( typeName.begin(), typeName.end(), '>', '_');
+		std::replace( typeName.begin(), typeName.end(), ':', '_');
+		std::replace( typeName.begin(), typeName.end(), ',', '_');
+		std::string::iterator newEnd = std::remove( typeName.begin(), typeName.end(), ' ');
+		typeName.erase(newEnd, typeName.end());
+
+		CodeGenFunctionType *functionType = new CodeGenFunctionType(typeName, this, ft, getTypeName(ft));
+		functionTypes[typeName] = std::unique_ptr<CodeGenFunctionType>(functionType);
+
+		return functionType;
 	}
 
 	CodeGenComplexType *CodeGenFileContext::getComplexType(std::string typeName)
@@ -193,6 +231,16 @@ namespace stark
 		if (primaryTypes.find(typeName) != primaryTypes.end())
 		{
 			return primaryTypes[typeName].get();
+		}
+
+		return nullptr;
+	}
+
+	CodeGenFunctionType *CodeGenFileContext::getFunctionType(std::string typeName)
+	{
+		if (functionTypes.find(typeName) != functionTypes.end())
+		{
+			return functionTypes[typeName].get();
 		}
 
 		return nullptr;

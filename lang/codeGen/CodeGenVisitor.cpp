@@ -383,10 +383,17 @@ namespace stark
         // var:() => void [= function]
         else if (node->getFunctionSignature() != nullptr)
         {
-            FunctionType *ftype = context->getFunctionHelper()->createFunctionType(node->getFunctionSignature());
-            ASTWriter w;
-            w.visit(node->getFunctionSignature());
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), w.getSourceCode(), node->isArray(), ftype->getPointerTo());
+            Type *type;
+            CodeGenFunctionType *ft = context->declareFunctionType(node->getFunctionSignature());
+            // Function variables are pointers !
+            type = ft->getType()->getPointerTo();
+            if (node->isArray())
+            {
+                // Array variables are pointers !
+                type = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
+            }
+
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), ft->getName(), node->isArray(), type);
             var->setFunction(true);
             context->declareLocal(var);
 
@@ -398,7 +405,7 @@ namespace stark
             // If no assignement : assign null as default value
             else
             {
-                Value *defaultValue = ConstantPointerNull::getNullValue(ftype->getPointerTo());
+                Value *defaultValue = ConstantPointerNull::getNullValue(ft->getType()->getPointerTo());
                 this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
             }
         }
@@ -475,7 +482,8 @@ namespace stark
             // Function signatures
             else
             {
-                type = context->getFunctionHelper()->createFunctionType(v->getFunctionSignature())->getPointerTo();
+                CodeGenFunctionType *ft = context->declareFunctionType(v->getFunctionSignature());
+                type = ft->getType()->getPointerTo();
             }
 
             argTypes.push_back(type);
@@ -621,7 +629,7 @@ namespace stark
         Function *function = context->getIdentifierResolver()->resolveFunction(node->getId());
         CodeGenVariable *var = nullptr;
         FunctionType *varFunctionType = nullptr;
-        Value *functionPtrValue = nullptr;
+        Value *functionPtrValue = nullptr; 
         if (function == nullptr)
         {
             // Look for a variable
@@ -629,15 +637,15 @@ namespace stark
             if (var != nullptr)
             {
                 // Variable is a function
-                if (var->isFunction())
+                if (var->isFunction() && !var->isArray())
                 {
                     varFunctionType = static_cast<FunctionType *>(var->getType()->getPointerElementType());
                     functionPtrValue = var->getValue();
                 }
-                // Identifier has nested members
-                else if (node->getId()->countNestedMembers() > 0)
+                // Not a function: need to resolve members /array
+                else 
                 {
-                    CodeGenComplexType *complexType = context->getComplexType(var->getTypeName());
+                    CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
                     if (complexType != nullptr)
                     {
                         functionPtrValue = getComplexTypeMemberValue(complexType, var->getValue(), node->getId(), context);
@@ -1145,10 +1153,8 @@ namespace stark
             // Function signatures
             else
             {
-                ASTWriter w;
-                w.visit(vd->getFunctionSignature());
-                FunctionType *ft = context->getFunctionHelper()->createFunctionType(vd->getFunctionSignature());
-                structType->addMember(vd->getId()->getName(), w.getSourceCode(), ft, false, true);
+                CodeGenFunctionType *ft = context->declareFunctionType(vd->getFunctionSignature());
+                structType->addMember(vd->getId()->getName(), ft->getName(), ft->getType(), vd->isArray(), true);
             }
         }
 

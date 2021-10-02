@@ -28,7 +28,7 @@ namespace stark
         CodeGenFunctionHelper(CodeGenFileContext *context) : context(context) {}
 
         /**
-         * Create  function type from a singature.
+         * Create function type from a signature.
          */
         FunctionType *createFunctionType(ASTFunctionSignature *signature);
 
@@ -36,6 +36,7 @@ namespace stark
          * Create a function declaration.
          */
         Function *createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
+
     };
 
 } // namespace stark

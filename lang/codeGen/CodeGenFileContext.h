@@ -15,6 +15,7 @@
 
 #include "types/CodeGenComplexType.h"
 #include "types/CodeGenPrimaryType.h"
+#include "types/CodeGenFunctionType.h"
 #include "CodeGenVariable.h"
 #include "CodeGenMangler.h"
 #include "CodeGenBitcode.h"
@@ -83,6 +84,9 @@ namespace stark
     /** Holds primary types */
     std::map<std::string, std::unique_ptr<CodeGenPrimaryType>> primaryTypes;
 
+    /** Holds function types */
+    std::map<std::string, std::unique_ptr<CodeGenFunctionType>> functionTypes;
+
     /** Run code generation in debug mode if enabled */
     bool debugEnabled = false;
 
@@ -135,17 +139,23 @@ namespace stark
     /** Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
 
+    /** Declare a function type from a function signature */
+    CodeGenFunctionType *declareFunctionType(ASTFunctionSignature *signature);
+
     /** Return matching complex type information from a type name */
     CodeGenComplexType *getComplexType(std::string typeName);
 
     /** 
      * Return matching array type (complex type) for a given enclosing type name.
-     * If type not found, thet it is created.
+     * If type not found, then it is created.
      */
     CodeGenArrayComplexType *getArrayComplexType(std::string typeName);
 
     /** Return matching primary type from a type name */
     CodeGenPrimaryType *getPrimaryType(std::string typeName);
+
+    /** Return matching function type from a type name */
+    CodeGenFunctionType *getFunctionType(std::string typeName);
 
     /** Check if the given type name is a primary type */
     bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }

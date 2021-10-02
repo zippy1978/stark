@@ -95,7 +95,7 @@ namespace stark
             // Function signatures
             else
             {
-                type = context->getFunctionHelper()->createFunctionType(v->getFunctionSignature())->getPointerTo();
+                type = createFunctionType(v->getFunctionSignature())->getPointerTo();
             }
 
             argTypes.push_back(type);
