@@ -45,7 +45,7 @@ Variables are local to the code block they are declared in: they can be accessed
 
 In this example, *result* variable is accessible from the *if* block:
 ```stark
-func amIOld(age: int): string {
+func amIOld(age: int) => string {
     result := "No you are young !"
     if (age > 50) {
         result = "Sorry, you are old"
@@ -297,16 +297,16 @@ Functions are callable code blocks taking values as input (parameters), and outp
 
 The function definition syntax is:
 
-func ``name``(``paramname``: ``type``, ``paramname``: ``type``, ...): ``type`` {...}
+func ``name``(``paramname``: ``type``, ``paramname``: ``type``, ...) => ``type`` {...}
 
 A ``return`` statement is expected inside the function body, except if the return type is ``void``:
 
 ```stark
-func add(a: int, b: int): int {
+func add(a: int, b: int) => int {
     return a + b
 }
 
-func sayHello(): void {
+func sayHello() => void {
     println("Hello")
     // No need to return here
 }

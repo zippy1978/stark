@@ -10,12 +10,12 @@
  }
 
 // A function
- func addTest(a: int, b: int): int {
+ func addTest(a: int, b: int) => int {
      return a + b
  }
 
  // A funtion returning a Test type
- func returnTest(): Test {
+ func returnTest() => Test {
      return Test("this is a test")
  }
 

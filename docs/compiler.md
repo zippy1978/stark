@@ -49,7 +49,7 @@ func main() {
 It is also responsible to return exit / error code for the program. In this case, it must return a `ìnt``:
 
 ```stark
-func main(): int {
+func main() => int {
   println("Hello")
   // Everything is fine: return 0
   return 0
@@ -59,7 +59,7 @@ func main(): int {
 Arguments of the program can be retrieved by adding a ``string[]``paramter to the funciton:
 
 ```stark
-func main(args: string[]): int {
+func main(args: string[]) => int {
   if (args.len < 2) {
     println("missing parameter: program is expecting a name as parameter")
     return 1

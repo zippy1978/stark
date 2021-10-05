@@ -11,7 +11,7 @@ func printHello(msg: string) {
     println(msg)
 }
 
-func main(args: string[]): int {
+func main(args: string[]) => int {
     
     if (args.len > 2) {
         printHello(args[1])

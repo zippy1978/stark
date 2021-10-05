@@ -11,7 +11,7 @@ extern assertFalse(actual: bool)
 fn: (int, int) => int 
 
 // Assignement
-func classical(a: int, b: int): int {
+func classical(a: int, b: int) => int {
     return a + b
 }
 fn = classical
@@ -21,7 +21,7 @@ fn2 := classical
 assertIntEquals(fn(1, 2), 3)
 
 // Function as parameter to another function
-func caller(called: (int, int) => int): int {
+func caller(called: (int, int) => int) => int {
     return called(1, 2)
 }
 assertIntEquals(caller(fn), 3)

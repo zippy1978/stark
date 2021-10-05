@@ -226,7 +226,7 @@ var_decl:
 ;
 
 extern_decl:
-      EXTERN ident LPAREN decl_args RPAREN COLON ident
+      EXTERN ident LPAREN decl_args RPAREN ARROW ident
       { 
             $$ = new stark::ASTExternDeclaration($7, $2, *$4); 
             delete $4;
@@ -242,7 +242,7 @@ extern_decl:
             $$->location.column = @1.begin.column;
       }
 |
-      EXTERN ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS
+      EXTERN ident LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS
       { 
             $7->setArray(true);
             $$ = new stark::ASTExternDeclaration($7, $2, *$4); 
@@ -271,7 +271,7 @@ module_decl:
 ;
 
 func_decl:
-      DECLARE ident LPAREN decl_args RPAREN COLON ident
+      DECLARE ident LPAREN decl_args RPAREN ARROW ident
       { 
             $$ = new stark::ASTFunctionDeclaration($7, $2, *$4);
             delete $4;
@@ -287,7 +287,7 @@ func_decl:
             $$->location.column = @1.begin.column;
       }
 |
-      DECLARE ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS
+      DECLARE ident LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS
       { 
             $7->setArray(true);
             $$ = new stark::ASTFunctionDeclaration($7, $2, *$4);
@@ -298,7 +298,7 @@ func_decl:
 ;
 
 func_def: 
-      FUNC ident LPAREN decl_args RPAREN COLON ident block
+      FUNC ident LPAREN decl_args RPAREN ARROW ident block
       { 
             $$ = new stark::ASTFunctionDefinition($7, $2, *$4, $8);
             $$->location.line = @1.begin.line;
@@ -314,7 +314,7 @@ func_def:
             delete $4; 
       }
 |
-      FUNC ident LPAREN decl_args RPAREN COLON ident EMPTYBRACKETS block
+      FUNC ident LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS block
       { 
             $7->setArray(true);
             $$ = new stark::ASTFunctionDefinition($7, $2, *$4, $9);

@@ -14,6 +14,6 @@
     employees: Employee[]
 }
 
-func createEmployee(name: string, age: int): Employee {
+func createEmployee(name: string, age: int) => Employee {
     return Employee(name, age)
 }

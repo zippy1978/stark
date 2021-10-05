@@ -28,7 +28,7 @@ if (true) {
 }
 
 // Simple if / else in a function
-func simple(): int {
+func simple() => int {
     if (true) {
         assertTrue(true)
         return 1
@@ -51,7 +51,7 @@ if (true) {
 }
 
 // Nested if / else in a function
-func nested(): int {
+func nested() => int {
     if (false) {
         failure()
     } else {
@@ -68,7 +68,7 @@ func nested(): int {
 assertIntEquals(nested(), 12)
 
 // Return in if statement
-func ifReturn(cond: bool): int {
+func ifReturn(cond: bool) => int {
     if (cond) {
         return 1
     }
@@ -78,7 +78,7 @@ assertIntEquals(ifReturn(true), 1)
 assertIntEquals(ifReturn(false), 0)
 
 // Return in else statement
-func elseReturn(cond: bool): int {
+func elseReturn(cond: bool) => int {
     if (cond) {
         assertTrue(true)
     } else {

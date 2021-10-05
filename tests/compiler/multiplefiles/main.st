@@ -3,7 +3,7 @@
  *  main.st
  */
 
-func main(): int {
+func main() => int {
 
     tony: Employee  = createEmployee("Tony Stark", 40)
     pepper: Employee = createEmployee("Pepper Pots", 38)

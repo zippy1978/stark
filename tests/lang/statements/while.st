@@ -15,7 +15,7 @@ while (i > 0) {
 assertIntEquals(i, 0)
 
 // In function
-func test(): int {
+func test() => int {
     i: int = 10
     while (i > 0) {
         i = i - 1
@@ -25,7 +25,7 @@ func test(): int {
 assertIntEquals(test(), 0)
 
 // In function wih return
-func returnTest(): int {
+func returnTest() => int {
     i: int = 10
     while (i > 0) {
         i = i - 1

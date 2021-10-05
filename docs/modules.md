@@ -17,7 +17,7 @@ A source file is declared as belonging to a module by using the ``module`` keywo
 // A module named "myModule" containing an "add" function
 module myModule
 
-func add(a: int, b: int): int {
+func add(a: int, b: int) => int {
   return a + b
 }
 ```

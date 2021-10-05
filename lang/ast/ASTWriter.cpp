@@ -129,7 +129,7 @@ namespace stark
             i++;
         }
 
-        output << "): ";
+        output << ") => ";
         node->getType()->accept(this);
         output << "{\n";
         node->getBlock()->accept(this);
@@ -173,7 +173,7 @@ namespace stark
             i++;
         }
 
-        output << "): ";
+        output << ") => ";
         node->getType()->accept(this);
     }
 
@@ -330,7 +330,7 @@ namespace stark
             i++;
         }
 
-        output << "): ";
+        output << ") => ";
         node->getType()->accept(this);
     }
 
