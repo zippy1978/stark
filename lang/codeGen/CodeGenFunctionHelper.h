@@ -37,6 +37,11 @@ namespace stark
          */
         Function *createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
 
+        /**
+         * Create a vector of argument types from a ASTVariableList.
+         */
+        std::vector<Type *> checkAndExtractArgumentTypes(ASTVariableList arguments);
+
     };
 
 } // namespace stark

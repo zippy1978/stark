@@ -35,7 +35,7 @@ namespace stark
 
         // Build parameters
         ASTIdentifierList arguments = signature->getArguments();
-        vector<Type *> argTypes; 
+        vector<Type *> argTypes;
         for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
             ASTIdentifier *id = *it;
@@ -64,8 +64,40 @@ namespace stark
 
     Function *CodeGenFunctionHelper::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
     {
-        vector<Type *> argTypes;
+        vector<Type *> argTypes = this->checkAndExtractArgumentTypes(arguments);
 
+        Type *returnType;
+        if (type == nullptr)
+        {
+            returnType = context->getPrimaryType("void")->getType();
+        }
+        else
+        {
+            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType()->getPointerTo() : context->getType(type->getFullName());
+
+            // Complex types are pointers !
+            if (!context->isPrimaryType(type->getFullName()) && !type->isArray())
+            {
+                returnType = returnType->getPointerTo();
+            }
+        }
+
+        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
+        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
+
+        // If in interpreter mode : try to init the memory manager
+        // as soon as the required runtime function is declared
+        if (context->isInterpreterMode())
+        {
+            context->initMemoryManager();
+        }
+
+        return function;
+    }
+
+    vector<Type *> CodeGenFunctionHelper::checkAndExtractArgumentTypes(ASTVariableList arguments)
+    {
+        vector<Type *> argTypes;
         for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
             ASTVariableDeclaration *v = *it;
@@ -100,33 +132,7 @@ namespace stark
             argTypes.push_back(type);
         }
 
-        Type *returnType;
-        if (type == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType()->getPointerTo() : context->getType(type->getFullName());
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(type->getFullName()) && !type->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
-
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
-
-        // If in interpreter mode : try to init the memory manager
-        // as soon as the required runtime function is declared
-        if (context->isInterpreterMode())
-        {
-            context->initMemoryManager();
-        }
-
-        return function;
+        return argTypes;
     }
 
 } // namespace stark

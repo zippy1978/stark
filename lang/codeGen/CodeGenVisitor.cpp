@@ -422,8 +422,6 @@ namespace stark
             Type *type = v.result->getType();
             std::string typeName = context->getTypeName(type);
 
-            context->logger.logWarn(typeName);
-
             bool isArray = false;
             if (context->isArrayType(typeName))
             {
@@ -463,43 +461,7 @@ namespace stark
         ASTVariableList arguments = node->getArguments();
 
         // Build parameters
-        vector<Type *> argTypes;
-        ASTVariableList::const_iterator it;
-        for (it = arguments.begin(); it != arguments.end(); it++)
-        {
-            Type *type = nullptr;
-
-            ASTVariableDeclaration *v = *it;
-
-            // Types
-            if (v->getType() != nullptr)
-            {
-                type = context->getType(v->getType()->getFullName());
-                if (v->isArray())
-                {
-                    type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-                }
-
-                if (type == nullptr)
-                {
-                    context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-                }
-
-                // Complex types are pointer variables !
-                if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
-                {
-                    type = type->getPointerTo();
-                }
-            }
-            // Function signatures
-            else
-            {
-                CodeGenFunctionType *ft = context->declareFunctionType(v->getFunctionSignature());
-                type = ft->getType()->getPointerTo();
-            }
-
-            argTypes.push_back(type);
-        }
+        vector<Type *> argTypes = context->getFunctionHelper()->checkAndExtractArgumentTypes(node->getArguments());
 
         // Create function
 
@@ -582,7 +544,7 @@ namespace stark
         // Otherwise: create local variables for each argument
         else
         {
-            for (it = arguments.begin(); it != arguments.end(); it++)
+            for (auto it = arguments.begin(); it != arguments.end(); it++)
             {
                 CodeGenVisitor v(context);
                 (**it).accept(&v);
@@ -752,7 +714,6 @@ namespace stark
         std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
 
         // Create external
-        // TODO : get rid of this : create and evaluate ASTExternDeclaration node instead
         this->result = context->getFunctionHelper()->createExternalDeclaration(mangledName, node->getArguments(), node->getType());
     }
 
