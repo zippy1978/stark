@@ -327,6 +327,23 @@ namespace stark
         return clone;
     }
 
+    // ASTAnonymousFunction
+
+    void ASTAnonymousFunction::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTAnonymousFunction::~ASTAnonymousFunction()
+    {
+        deleteList(arguments);
+    }
+
+    ASTAnonymousFunction *ASTAnonymousFunction::clone()
+    {
+        ASTVariableList arguments = cloneList(this->getArguments());
+        ASTAnonymousFunction *clone = new ASTAnonymousFunction(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments, this->getBlock()->clone());
+        clone->location = this->location;
+        return clone;
+    }
+
     // ASTFunctionDefinition
 
     void ASTFunctionDefinition::accept(ASTVisitor *visitor) { visitor->visit(this); }

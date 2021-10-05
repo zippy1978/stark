@@ -73,6 +73,7 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTExpressionStatement *node) {}
     void ASTDeclarationExtractor::visit(ASTVariableDeclaration *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionSignature *node) {}
+    void ASTDeclarationExtractor::visit(ASTAnonymousFunction *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionDefinition *node)
     {
         // Extract function definition to declaration

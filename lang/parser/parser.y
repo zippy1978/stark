@@ -53,7 +53,7 @@
 %type <ident> ident
 %type <func_signature> func_signature
 %type <identvec> chained_ident
-%type <expr> numeric expr str comparison array type_conversion null_value
+%type <expr> numeric expr str comparison array type_conversion null_value anon_func
 %type <block> program stmts block
 %type <stmt> stmt var_decl func_def struct_decl extern_decl if_else_stmt while_stmt func_decl module_decl module_import return_stmt
 %type <varvec> decl_args
@@ -555,6 +555,24 @@ comparison:
             $$->location.column = @1.begin.column;
       }
 ;
+
+anon_func:
+      LPAREN decl_args RPAREN ARROW ident block
+      { 
+            $$ = new stark::ASTAnonymousFunction($5, *$2, $6);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+            delete $2; 
+      } 
+|
+      LPAREN decl_args RPAREN block
+      { 
+            $$ = new stark::ASTAnonymousFunction(nullptr, *$2, $4);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+            delete $2; 
+      }
+;
     
 expr: 
       ident EQUAL expr 
@@ -589,6 +607,8 @@ expr:
 |
       type_conversion
 |     
+      anon_func
+|
       expr MUL expr 
       { 
             $$ = new stark::ASTBinaryOperation($1, stark::MUL, $3);

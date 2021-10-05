@@ -16,8 +16,8 @@ namespace stark
     class CodeGenFileContext;
 
     /**
-     * Identifier resolver.
-     * In charge of resolving ASTIdentifiers
+     * Function helper.
+     * Helper functions for function handling.
      */
     class CodeGenFunctionHelper
     {

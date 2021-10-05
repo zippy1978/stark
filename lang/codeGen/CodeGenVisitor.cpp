@@ -446,17 +446,41 @@ namespace stark
         // Nothing to generate here
     }
 
+    void CodeGenVisitor::visit(ASTAnonymousFunction *node)
+    {
+        // Convert to an ASTFunctionefinition
+        ASTVariableList arguments = cloneList(node->getArguments());
+        ASTFunctionDefinition fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
+        CodeGenVisitor v(context);
+        fd.accept(&v);
+
+        this->result = v.result;
+    }
+
     void CodeGenVisitor::visit(ASTFunctionDefinition *node)
     {
 
-        context->logger.logDebug(node->location, formatv("creating function definition for {0}", node->getId()->getName()));
         context->setCurrentLocation(node->location);
 
-        // Check declaration
-        context->getChecker()->checkAllowedFunctionDeclaration(node->getId());
+        bool anonymous = node->getId() == nullptr;
 
-        // Mangle name
-        std::string functionName = context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName());
+        std::string functionName;
+        // Anonymous function : generate a name
+        if (anonymous)
+        {
+            functionName = context->getMangler()->mangleAnonymousFunctionName(context->getNextAnonymousId(), context->getModuleName(), context->getFilename());
+        }
+        // Otherwise : check and mangle name
+        else
+        {
+            // Check declaration
+            context->getChecker()->checkAllowedFunctionDeclaration(node->getId());
+
+            // Mangle name
+            functionName = context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName());
+        }
+
+        context->logger.logDebug(node->location, formatv("creating function definition for {0}", functionName));
 
         ASTVariableList arguments = node->getArguments();
 

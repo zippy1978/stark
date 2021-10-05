@@ -246,6 +246,22 @@ namespace stark
     ASTFunctionSignature *clone();
   };
 
+  class ASTAnonymousFunction : public ASTExpression
+  {
+    std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTBlock> block;
+    ASTVariableList arguments;
+
+  public:
+    ASTAnonymousFunction(ASTIdentifier *type, ASTVariableList &arguments, ASTBlock *block) : type(type), arguments(arguments), block(block) {}
+    ~ASTAnonymousFunction();
+    ASTIdentifier *getType() { return type.get(); }
+    ASTVariableList getArguments() { return arguments; }
+    ASTBlock *getBlock() { return block.get(); }
+    void accept(ASTVisitor *visitor);
+    ASTAnonymousFunction *clone();
+  };
+
   class ASTFunctionDefinition : public ASTStatement
   {
     std::unique_ptr<ASTIdentifier> type;
@@ -462,6 +478,7 @@ namespace stark
     virtual void visit(ASTExpressionStatement *node) = 0;
     virtual void visit(ASTVariableDeclaration *node) = 0;
     virtual void visit(ASTFunctionSignature *node) = 0;
+    virtual void visit(ASTAnonymousFunction *node) = 0;
     virtual void visit(ASTFunctionDefinition *node) = 0;
     virtual void visit(ASTFunctionCall *node) = 0;
     virtual void visit(ASTExternDeclaration *node) = 0;

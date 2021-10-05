@@ -87,6 +87,11 @@ namespace stark
     /** Holds function types */
     std::map<std::string, std::unique_ptr<CodeGenFunctionType>> functionTypes;
 
+    /** Counter holding the next id to use to generate 
+     * an anonymous item name (sucha as an anonymous function)
+     */
+    int anonymousIdCounter = 0;
+
     /** Run code generation in debug mode if enabled */
     bool debugEnabled = false;
 
@@ -193,6 +198,15 @@ namespace stark
     void setInterpreterMode(bool m) { interpreterMode = m; }
     bool isInterpreterMode() { return interpreterMode; }
 
+    /** Return a unique identifier 
+     * for the source file being processed 
+     */
+    int getNextAnonymousId()
+    {
+      anonymousIdCounter++;
+      return anonymousIdCounter;
+    }
+
     /**
     * Try to initialize the memory manager. 
     * Can be called many times, will initialize only once, if conditions are met.
@@ -206,6 +220,8 @@ namespace stark
 
     std::string getModuleName() { return moduleName; }
     void setModuleName(std::string name) { moduleName = name; }
+
+    std::string getFilename() { return filename; }
 
     /** Returns llvm module of the context.
      * Be careful : it is only available during code generation

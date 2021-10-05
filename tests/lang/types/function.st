@@ -10,15 +10,18 @@ extern assertFalse(actual: bool)
 // Declaration
 fn: (int, int) => int 
 
-// Assignement
+// Assignement and call of a standard function
 func classical(a: int, b: int) => int {
     return a + b
 }
 fn = classical
-fn2 := classical
-
-// Call
 assertIntEquals(fn(1, 2), 3)
+
+// Anonymous function creation and call
+add := (a: int, b: int) => int {
+    return a + b
+}
+assertIntEquals(add(1, 2), 3)
 
 // Function as parameter to another function
 func caller(called: (int, int) => int) => int {

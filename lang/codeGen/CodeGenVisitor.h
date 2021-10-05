@@ -37,6 +37,7 @@ namespace stark
     void visit(ASTExpressionStatement *node);
     void visit(ASTVariableDeclaration *node);
     void visit(ASTFunctionSignature *node);
+    void visit(ASTAnonymousFunction *node);
     void visit(ASTFunctionDefinition *node);
     void visit(ASTFunctionCall *node);
     void visit(ASTExternDeclaration *node);

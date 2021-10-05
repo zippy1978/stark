@@ -111,6 +111,29 @@ namespace stark
         node->getType()->accept(this);
     }
 
+    void ASTWriter::visit(ASTAnonymousFunction *node)
+    {
+        output << "(";
+        ASTVariableList args = node->getArguments();
+        int i = 0;
+        for (auto it = args.begin(); it != args.end(); it++)
+        {
+            ASTVariableDeclaration *v = *it;
+            v->accept(this);
+            if (i < (args.size() - 1))
+            {
+                output << ", ";
+            }
+            i++;
+        }
+
+        output << ") => ";
+        node->getType()->accept(this);
+        output << "{\n";
+        node->getBlock()->accept(this);
+        output << "}";
+    }
+
     void ASTWriter::visit(ASTFunctionDefinition *node)
     {
         output << "func ";

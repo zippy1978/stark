@@ -18,6 +18,13 @@ namespace stark
         }
     }
 
+    std::string CodeGenMangler::mangleAnonymousFunctionName(int id, std::string moduleName, std::string sourceFilename)
+    {
+        std::string result = STARK_FUNCTION_PREFIX;
+        std::replace( sourceFilename.begin(), sourceFilename.end(), '/', '.');
+        return result.append(moduleName).append(".").append(sourceFilename).append(".anon").append(std::to_string(id));
+    }
+
     std::string CodeGenMangler::mangleStructConstructorName(std::string structName, std::string moduleName)
     {
         std::string result = STARK_STRUCT_PREFIX;
