@@ -16,15 +16,15 @@ func main() => int {
     print("Number of employees: ")
     println(starkIndustries.employees.len as string)
 
+    formatEmployee := (e: Employee) => string {
+        return "- " + e.name + " (age " + e.age as string + ")"
+    }
+
     println("Employees are:")
     i: int = 0
     while (i < starkIndustries.employees.len) {
-        e: Employee = starkIndustries.employees[i]
-        print("- ")
-        print(e.name)
-        print(" (age ")
-        print(e.age as string)
-        println(")")
+        e := starkIndustries.employees[i]
+        println(formatEmployee(e))
         i = i + 1
     }
 
