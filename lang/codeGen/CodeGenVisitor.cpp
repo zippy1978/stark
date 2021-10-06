@@ -535,7 +535,7 @@ namespace stark
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
+        Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, functionName.c_str(), context->getLlvmModule());
 
         BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
 
