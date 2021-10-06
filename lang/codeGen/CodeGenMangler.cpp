@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "CodeGenConstants.h"
 #include "CodeGenMangler.h"
 
