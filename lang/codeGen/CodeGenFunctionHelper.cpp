@@ -126,7 +126,15 @@ namespace stark
             // Function signatures
             else
             {
-                type = createFunctionType(v->getFunctionSignature())->getPointerTo();
+                CodeGenFunctionType *ft = context->declareFunctionType(v->getFunctionSignature());
+                type = ft->getType()->getPointerTo();
+
+                if (v->isArray())
+                {
+                    type = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
+                }
+                
+                
             }
 
             argTypes.push_back(type);

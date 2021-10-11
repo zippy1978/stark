@@ -182,7 +182,9 @@ namespace stark
 		std::string::iterator newEnd = std::remove( typeName.begin(), typeName.end(), ' ');
 		typeName.erase(newEnd, typeName.end());
 
-		CodeGenFunctionType *functionType = new CodeGenFunctionType(typeName, this, ft, getTypeName(ft));
+		logger.logDebug(formatv("declaring function type {0}", typeName));
+
+		CodeGenFunctionType *functionType = new CodeGenFunctionType(typeName, this, ft);
 		functionTypes[typeName] = std::unique_ptr<CodeGenFunctionType>(functionType);
 
 		return functionType;

@@ -16,6 +16,13 @@ func withArgs(a: int, b: int) => int {
 }
 assertIntEquals(withArgs(2, 1), 2)
 
+// With function args (function and function array)
+callee := (i: int) => int { return i}
+func withFunctionArgs(f: (int) => int, fa: (int) => int[]) => int {
+    return f(1) + fa[0](1)
+}
+assertIntEquals(withFunctionArgs(callee, [callee]), 2)
+
 // Recursive function call
 func fib(x: int) => int {
     if (x < 3) {

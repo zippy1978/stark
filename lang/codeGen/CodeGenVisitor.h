@@ -15,14 +15,6 @@ namespace stark
     CodeGenFileContext *context;
 
   private:
-    /**
-     * Generic external function declaration.
-     */
-    Function* createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
-    /**
-     * Create function type from signature
-     */
-    FunctionType *createFunctionType(ASTFunctionSignature *signature);
 
   public:
     CodeGenVisitor(CodeGenFileContext *context) : context(context) {}

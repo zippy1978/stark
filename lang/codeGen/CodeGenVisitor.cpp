@@ -17,7 +17,7 @@ using namespace stark;
 
 namespace stark
 {
-    /*
+    
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -35,7 +35,7 @@ namespace stark
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
     }
-    */
+    
 
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
@@ -444,6 +444,7 @@ namespace stark
     void CodeGenVisitor::visit(ASTFunctionSignature *node)
     {
         // Nothing to generate here
+        //context->declareFunctionType(node);
     }
 
     void CodeGenVisitor::visit(ASTAnonymousFunction *node)
@@ -563,19 +564,20 @@ namespace stark
             args.push_back(&*argsValues++);
             Value *alloc = CallInst::Create(extractFunction, makeArrayRef(args), "argsalloc", context->getCurrentBlock());
             StoreInst *inst = new StoreInst(alloc, var->getValue(), false, context->getCurrentBlock());
-            //return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
         }
         // Otherwise: create local variables for each argument
         else
         {
             for (auto it = arguments.begin(); it != arguments.end(); it++)
             {
+                ASTVariableDeclaration *vd = (*it);
                 CodeGenVisitor v(context);
-                (**it).accept(&v);
-
+                vd->accept(&v);
+            
                 argumentValue = &*argsValues++;
-                argumentValue->setName((*it)->getId()->getName().c_str());
-                StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->getId()->getName())->getValue(), false, context->getCurrentBlock());
+                argumentValue->setName(vd->getId()->getName().c_str());
+                Value *varValue = context->getLocal(vd->getId()->getName())->getValue();
+                StoreInst *inst = new StoreInst(argumentValue, varValue, false, context->getCurrentBlock());
             }
         }
 
