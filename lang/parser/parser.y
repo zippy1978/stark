@@ -189,9 +189,9 @@ var_decl:
             $$->location.column = @1.begin.column;
       }
 | 
-      ident COLON func_signature EMPTYBRACKETS
+      ident COLON LPAREN func_signature RPAREN EMPTYBRACKETS
       {
-            $$ = new stark::ASTVariableDeclaration(nullptr, $3, $1, true, nullptr);
+            $$ = new stark::ASTVariableDeclaration(nullptr, $4, $1, true, nullptr);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -363,6 +363,14 @@ struct_decl:
 func_signature: 
       LPAREN ident_args RPAREN ARROW ident
       {
+            $$ = new stark::ASTFunctionSignature($5, *$2);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+      }
+|
+      LPAREN ident_args RPAREN ARROW ident EMPTYBRACKETS
+      {
+            $5->setArray(true);
             $$ = new stark::ASTFunctionSignature($5, *$2);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
@@ -560,6 +568,15 @@ anon_func:
       LPAREN decl_args RPAREN ARROW ident block
       { 
             $$ = new stark::ASTAnonymousFunction($5, *$2, $6);
+            $$->location.line = @1.begin.line;
+            $$->location.column = @1.begin.column;
+            delete $2; 
+      } 
+|
+      LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS block
+      { 
+            $5->setArray(true);
+            $$ = new stark::ASTAnonymousFunction($5, *$2, $7);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $2; 

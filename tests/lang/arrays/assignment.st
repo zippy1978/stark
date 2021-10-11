@@ -66,6 +66,6 @@ assertStringEquals(oneLineShops[0].name, "shop 1")
 func nestedFunc() => int {
     return 1
 }
-f : () => int []
+f : (() => int)[]
 f = [nestedFunc]
 assertIntEquals(f[0](), 1)

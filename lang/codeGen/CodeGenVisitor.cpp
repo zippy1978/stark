@@ -17,7 +17,7 @@ using namespace stark;
 
 namespace stark
 {
-    
+    /*
     static void printDebugType(Value *value)
     {
         std::string typeStr;
@@ -34,7 +34,7 @@ namespace stark
         value->print(rso);
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
-    }
+    }*/
     
 
     /**

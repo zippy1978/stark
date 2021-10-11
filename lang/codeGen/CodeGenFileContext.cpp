@@ -101,10 +101,10 @@ namespace stark
 		rso.flush();
 		std::string llvmTypeName = rso.str();
 
-		// Strip type name to get the name only
+		// Strip type name to get the name only except if it is a function type (ends with ')*')
 		// Case adressed here :
 		// %trooper = type { %string, i64, %ship } is changed to trooper
-		if (llvmTypeName.rfind("%", 0) == 0)
+		if (llvmTypeName.rfind("%", 0) == 0 && !endsWith(llvmTypeName, ")*"))
 		{
 			llvmTypeName = llvmTypeName.erase(0, 1);
 			std::vector<std::string> nameParts = split(llvmTypeName, ' ');
@@ -135,6 +135,7 @@ namespace stark
 			for (auto it = functionTypes.begin(); it != functionTypes.end(); it++)
 			{
 				CodeGenFunctionType *functionType = it->second.get();
+				logger.logDebug(formatv("{0} vs {1}", functionType->getLLvmTypeName(), llvmTypeName));
 				if (functionType->getLLvmTypeName().compare(llvmTypeName) == 0)
 				{
 					return functionType->getName();

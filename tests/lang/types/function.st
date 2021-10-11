@@ -23,6 +23,13 @@ add := (a: int, b: int) => int {
 }
 assertIntEquals(add(1, 2), 3)
 
+// Anonymous function with array return type
+count := () => int[] {
+    return [1, 2, 3]
+}
+myCount := count()
+assertIntEquals(myCount.len, 3)
+
 // Function as parameter to another function
 func caller(called: (int, int) => int) => int {
     return called(1, 2)

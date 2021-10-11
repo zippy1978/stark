@@ -18,10 +18,13 @@ assertIntEquals(withArgs(2, 1), 2)
 
 // With function args (function and function array)
 callee := (i: int) => int { return i}
-func withFunctionArgs(f: (int) => int, fa: (int) => int[]) => int {
-    return f(1) + fa[0](1)
+calledArrayReturn := (i: int) => int[] { return [i, i]}
+func withFunctionArgs(f: (int) => int, fa: ((int) => int)[], fra: (int) => int[]) => int {
+    x := fra(1)
+    return f(1) + fa[0](1) + x[0]
 }
-assertIntEquals(withFunctionArgs(callee, [callee]), 2)
+assertIntEquals(withFunctionArgs(callee, [callee], calledArrayReturn), 3)
+
 
 // Recursive function call
 func fib(x: int) => int {
