@@ -4,6 +4,7 @@
 #define STARK_FUNCTION_PREFIX "stark.functions."
 #define STARK_STRUCT_PREFIX "stark.structs."
 #define STARK_PUBLIC_RUNTIME_FUNCTION_PREFIX "stark_runtime_pub_"
+#define STARK_CLOSURE_ENV_VAR_NAME "stark.closure.env"
 
 #define STARK_RUNTIME_EXTRACT_ARGS_FUNCTION "stark_runtime_priv_extract_args"
 #define STARK_RUNTIME_MM_ALLOC_FUNCTION "stark_runtime_priv_mm_alloc"

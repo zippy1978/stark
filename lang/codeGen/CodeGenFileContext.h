@@ -13,9 +13,7 @@
 #include "../ast/AST.h"
 #include "../util/Util.h"
 
-#include "types/CodeGenComplexType.h"
-#include "types/CodeGenPrimaryType.h"
-#include "types/CodeGenFunctionType.h"
+#include "types/CodeGenTypes.h"
 #include "CodeGenVariable.h"
 #include "CodeGenMangler.h"
 #include "CodeGenBitcode.h"
@@ -87,6 +85,9 @@ namespace stark
     /** Holds function types */
     std::map<std::string, std::unique_ptr<CodeGenFunctionType>> functionTypes;
 
+    /** Holds closure types */
+    std::map<std::string, std::unique_ptr<CodeGenClosureType>> closureTypes;
+
     /** Counter holding the next id to use to generate 
      * an anonymous item name (sucha as an anonymous function)
      */
@@ -144,11 +145,17 @@ namespace stark
     /** Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
 
+    /** Generate a complex type declaration */
+    void declareClosureType(CodeGenClosureType *closureType);
+
     /** Declare a function type from a function signature */
     CodeGenFunctionType *declareFunctionType(ASTFunctionSignature *signature);
 
     /** Return matching complex type information from a type name */
     CodeGenComplexType *getComplexType(std::string typeName);
+
+    /** Return matching complex type information from a type name */
+    CodeGenClosureType *getClosureType(std::string typeName);
 
     /** 
      * Return matching array type (complex type) for a given enclosing type name.
@@ -179,6 +186,7 @@ namespace stark
 
     void declareLocal(CodeGenVariable *var);
     CodeGenVariable *getLocal(std::string name);
+    std::vector<CodeGenVariable *> getLocals();
 
     void addImportedModuleName(std::string moduleName) { importedModuleNames.push_back(moduleName); }
     std::vector<std::string> getImportedModuleNames() { return importedModuleNames; }

@@ -4,5 +4,6 @@
 #include "CodeGenComplexType.h"
 #include "CodeGenPrimaryType.h"
 #include "CodeGenFunctionType.h"
+#include "CodeGenClosureType.h"
 
 #endif

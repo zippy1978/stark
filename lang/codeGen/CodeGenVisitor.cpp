@@ -451,6 +451,7 @@ namespace stark
     {
         // Convert to an ASTFunctionefinition
         ASTVariableList arguments = cloneList(node->getArguments());
+ 
         ASTFunctionDefinition fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
         CodeGenVisitor v(context);
         fd.accept(&v);
@@ -486,99 +487,41 @@ namespace stark
         ASTVariableList arguments = node->getArguments();
 
         // Build parameters
-        vector<Type *> argTypes = context->getFunctionHelper()->checkAndExtractArgumentTypes(node->getArguments());
+        vector<Type *> argTypes = context->getFunctionHelper()->checkAndExtractArgumentTypes(arguments);
 
-        // Create function
-
-        // If no return type : void is assumed
-        Type *returnType;
-        if (node->getType() == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-
-            returnType = typeOf(*node->getType(), context);
-
-            // Array case
-            if (node->getType()->isArray())
-            {
-                returnType = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->getType()->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
 
         // Test if function is main with args: string[] as single parameter
-        bool isMainWithArgs = false;
-        std::string mainArgsParameterName = "args";
-        if (argTypes.size() == 1 && functionName.compare(MAIN_FUNCTION_NAME) == 0)
-        {
-            CodeGenComplexType *stringArrayType = context->getArrayComplexType("string");
-            if (context->getTypeName(stringArrayType->getType()).compare(context->getTypeName(argTypes[0])) == 0)
-            {
-                isMainWithArgs = true;
+        bool isMainWithArgs = context->getFunctionHelper()->isMainFunctionWithArgs(functionName, argTypes);
 
-                mainArgsParameterName = arguments[0]->getId()->getFullName();
+        std::string mainArgsParameterName = "args";
+        if (isMainWithArgs) {
+            mainArgsParameterName = arguments[0]->getId()->getFullName();
 
                 // Replace arg types with argc & argv
-                argTypes.clear();
-                argTypes.push_back(context->getPrimaryType("int")->getType());
-                argTypes.push_back(context->getPrimaryType("any")->getType());
-            }
+                argTypes = context->getFunctionHelper()->getMainArgumentTypes();
         }
 
+        // Create function
+        Type *returnType = context->getFunctionHelper()->getReturnType(node->getType());
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         // TODO : being able to change function visibility by changing ExternalLinkage
         // See https://llvm.org/docs/LangRef.html
         Function *function = Function::Create(ftype, anonymous ? GlobalValue::InternalLinkage : GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
 
+        // Block
         BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
-
         context->pushBlock(bblock);
 
-        Function::arg_iterator argsValues = function->arg_begin();
-        Value *argumentValue;
 
         // If main function with args: create args local variable
         if (isMainWithArgs)
         {
-            // Create variable
-            std::string typeName = "string";
-            CodeGenVariable *var = new CodeGenVariable(mainArgsParameterName, typeName, true, context->getArrayComplexType(typeName)->getType()->getPointerTo());
-            context->declareLocal(var);
-
-            // Call runtime function to create args string[]
-            Function *extractFunction = context->getLlvmModule()->getFunction(STARK_RUNTIME_EXTRACT_ARGS_FUNCTION);
-            if (extractFunction == nullptr)
-            {
-                context->logger.logError("cannot extract main args: cannot find runtime function");
-            }
-            std::vector<Value *> args;
-            args.push_back(&*argsValues++);
-            args.push_back(&*argsValues++);
-            Value *alloc = CallInst::Create(extractFunction, makeArrayRef(args), "argsalloc", context->getCurrentBlock());
-            StoreInst *inst = new StoreInst(alloc, var->getValue(), false, context->getCurrentBlock());
+            context->getFunctionHelper()->expandMainArgs(function, mainArgsParameterName, context->getCurrentBlock());
         }
         // Otherwise: create local variables for each argument
         else
         {
-            for (auto it = arguments.begin(); it != arguments.end(); it++)
-            {
-                ASTVariableDeclaration *vd = (*it);
-                CodeGenVisitor v(context);
-                vd->accept(&v);
-            
-                argumentValue = &*argsValues++;
-                argumentValue->setName(vd->getId()->getName().c_str());
-                Value *varValue = context->getLocal(vd->getId()->getName())->getValue();
-                StoreInst *inst = new StoreInst(argumentValue, varValue, false, context->getCurrentBlock());
-            }
+            context->getFunctionHelper()->expandLocalVariables(function, arguments, context->getCurrentBlock());
         }
 
         // When not running in interpreter mode : try init memory manager
@@ -588,29 +531,12 @@ namespace stark
             context->initMemoryManager();
         }
 
+        // Evaluate block
         CodeGenVisitor v(context);
         node->getBlock()->accept(&v);
 
         // Add return at the end.
-        // If no return : add a default one
-        if (context->getReturnValue() != nullptr)
-        {
-            ReturnInst::Create(context->getLlvmContext(), context->getReturnValue(), context->getCurrentBlock());
-        }
-        else
-        {
-            if (function->getReturnType()->isVoidTy())
-            {
-                // Add return to void function
-                context->logger.logDebug(node->location, formatv("adding void return in {0}.{1}", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->getLlvmContext(), context->getCurrentBlock());
-            }
-            else
-            {
-                context->logger.logDebug(node->location, formatv("missing return in {0}.{1}, adding one with block value", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->getLlvmContext(), v.result, context->getCurrentBlock());
-            }
-        }
+        context->getFunctionHelper()->createReturn(function, v.result, context->getCurrentBlock());
 
         context->popBlock();
 

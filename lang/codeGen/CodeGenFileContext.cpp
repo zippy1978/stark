@@ -122,7 +122,6 @@ namespace stark
 			}
 		}
 
-
 		// If not a primary type: drop pointer symbol
 		if (endsWith(llvmTypeName, "*"))
 		{
@@ -165,6 +164,17 @@ namespace stark
 		}
 	}
 
+	void CodeGenFileContext::declareClosureType(CodeGenClosureType *closureType)
+	{
+		CodeGenClosureType *existingType = getClosureType(closureType->getName());
+		// Type does not eist : create it
+		if (existingType == nullptr)
+		{
+			closureType->declare();
+			closureTypes[closureType->getName()] = std::unique_ptr<CodeGenClosureType>(closureType);
+		}
+	}
+
 	CodeGenFunctionType *CodeGenFileContext::declareFunctionType(ASTFunctionSignature *signature)
 	{
 		FunctionType *ft = getFunctionHelper()->createFunctionType(signature);
@@ -173,14 +183,14 @@ namespace stark
 		w.visit(signature);
 		std::string typeName = w.getSourceCode();
 
-		// Remove spaces to avoid LLVM naming issues 
-		std::replace( typeName.begin(), typeName.end(), '(', '_');
-		std::replace( typeName.begin(), typeName.end(), ')', '_');
-		std::replace( typeName.begin(), typeName.end(), '=', '_');
-		std::replace( typeName.begin(), typeName.end(), '>', '_');
-		std::replace( typeName.begin(), typeName.end(), ':', '_');
-		std::replace( typeName.begin(), typeName.end(), ',', '_');
-		std::string::iterator newEnd = std::remove( typeName.begin(), typeName.end(), ' ');
+		// Remove spaces to avoid LLVM naming issues
+		std::replace(typeName.begin(), typeName.end(), '(', '_');
+		std::replace(typeName.begin(), typeName.end(), ')', '_');
+		std::replace(typeName.begin(), typeName.end(), '=', '_');
+		std::replace(typeName.begin(), typeName.end(), '>', '_');
+		std::replace(typeName.begin(), typeName.end(), ':', '_');
+		std::replace(typeName.begin(), typeName.end(), ',', '_');
+		std::string::iterator newEnd = std::remove(typeName.begin(), typeName.end(), ' ');
 		typeName.erase(newEnd, typeName.end());
 
 		logger.logDebug(formatv("declaring function type {0}", typeName));
@@ -196,6 +206,16 @@ namespace stark
 		if (complexTypes.find(typeName) != complexTypes.end())
 		{
 			return complexTypes[typeName].get();
+		}
+
+		return nullptr;
+	}
+
+	CodeGenClosureType *CodeGenFileContext::getClosureType(std::string typeName)
+	{
+		if (closureTypes.find(typeName) != closureTypes.end())
+		{
+			return closureTypes[typeName].get();
 		}
 
 		return nullptr;
@@ -265,6 +285,16 @@ namespace stark
 		}
 
 		return nullptr;
+	}
+
+	std::vector<CodeGenVariable *> CodeGenFileContext::getLocals()
+	{
+		std::vector<CodeGenVariable *> result;
+		for (auto v : blocks.top()->locals)
+		{
+			result.push_back(v.second.get());
+		}
+		return result;
 	}
 
 	/* Push new block on the stack */

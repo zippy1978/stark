@@ -361,17 +361,17 @@ struct_decl:
 ;
 
 func_signature: 
-      LPAREN ident_args RPAREN ARROW ident
+      FUNC LPAREN ident_args RPAREN ARROW ident
       {
-            $$ = new stark::ASTFunctionSignature($5, *$2);
+            $$ = new stark::ASTFunctionSignature($6, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
 |
-      LPAREN ident_args RPAREN ARROW ident EMPTYBRACKETS
+      FUNC LPAREN ident_args RPAREN ARROW ident EMPTYBRACKETS
       {
-            $5->setArray(true);
-            $$ = new stark::ASTFunctionSignature($5, *$2);
+            $6->setArray(true);
+            $$ = new stark::ASTFunctionSignature($6, *$3);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
       }
@@ -565,29 +565,29 @@ comparison:
 ;
 
 anon_func:
-      LPAREN decl_args RPAREN ARROW ident block
+      FUNC LPAREN decl_args RPAREN ARROW ident block
       { 
-            $$ = new stark::ASTAnonymousFunction($5, *$2, $6);
+            $$ = new stark::ASTAnonymousFunction($6, *$3, $7);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
-            delete $2; 
+            delete $3; 
       } 
 |
-      LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS block
+      FUNC LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS block
       { 
-            $5->setArray(true);
-            $$ = new stark::ASTAnonymousFunction($5, *$2, $7);
+            $6->setArray(true);
+            $$ = new stark::ASTAnonymousFunction($6, *$3, $8);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
-            delete $2; 
+            delete $3; 
       } 
 |
-      LPAREN decl_args RPAREN block
+      FUNC LPAREN decl_args RPAREN block
       { 
-            $$ = new stark::ASTAnonymousFunction(nullptr, *$2, $4);
+            $$ = new stark::ASTAnonymousFunction(nullptr, *$3, $5);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
-            delete $2; 
+            delete $3; 
       }
 ;
     

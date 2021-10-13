@@ -23,4 +23,4 @@ s: Shop[]
 assertIntEquals(s.len, 0)
 
 // Array with function types
-f: (int) => void
+f: func (int) => void

@@ -17,9 +17,9 @@ func withArgs(a: int, b: int) => int {
 assertIntEquals(withArgs(2, 1), 2)
 
 // With function args (function and function array)
-callee := (i: int) => int { return i}
-calledArrayReturn := (i: int) => int[] { return [i, i]}
-func withFunctionArgs(f: (int) => int, fa: ((int) => int)[], fra: (int) => int[]) => int {
+callee := func (i: int) => int { return i}
+calledArrayReturn := func (i: int) => int[] { return [i, i]}
+func withFunctionArgs(f: func (int) => int, fa: (func (int) => int)[], fra: func (int) => int[]) => int {
     x := fra(1)
     return f(1) + fa[0](1) + x[0]
 }

@@ -8,7 +8,7 @@ extern assertTrue(actual: bool)
 extern assertFalse(actual: bool)
 
 // Declaration
-fn: (int, int) => int 
+fn: func (int, int) => int 
 
 // Assignement and call of a standard function
 func classical(a: int, b: int) => int {
@@ -18,26 +18,26 @@ fn = classical
 assertIntEquals(fn(1, 2), 3)
 
 // Anonymous function creation and call
-add := (a: int, b: int) => int {
+add := func (a: int, b: int) => int {
     return a + b
 }
 assertIntEquals(add(1, 2), 3)
 
 // Anonymous function with array return type
-count := () => int[] {
+count := func () => int[] {
     return [1, 2, 3]
 }
 myCount := count()
 assertIntEquals(myCount.len, 3)
 
 // Function as parameter to another function
-func caller(called: (int, int) => int) => int {
+func caller(called: func (int, int) => int) => int {
     return called(1, 2)
 }
 assertIntEquals(caller(fn), 3)
 
 // Null assignment
-fnnull: (int, int) => int 
+fnnull: func (int, int) => int 
 fnnull = null
 assertTrue(fnnull == null)
 assertFalse(fnnull != null)

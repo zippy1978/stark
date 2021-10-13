@@ -16,7 +16,7 @@ func main() => int {
     print("Number of employees: ")
     println(starkIndustries.employees.len as string)
 
-    formatEmployee := (e: Employee) => string {
+    formatEmployee := func (e: Employee) => string {
         return "- " + e.name + " (age " + e.age as string + ")"
     }
 

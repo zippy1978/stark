@@ -1,10 +1,4 @@
-
-struct Test {
-    name: string
+t := (a: int) => int {
+    return a
 }
-
-func f() => Test[] {
-    return [Test("one"), Test("two")]
-}
-r := f()
-println(r[1].name)
+println(t(1) as string)
