@@ -9,12 +9,13 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/FormatVariadic.h>
 
-#include "CodeGenConstants.h"
-#include "CodeGenFileContext.h"
-#include "CodeGenVisitor.h"
+#include "../CodeGenConstants.h"
+#include "../CodeGenFileContext.h"
+#include "../CodeGenVisitor.h"
 #include "CodeGenFunctionHelper.h"
 
 using namespace std;
+using namespace llvm;
 
 namespace stark
 {
@@ -30,20 +31,7 @@ namespace stark
         }
         else
         {
-
-            returnType = context->getType(signature->getType()->getFullName());
-
-            // Array case
-            if (signature->getType()->isArray())
-            {
-                returnType = context->getArrayComplexType(signature->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(signature->getType()->getFullName()) && !signature->getType()->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
+            returnType = context->getTypeHelper()->getType(signature->getType());
         }
 
         // Build parameters
@@ -243,11 +231,16 @@ namespace stark
         return result;
     }
 
-    void CodeGenFunctionHelper::createReturn(Function *function, Value* value, BasicBlock *block)
+    void CodeGenFunctionHelper::createReturn(Function *function, Value *value, BasicBlock *block)
     {
         // If no return : add a default one
         if (context->getReturnValue() != nullptr)
         {
+            if (!context->getChecker()->canAssign(context->getReturnValue(), context->getTypeName(function->getReturnType())))
+            {
+                context->logger.logError(formatv("function is expecting {0} type as return type, not {1}", context->getTypeName(function->getReturnType()), context->getTypeName(context->getReturnValue()->getType())));
+            }
+
             ReturnInst::Create(context->getLlvmContext(), context->getReturnValue(), block);
         }
         else

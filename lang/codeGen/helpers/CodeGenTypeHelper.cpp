@@ -9,9 +9,9 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/FormatVariadic.h>
 
-#include "CodeGenConstants.h"
-#include "CodeGenFileContext.h"
-#include "CodeGenVisitor.h"
+#include "../CodeGenConstants.h"
+#include "../CodeGenFileContext.h"
+#include "../CodeGenVisitor.h"
 #include "CodeGenTypeHelper.h"
 
 using namespace std;
@@ -39,6 +39,29 @@ namespace stark
         if (!context->isPrimaryType(typeName) && !id->isArray())
         {
             result = result->getPointerTo();
+        }
+
+        return result;
+    }
+
+    Type *CodeGenTypeHelper::getType(ASTFunctionSignature *functionSignature)
+    {
+        Type *result;
+        // Closure
+        if (functionSignature->isClosure())
+        {
+            context->logger.logError(functionSignature->location, "closures are not yet supported");
+        }
+        // Regular function
+        else
+        {
+            CodeGenFunctionType *ft = context->declareFunctionType(functionSignature);
+            result = context->declareFunctionType(functionSignature)->getType()->getPointerTo();
+            // Array case
+            if (functionSignature->isArray())
+            {
+                result = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
+            }
         }
 
         return result;

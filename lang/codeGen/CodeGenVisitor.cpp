@@ -335,38 +335,12 @@ namespace stark
         // Check that variable name is available
         context->getChecker()->checkAvailableLocalVariable(node->getId());
 
-        // var: type [= expr]
-        if (node->getType() != nullptr)
+        // Type is provided
+        if (node->getType() != nullptr || node->getFunctionSignature() != nullptr)
         {
-            // Type selection : based on the value of the declaration
-            // Except if it is an array
-
-            /*
-            std::string typeName = node->getType()->getFullName();
-            Type *type = context->getType(typeName);
-            if (node->isArray())
-            {
-                // Array variables are pointers !
-                type = context->getArrayComplexType(typeName)->getType()->getPointerTo();
-            }
-
-            if (type == nullptr)
-            {
-                context->logger.logError(node->location, formatv("unknown type {0}", typeName));
-            }
-
-            // All complex types are pointer variables (be careful not to process array type once again)
-            if (!context->isPrimaryType(typeName) && !node->isArray())
-            {
-                type = type->getPointerTo();
-            }
-            */
-
-            std::string typeName = node->getType()->getFullName();
-            Type *type = context->getTypeHelper()->getType(node->getType());
-
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, node->getType()->isArray(), type);
-            context->declareLocal(var);
+            // Create (and declare) variable
+            CodeGenVariable *var = context->getVariableHelper()->createVariable(node);
+            std::string typeName = var->getTypeName();
 
             // If assignment expression : assign variable
             if (node->getAssignmentExpr() != nullptr)
@@ -380,46 +354,10 @@ namespace stark
             // If no assignement : assign default value
             else
             {
-                Value *defaultValue = context->isPrimaryType(typeName) ? context->getPrimaryType(typeName)->createDefaultValue() : node->getType()->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue()
-                                                                                                                                                   : context->getComplexType(typeName)->createDefaultValue();
-                this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
+                this->result = new StoreInst(context->getVariableHelper()->createDefaultValue(var), var->getValue(), false, context->getCurrentBlock());
             }
         }
-        // var:() => void [= function] (regular function or closure)
-        else if (node->getFunctionSignature() != nullptr)
-        {
-            Type *type;
-            CodeGenFunctionType *ft = context->declareFunctionType(node->getFunctionSignature());
-            // Function variables are pointers !
-            type = ft->getType()->getPointerTo();
-            if (node->getFunctionSignature()->isArray())
-            {
-                // Array variables are pointers !
-                type = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
-            }
-
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), ft->getName(), node->getFunctionSignature()->isArray(), type);
-            var->setFunction(true);
-            context->declareLocal(var);
-
-            // TODO : duplaced block with above, consider refactoring
-            // If assignment expression : assign variable
-            if (node->getAssignmentExpr() != nullptr)
-            {
-                ASTAssignment assn(node->getId()->clone(), node->getAssignmentExpr()->clone());
-                CodeGenVisitor v(context);
-                assn.accept(&v);
-
-                this->result = var->getValue();
-            }
-            // If no assignement : assign null as default value
-            else
-            {
-                Value *defaultValue = ConstantPointerNull::getNullValue(ft->getType()->getPointerTo());
-                this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
-            }
-        }
-        // No type: infer it from assignement (var := expr)
+        // Type not provided : infer it
         else
         {
             CodeGenVisitor v(context);
@@ -427,16 +365,14 @@ namespace stark
             Type *type = v.result->getType();
             std::string typeName = context->getTypeName(type);
 
+            bool isFunction = type->isPointerTy() ? type->getPointerElementType()->isFunctionTy() : false;
+        
             bool isArray = false;
             if (context->isArrayType(typeName))
             {
                 type = context->getArrayComplexType(typeName)->getType()->getPointerTo();
                 isArray = true;
             }
-
-            // Detected if it is a function type
-            // That is : function type is already known or if unkown LLVM tyme : ends with ")"
-            bool isFunction = (endsWith(typeName, ")") || context->getFunctionType(typeName) != nullptr);
 
             CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, isArray, type);
             var->setFunction(isFunction);
@@ -449,7 +385,6 @@ namespace stark
     void CodeGenVisitor::visit(ASTFunctionSignature *node)
     {
         // Nothing to generate here
-        //context->declareFunctionType(node);
     }
 
     void CodeGenVisitor::visit(ASTAnonymousFunction *node)

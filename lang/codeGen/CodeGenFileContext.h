@@ -19,8 +19,9 @@
 #include "CodeGenBitcode.h"
 #include "CodeGenChecker.h"
 #include "CodeGenIdentifierResolver.h"
-#include "CodeGenFunctionHelper.h"
-#include "CodeGenTypeHelper.h"
+#include "helpers/CodeGenFunctionHelper.h"
+#include "helpers/CodeGenTypeHelper.h"
+#include "helpers/CodeGenVariableHelper.h"
 
 using namespace llvm;
 
@@ -118,6 +119,9 @@ namespace stark
     /** Type helper */
     std::unique_ptr<CodeGenTypeHelper> typeHelper;
 
+    /** Variable helper */
+    std::unique_ptr<CodeGenVariableHelper> variableHelper;
+
     FileLocation currentLocation;
 
   private:
@@ -137,12 +141,14 @@ namespace stark
       identifierResolver = std::make_unique<CodeGenIdentifierResolver>(this);
       functionHelper = std::make_unique<CodeGenFunctionHelper>(this);
       typeHelper = std::make_unique<CodeGenTypeHelper>(this);
+      variableHelper = std::make_unique<CodeGenVariableHelper>(this);
     }
 
     CodeGenMangler *getMangler() { return mangler.get(); }
     CodeGenChecker *getChecker() { return checker.get(); }
     CodeGenFunctionHelper *getFunctionHelper() { return functionHelper.get(); }
     CodeGenTypeHelper *getTypeHelper() { return typeHelper.get(); }
+    CodeGenVariableHelper *getVariableHelper() { return variableHelper.get(); }
     CodeGenIdentifierResolver *getIdentifierResolver() { return identifierResolver.get(); }
 
     /** Generate llvm program code */
@@ -179,7 +185,7 @@ namespace stark
     bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }
 
     /** Check if the given type name is a function signature */
-    bool isFunctionSignature(std::string typeName) { return (typeName.rfind("(") == 0); }
+    bool isFunctionSignature(std::string typeName) { return (typeName.rfind("func_") == 0); }
 
     /** Check if the given type name is an array type */
     bool isArrayType(std::string typeName) { return (typeName.rfind("array.") == 0); }

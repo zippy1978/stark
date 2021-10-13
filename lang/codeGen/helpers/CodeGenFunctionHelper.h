@@ -7,7 +7,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/BasicBlock.h>
 
-#include "../ast/AST.h"
+#include "../../ast/AST.h"
 
 using namespace llvm;
 

@@ -134,7 +134,6 @@ namespace stark
 			for (auto it = functionTypes.begin(); it != functionTypes.end(); it++)
 			{
 				CodeGenFunctionType *functionType = it->second.get();
-				logger.logDebug(formatv("{0} vs {1}", functionType->getLLvmTypeName(), llvmTypeName));
 				if (functionType->getLLvmTypeName().compare(llvmTypeName) == 0)
 				{
 					return functionType->getName();
@@ -179,9 +178,13 @@ namespace stark
 	{
 		FunctionType *ft = getFunctionHelper()->createFunctionType(signature);
 		// Get a string version of the type from the signature
+		// Clone to remove array brackets
 		ASTWriter w;
-		w.visit(signature);
+		ASTFunctionSignature *clone = signature->clone();
+		clone->setArray(false);
+		w.visit(clone);
 		std::string typeName = w.getSourceCode();
+		delete clone;
 
 		// Remove spaces to avoid LLVM naming issues
 		std::replace(typeName.begin(), typeName.end(), '(', '_');
@@ -193,7 +196,7 @@ namespace stark
 		std::string::iterator newEnd = std::remove(typeName.begin(), typeName.end(), ' ');
 		typeName.erase(newEnd, typeName.end());
 
-		logger.logDebug(formatv("declaring function type {0}", typeName));
+		logger.logDebug(signature->location, formatv("declaring function type {0}", typeName));
 
 		CodeGenFunctionType *functionType = new CodeGenFunctionType(typeName, this, ft);
 		functionTypes[typeName] = std::unique_ptr<CodeGenFunctionType>(functionType);
