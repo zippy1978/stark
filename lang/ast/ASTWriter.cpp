@@ -22,20 +22,34 @@ namespace stark
 
         output << node->getName();
 
-        if (node->isArray())
+        if (node->getIndex() != nullptr)
         {
             output << "[";
-            if (node->getIndex() != nullptr)
-            {
-                node->getIndex()->accept(this);
-            }
+            node->getIndex()->accept(this);
             output << "]";
+        }
+
+        if (node->isArray())
+        {
         }
 
         if (node->getMember() != nullptr)
         {
+            // Pass array typing on to the next member (if not index)
+            if (node->isArray() && node->getIndex() == nullptr)
+            {
+                node->getMember()->setArray(true);
+            }
             output << ".";
             node->getMember()->accept(this);
+        }
+        // Last member of the identifier : array case
+        else
+        {
+            if (node->isArray() && node->getIndex() == nullptr)
+            {
+                output << "[]";
+            }
         }
     }
 
@@ -81,11 +95,6 @@ namespace stark
             node->getFunctionSignature()->accept(this);
         }
 
-        if (node->isArray())
-        {
-            output << "[]";
-        }
-
         if (node->getAssignmentExpr() != nullptr)
         {
             node->getAssignmentExpr()->accept(this);
@@ -94,6 +103,14 @@ namespace stark
 
     void ASTWriter::visit(ASTFunctionSignature *node)
     {
+        if (node->isArray())
+        {
+            output << "(";
+        }
+        if (!node->isClosure())
+        {
+            output << "func ";
+        }
         output << "(";
         ASTIdentifierList args = node->getArguments();
         int i = 0;
@@ -109,6 +126,11 @@ namespace stark
         }
         output << ") => ";
         node->getType()->accept(this);
+
+        if (node->isArray())
+        {
+            output << ") []";
+        }
     }
 
     void ASTWriter::visit(ASTAnonymousFunction *node)

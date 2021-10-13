@@ -20,6 +20,7 @@
 #include "CodeGenChecker.h"
 #include "CodeGenIdentifierResolver.h"
 #include "CodeGenFunctionHelper.h"
+#include "CodeGenTypeHelper.h"
 
 using namespace llvm;
 
@@ -114,6 +115,9 @@ namespace stark
     /** Function helper */
     std::unique_ptr<CodeGenFunctionHelper> functionHelper;
 
+    /** Type helper */
+    std::unique_ptr<CodeGenTypeHelper> typeHelper;
+
     FileLocation currentLocation;
 
   private:
@@ -132,11 +136,13 @@ namespace stark
       checker = std::make_unique<CodeGenChecker>(this);
       identifierResolver = std::make_unique<CodeGenIdentifierResolver>(this);
       functionHelper = std::make_unique<CodeGenFunctionHelper>(this);
+      typeHelper = std::make_unique<CodeGenTypeHelper>(this);
     }
 
     CodeGenMangler *getMangler() { return mangler.get(); }
     CodeGenChecker *getChecker() { return checker.get(); }
     CodeGenFunctionHelper *getFunctionHelper() { return functionHelper.get(); }
+    CodeGenTypeHelper *getTypeHelper() { return typeHelper.get(); }
     CodeGenIdentifierResolver *getIdentifierResolver() { return identifierResolver.get(); }
 
     /** Generate llvm program code */

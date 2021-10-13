@@ -120,7 +120,7 @@ namespace stark
             if (v->getType() != nullptr)
             {
                 type = context->getType(v->getType()->getFullName());
-                if (v->isArray())
+                if (v->getType()->isArray())
                 {
                     type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
                 }
@@ -131,7 +131,7 @@ namespace stark
                 }
 
                 // Complex types are pointer variables !
-                if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
+                if (!context->isPrimaryType(v->getType()->getFullName()) && !v->getType()->isArray())
                 {
                     type = type->getPointerTo();
                 }
@@ -142,7 +142,7 @@ namespace stark
                 CodeGenFunctionType *ft = context->declareFunctionType(v->getFunctionSignature());
                 type = ft->getType()->getPointerTo();
 
-                if (v->isArray())
+                if (v->getFunctionSignature()->isArray())
                 {
                     type = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
                 }

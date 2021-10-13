@@ -218,16 +218,14 @@ namespace stark
     std::unique_ptr<ASTFunctionSignature> functionSignature;
     std::unique_ptr<ASTIdentifier> id;
     std::unique_ptr<ASTExpression> assignmentExpr;
-    bool array;
 
   public:
-    ASTVariableDeclaration(ASTIdentifier *type, ASTIdentifier *id, bool array, ASTExpression *assignmentExpr) : type(type), id(id), array(array), assignmentExpr(assignmentExpr) {}
-    ASTVariableDeclaration(ASTIdentifier *type, ASTFunctionSignature *functionSignature, ASTIdentifier *id, bool array, ASTExpression *assignmentExpr) : type(type), functionSignature(functionSignature), id(id), array(array), assignmentExpr(assignmentExpr) {}
+    ASTVariableDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTExpression *assignmentExpr) : type(type), id(id), assignmentExpr(assignmentExpr) {}
+    ASTVariableDeclaration(ASTIdentifier *type, ASTFunctionSignature *functionSignature, ASTIdentifier *id, ASTExpression *assignmentExpr) : type(type), functionSignature(functionSignature), id(id), assignmentExpr(assignmentExpr) {}
     ASTIdentifier *getType() { return type.get(); }
     ASTFunctionSignature *getFunctionSignature() { return functionSignature.get(); }
     ASTIdentifier *getId() { return id.get(); }
     ASTExpression *getAssignmentExpr() { return assignmentExpr.get(); }
-    bool isArray() { return array; }
     void accept(ASTVisitor *visitor);
     ASTVariableDeclaration *clone();
   };
@@ -236,6 +234,8 @@ namespace stark
   {
     std::unique_ptr<ASTIdentifier> type;
     ASTIdentifierList arguments;
+    bool closure = false;
+    bool array = false;
 
   public:
     ASTFunctionSignature(ASTIdentifier *type, ASTIdentifierList &arguments) : type(type), arguments(arguments) {}
@@ -243,6 +243,10 @@ namespace stark
     ASTIdentifier *getType() { return type.get(); }
     ASTIdentifierList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
+    bool isClosure() { return closure; }
+    void setClosure(bool c) { closure = c; }
+    bool isArray() { return array; }
+    void setArray(bool a) { array = a; }
     ASTFunctionSignature *clone();
   };
 

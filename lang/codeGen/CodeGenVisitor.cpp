@@ -35,7 +35,6 @@ namespace stark
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
     }*/
-    
 
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
@@ -341,6 +340,8 @@ namespace stark
         {
             // Type selection : based on the value of the declaration
             // Except if it is an array
+
+            /*
             std::string typeName = node->getType()->getFullName();
             Type *type = context->getType(typeName);
             if (node->isArray())
@@ -359,8 +360,12 @@ namespace stark
             {
                 type = type->getPointerTo();
             }
+            */
 
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, node->isArray(), type);
+            std::string typeName = node->getType()->getFullName();
+            Type *type = context->getTypeHelper()->getType(node->getType());
+
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, node->getType()->isArray(), type);
             context->declareLocal(var);
 
             // If assignment expression : assign variable
@@ -375,25 +380,25 @@ namespace stark
             // If no assignement : assign default value
             else
             {
-                Value *defaultValue = context->isPrimaryType(typeName) ? context->getPrimaryType(typeName)->createDefaultValue() : node->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue()
+                Value *defaultValue = context->isPrimaryType(typeName) ? context->getPrimaryType(typeName)->createDefaultValue() : node->getType()->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue()
                                                                                                                                                    : context->getComplexType(typeName)->createDefaultValue();
                 this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
             }
         }
-        // var:() => void [= function]
+        // var:() => void [= function] (regular function or closure)
         else if (node->getFunctionSignature() != nullptr)
         {
             Type *type;
             CodeGenFunctionType *ft = context->declareFunctionType(node->getFunctionSignature());
             // Function variables are pointers !
             type = ft->getType()->getPointerTo();
-            if (node->isArray())
+            if (node->getFunctionSignature()->isArray())
             {
                 // Array variables are pointers !
                 type = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
             }
 
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), ft->getName(), node->isArray(), type);
+            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), ft->getName(), node->getFunctionSignature()->isArray(), type);
             var->setFunction(true);
             context->declareLocal(var);
 
@@ -451,7 +456,7 @@ namespace stark
     {
         // Convert to an ASTFunctionefinition
         ASTVariableList arguments = cloneList(node->getArguments());
- 
+
         ASTFunctionDefinition fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
         CodeGenVisitor v(context);
         fd.accept(&v);
@@ -489,16 +494,16 @@ namespace stark
         // Build parameters
         vector<Type *> argTypes = context->getFunctionHelper()->checkAndExtractArgumentTypes(arguments);
 
-
         // Test if function is main with args: string[] as single parameter
         bool isMainWithArgs = context->getFunctionHelper()->isMainFunctionWithArgs(functionName, argTypes);
 
         std::string mainArgsParameterName = "args";
-        if (isMainWithArgs) {
+        if (isMainWithArgs)
+        {
             mainArgsParameterName = arguments[0]->getId()->getFullName();
 
-                // Replace arg types with argc & argv
-                argTypes = context->getFunctionHelper()->getMainArgumentTypes();
+            // Replace arg types with argc & argv
+            argTypes = context->getFunctionHelper()->getMainArgumentTypes();
         }
 
         // Create function
@@ -511,7 +516,6 @@ namespace stark
         // Block
         BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
         context->pushBlock(bblock);
-
 
         // If main function with args: create args local variable
         if (isMainWithArgs)
@@ -1073,13 +1077,13 @@ namespace stark
                     context->declareComplexType(forwardStructType);
                 }
 
-                structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), (**it).isArray(), false);
+                structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), vd->getType()->isArray(), false);
             }
             // Function signatures
             else
             {
                 CodeGenFunctionType *ft = context->declareFunctionType(vd->getFunctionSignature());
-                structType->addMember(vd->getId()->getName(), ft->getName(), ft->getType(), vd->isArray(), true);
+                structType->addMember(vd->getId()->getName(), ft->getName(), ft->getType(), vd->getFunctionSignature()->isArray(), true);
             }
         }
 

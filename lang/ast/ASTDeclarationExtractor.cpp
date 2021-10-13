@@ -36,7 +36,7 @@ namespace stark
         for (auto it = list.begin(); it != list.end(); it++)
         {
             ASTVariableDeclaration *vd = *it;
-            ASTVariableDeclaration *newDeclaration = new ASTVariableDeclaration(extractType(vd->getType()), vd->getId()->clone(), vd->isArray(), vd->getAssignmentExpr() != nullptr ? vd->getAssignmentExpr()->clone() : nullptr);
+            ASTVariableDeclaration *newDeclaration = new ASTVariableDeclaration(extractType(vd->getType()), vd->getId()->clone(), vd->getAssignmentExpr() != nullptr ? vd->getAssignmentExpr()->clone() : nullptr);
             result.push_back(newDeclaration);
         }
 
