@@ -392,94 +392,11 @@ namespace stark
         // Convert to an ASTFunctionefinition
         ASTVariableList arguments = cloneList(node->getArguments());
 
-        ASTFunctionDefinition fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
+        ASTFunctionDeclaration fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
         CodeGenVisitor v(context);
         fd.accept(&v);
 
         this->result = v.result;
-    }
-
-    void CodeGenVisitor::visit(ASTFunctionDefinition *node)
-    {
-
-        context->setCurrentLocation(node->location);
-
-        bool anonymous = node->getId() == nullptr;
-
-        std::string functionName;
-        // Anonymous function : generate a name
-        if (anonymous)
-        {
-            functionName = context->getMangler()->mangleAnonymousFunctionName(context->getNextAnonymousId(), context->getModuleName(), context->getFilename());
-        }
-        // Otherwise : check and mangle name
-        else
-        {
-            // Check declaration
-            context->getChecker()->checkAllowedFunctionDeclaration(node->getId());
-
-            // Mangle name
-            functionName = context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName());
-        }
-
-        context->logger.logDebug(node->location, formatv("creating function definition for {0}", functionName));
-
-        ASTVariableList arguments = node->getArguments();
-
-        // Build parameters
-        vector<Type *> argTypes = context->getFunctionHelper()->checkAndExtractArgumentTypes(arguments);
-
-        // Test if function is main with args: string[] as single parameter
-        bool isMainWithArgs = context->getFunctionHelper()->isMainFunctionWithArgs(functionName, argTypes);
-
-        std::string mainArgsParameterName = "args";
-        if (isMainWithArgs)
-        {
-            mainArgsParameterName = arguments[0]->getId()->getFullName();
-
-            // Replace arg types with argc & argv
-            argTypes = context->getFunctionHelper()->getMainArgumentTypes();
-        }
-
-        // Create function
-        Type *returnType = context->getFunctionHelper()->getReturnType(node->getType());
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        // TODO : being able to change function visibility by changing ExternalLinkage
-        // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, anonymous ? GlobalValue::InternalLinkage : GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
-
-        // Block
-        BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
-        context->pushBlock(bblock);
-
-        // If main function with args: create args local variable
-        if (isMainWithArgs)
-        {
-            context->getFunctionHelper()->expandMainArgs(function, mainArgsParameterName, context->getCurrentBlock());
-        }
-        // Otherwise: create local variables for each argument
-        else
-        {
-            context->getFunctionHelper()->expandLocalVariables(function, arguments, context->getCurrentBlock());
-        }
-
-        // When not running in interpreter mode : try init memory manager
-        // (must be done after the begining of the main function)
-        if (!context->isInterpreterMode())
-        {
-            context->initMemoryManager();
-        }
-
-        // Evaluate block
-        CodeGenVisitor v(context);
-        node->getBlock()->accept(&v);
-
-        // Add return at the end.
-        context->getFunctionHelper()->createReturn(function, v.result, context->getCurrentBlock());
-
-        context->popBlock();
-
-        this->result = function;
     }
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
@@ -582,33 +499,11 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating {0} declaration for {1}", node->isExternal() ? "extern" : "", node->getId()->getName()));
+        context->logger.logDebug(node->location, formatv("creating {0} declaration for {1}", node->isExternal() ? "extern" : "", node->getId() ? node->getId()->getName() : "anonymous function"));
         context->setCurrentLocation(node->location);
 
-        std::string functionName = node->getId()->getName();
-        std::string moduleName = context->getModuleName();
-
-        int memberCount = node->getId()->countNestedMembers();
-        // If identifier has a member : then it is module.function
-        if (memberCount == 1)
-        {
-            moduleName = node->getId()->getName();
-            functionName = node->getId()->getMember()->getName();
-        }
-        // If more than one member : identifier is invalid
-        else if (memberCount > 1)
-        {
-            context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->getId()->getFullName()));
-        }
-
-        // If not an external declaration : mangle name
-        if (!node->isExternal())
-        {
-            functionName = context->getMangler()->mangleFunctionName(functionName, moduleName);
-        }
-
-        // Create external
-        this->result = context->getFunctionHelper()->createFunctionDeclaration(functionName, node->getArguments(), node->getType());
+        // Create function declaration
+        this->result = context->getFunctionHelper()->createFunctionDeclaration(node);
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)

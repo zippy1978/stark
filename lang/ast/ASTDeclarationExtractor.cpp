@@ -74,26 +74,6 @@ namespace stark
     void ASTDeclarationExtractor::visit(ASTVariableDeclaration *node) {}
     void ASTDeclarationExtractor::visit(ASTFunctionSignature *node) {}
     void ASTDeclarationExtractor::visit(ASTAnonymousFunction *node) {}
-    void ASTDeclarationExtractor::visit(ASTFunctionDefinition *node)
-    {
-        // Extract function definition to declaration
-        if (node->getId()->getName().compare("main") != 0)
-        {
-
-            ASTVariableList arguments = node->getArguments();
-            ASTVariableList clonedArguments = extractVariableList(node->getArguments());
-
-            // Prefix id with module name
-            ASTIdentifierList *members = new ASTIdentifierList();
-            members->push_back(node->getId()->clone());
-            ASTIdentifier *idWithModule = new ASTIdentifier(moduleName, nullptr, members);
-            delete members;
-
-            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(extractType(node->getType()), idWithModule, clonedArguments);
-            fd->location = node->location;
-            declarationBlock->addStatement(fd);
-        }
-    }
     void ASTDeclarationExtractor::visit(ASTFunctionCall *node) {}
     void ASTDeclarationExtractor::visit(ASTReturnStatement *node) {}
     void ASTDeclarationExtractor::visit(ASTBinaryOperation *node) {}
@@ -130,7 +110,26 @@ namespace stark
 
     void ASTDeclarationExtractor::visit(ASTArray *node) {}
     void ASTDeclarationExtractor::visit(ASTTypeConversion *node) {}
-    void ASTDeclarationExtractor::visit(ASTFunctionDeclaration *node) {}
+    void ASTDeclarationExtractor::visit(ASTFunctionDeclaration *node)
+    {
+        // Extract function definition to declaration
+        if (node->getBlock() != nullptr && node->getId()->getName().compare("main") != 0)
+        {
+
+            ASTVariableList arguments = node->getArguments();
+            ASTVariableList clonedArguments = extractVariableList(node->getArguments());
+
+            // Prefix id with module name
+            ASTIdentifierList *members = new ASTIdentifierList();
+            members->push_back(node->getId()->clone());
+            ASTIdentifier *idWithModule = new ASTIdentifier(moduleName, nullptr, members);
+            delete members;
+
+            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(extractType(node->getType()), idWithModule, clonedArguments);
+            fd->location = node->location;
+            declarationBlock->addStatement(fd);
+        }
+    }
     void ASTDeclarationExtractor::visit(ASTModuleDeclaration *node)
     {
         moduleName = node->getId()->getFullName();

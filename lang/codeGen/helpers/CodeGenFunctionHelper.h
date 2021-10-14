@@ -35,7 +35,13 @@ namespace stark
         /**
          * Creates a function declaration.
          */
-        Function *createFunctionDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
+        Function *createFunctionDeclaration(ASTFunctionDeclaration *functionDeclaration);
+
+        /**
+         * Validates names of a function declaration AST node.
+         * If successfull, returns a ready to use (mangled if necessary) function name.
+         **/
+        std::string checkAndGenerateMangledFunctionName(ASTFunctionDeclaration *functionDeclaration);
 
         /**
          * Creates a vector of argument types from a ASTVariableList.

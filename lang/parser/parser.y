@@ -304,7 +304,7 @@ func_decl:
 func_def: 
       FUNC ident LPAREN decl_args RPAREN ARROW ident block
       { 
-            $$ = new stark::ASTFunctionDefinition($7, $2, *$4, $8);
+            $$ = new stark::ASTFunctionDeclaration($7, $2, *$4, $8);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 
@@ -312,7 +312,7 @@ func_def:
 |
       FUNC ident LPAREN decl_args RPAREN block
       { 
-            $$ = new stark::ASTFunctionDefinition(nullptr, $2, *$4, $6);
+            $$ = new stark::ASTFunctionDeclaration(nullptr, $2, *$4, $6);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 
@@ -321,7 +321,7 @@ func_def:
       FUNC ident LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS block
       { 
             $7->setArray(true);
-            $$ = new stark::ASTFunctionDefinition($7, $2, *$4, $9);
+            $$ = new stark::ASTFunctionDeclaration($7, $2, *$4, $9);
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
             delete $4; 

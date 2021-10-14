@@ -156,31 +156,6 @@ namespace stark
         output << "}";
     }
 
-    void ASTWriter::visit(ASTFunctionDefinition *node)
-    {
-        output << "func ";
-        node->getId()->accept(this);
-        output << "(";
-        ASTVariableList args = node->getArguments();
-        int i = 0;
-        for (auto it = args.begin(); it != args.end(); it++)
-        {
-            ASTVariableDeclaration *v = *it;
-            v->accept(this);
-            if (i < (args.size() - 1))
-            {
-                output << ", ";
-            }
-            i++;
-        }
-
-        output << ") => ";
-        node->getType()->accept(this);
-        output << "{\n";
-        node->getBlock()->accept(this);
-        output << "}";
-    }
-
     void ASTWriter::visit(ASTFunctionCall *node)
     {
         node->getId()->accept(this);
@@ -336,12 +311,19 @@ namespace stark
 
     void ASTWriter::visit(ASTFunctionDeclaration *node)
     {
-        if (node->isExternal()) {
-            output << "extern ";    
-        } else {
+        if (node->getBlock() != nullptr)
+        {
+            output << "func ";
+        }
+        if (node->isExternal())
+        {
+            output << "extern ";
+        }
+        else
+        {
             output << "declare ";
         }
-        
+
         node->getId()->accept(this);
         output << "(";
         ASTVariableList args = node->getArguments();
@@ -359,6 +341,12 @@ namespace stark
 
         output << ") => ";
         node->getType()->accept(this);
+        if (node->getBlock() != nullptr)
+        {
+            output << "{\n";
+            node->getBlock()->accept(this);
+            output << "}";
+        }
     }
 
     void ASTWriter::visit(ASTModuleDeclaration *node)

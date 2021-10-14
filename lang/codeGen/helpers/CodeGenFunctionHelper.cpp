@@ -63,20 +63,131 @@ namespace stark
         return FunctionType::get(returnType, makeArrayRef(argTypes), false);
     }
 
-    Function *CodeGenFunctionHelper::createFunctionDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
+    std::string CodeGenFunctionHelper::checkAndGenerateMangledFunctionName(ASTFunctionDeclaration *functionDeclaration)
     {
-        vector<Type *> argTypes = this->checkAndExtractArgumentTypes(arguments);
+        std::string functionName;
+        std::string moduleName = context->getModuleName();
+        bool anonymous = functionDeclaration->getId() == nullptr;
 
-        Type *returnType = context->getFunctionHelper()->getReturnType(type);
-
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
-
-        // If in interpreter mode : try to init the memory manager
-        // as soon as the required runtime function is declared
-        if (context->isInterpreterMode())
+        // Anonymous function : generate a name
+        if (anonymous)
         {
-            context->initMemoryManager();
+            functionName = context->getMangler()->mangleAnonymousFunctionName(context->getNextAnonymousId(), context->getModuleName(), context->getFilename());
+        }
+        else
+        {
+            functionName = functionDeclaration->getId()->getName();
+
+            int memberCount = functionDeclaration->getId()->countNestedMembers();
+            // If identifier has a member : then it is module.function
+            if (memberCount == 1)
+            {
+                if (functionDeclaration->getBlock() == nullptr)
+                {
+                    moduleName = functionDeclaration->getId()->getName();
+                    functionName = functionDeclaration->getId()->getMember()->getName();
+                }
+                // Function with body (definition) cannot have multiple members in identifier
+                else
+                {
+                    context->logger.logError(functionDeclaration->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", functionDeclaration->getId()->getFullName()));
+                }
+            }
+            // If more than one member : identifier is invalid
+            else if (memberCount > 1)
+            {
+                context->logger.logError(functionDeclaration->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", functionDeclaration->getId()->getFullName()));
+            }
+        }
+
+        // Naming
+        // Check declaration (if it is a definition)
+        if (functionDeclaration->getBlock() != nullptr && !anonymous)
+        {
+            context->getChecker()->checkAllowedFunctionDeclaration(functionDeclaration->getId());
+        }
+        // If not an external declaration : mangle name
+        if (!functionDeclaration->isExternal())
+        {
+            functionName = context->getMangler()->mangleFunctionName(functionName, moduleName);
+        }
+
+        return functionName;
+    }
+
+    Function *CodeGenFunctionHelper::createFunctionDeclaration(ASTFunctionDeclaration *functionDeclaration)
+    {
+        bool anonymous = functionDeclaration->getId() == nullptr;
+
+        // Generate valid name
+        std::string functionName = this->checkAndGenerateMangledFunctionName(functionDeclaration);
+
+        // Extract arguments
+        vector<Type *> argTypes = this->checkAndExtractArgumentTypes(functionDeclaration->getArguments());
+
+        // Test if function is main with args: string[] as single parameter
+        bool isMainWithArgs = context->getFunctionHelper()->isMainFunctionWithArgs(functionName, argTypes);
+
+        std::string mainArgsParameterName = "args";
+        if (isMainWithArgs)
+        {
+            mainArgsParameterName = functionDeclaration->getArguments()[0]->getId()->getFullName();
+
+            // Replace arg types with argc & argv
+            argTypes = context->getFunctionHelper()->getMainArgumentTypes();
+        }
+
+        // Determine return type
+        Type *returnType = context->getFunctionHelper()->getReturnType(functionDeclaration->getType());
+
+        // Create function
+        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
+        // TODO : being able to change function visibility by changing ExternalLinkage
+        // See https://llvm.org/docs/LangRef.html
+        Function *function = Function::Create(ftype, anonymous ? GlobalValue::InternalLinkage : GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
+
+        // Block
+        if (functionDeclaration->getBlock() != nullptr)
+        {
+
+            BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
+            context->pushBlock(bblock);
+
+            // If main function with args: create args local variable
+            if (isMainWithArgs)
+            {
+                context->getFunctionHelper()->expandMainArgs(function, mainArgsParameterName, context->getCurrentBlock());
+            }
+            // Otherwise: create local variables for each argument
+            else
+            {
+                context->getFunctionHelper()->expandLocalVariables(function, functionDeclaration->getArguments(), context->getCurrentBlock());
+            }
+
+            // When not running in interpreter mode : try init memory manager
+            // (must be done after the begining of the main function)
+            if (!context->isInterpreterMode())
+            {
+                context->initMemoryManager();
+            }
+
+            // Evaluate block
+            CodeGenVisitor v(context);
+            functionDeclaration->getBlock()->accept(&v);
+
+            // Add return at the end.
+            context->getFunctionHelper()->createReturn(function, v.result, context->getCurrentBlock());
+
+            context->popBlock();
+        }
+        else
+        {
+            // If in interpreter mode : try to init the memory manager
+            // as soon as the required runtime function is declared
+            if (context->isInterpreterMode())
+            {
+                context->initMemoryManager();
+            }
         }
 
         return function;

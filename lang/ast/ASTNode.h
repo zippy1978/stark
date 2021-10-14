@@ -266,24 +266,6 @@ namespace stark
     ASTAnonymousFunction *clone();
   };
 
-  class ASTFunctionDefinition : public ASTStatement
-  {
-    std::unique_ptr<ASTIdentifier> type;
-    std::unique_ptr<ASTIdentifier> id;
-    std::unique_ptr<ASTBlock> block;
-    ASTVariableList arguments;
-
-  public:
-    ASTFunctionDefinition(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : type(type), id(id), arguments(arguments), block(block) {}
-    ~ASTFunctionDefinition();
-    ASTIdentifier *getType() { return type.get(); }
-    ASTIdentifier *getId() { return id.get(); }
-    ASTVariableList getArguments() { return arguments; }
-    ASTBlock *getBlock() { return block.get(); }
-    void accept(ASTVisitor *visitor);
-    ASTFunctionDefinition *clone();
-  };
-
   class ASTFunctionCall : public ASTExpression
   {
     std::unique_ptr<ASTIdentifier> id;
@@ -303,16 +285,19 @@ namespace stark
   {
     std::unique_ptr<ASTIdentifier> type;
     std::unique_ptr<ASTIdentifier> id;
+    std::unique_ptr<ASTBlock> block;
     ASTVariableList arguments;
     bool external = false;
 
   public:
-    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
-    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, bool external) : type(type), id(id), arguments(arguments), external(external) {}
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : type(type), id(id), arguments(arguments), block(block) {}
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) { block = nullptr; }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, bool external) : type(type), id(id), arguments(arguments), external(external) { block = nullptr; }
     ~ASTFunctionDeclaration();
     ASTIdentifier *getType() { return type.get(); }
     ASTIdentifier *getId() { return id.get(); }
     ASTVariableList getArguments() { return arguments; }
+    ASTBlock *getBlock() { return block.get(); }
     void accept(ASTVisitor *visitor);
     ASTFunctionDeclaration *clone();
     bool isExternal() { return external; }
@@ -328,7 +313,15 @@ namespace stark
       }
       else
       {
-        return 3;
+        // Definition only
+        if (getBlock() == nullptr)
+        {
+          return 3;
+        }
+        else
+        {
+          return ASTStatement::getPriority();
+        }
       }
     }
   };
@@ -471,7 +464,6 @@ namespace stark
     virtual void visit(ASTVariableDeclaration *node) = 0;
     virtual void visit(ASTFunctionSignature *node) = 0;
     virtual void visit(ASTAnonymousFunction *node) = 0;
-    virtual void visit(ASTFunctionDefinition *node) = 0;
     virtual void visit(ASTFunctionCall *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperation *node) = 0;

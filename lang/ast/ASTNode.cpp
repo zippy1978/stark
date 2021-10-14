@@ -348,21 +348,6 @@ namespace stark
 
     // ASTFunctionDefinition
 
-    void ASTFunctionDefinition::accept(ASTVisitor *visitor) { visitor->visit(this); }
-
-    ASTFunctionDefinition::~ASTFunctionDefinition()
-    {
-        deleteList(arguments);
-    }
-
-    ASTFunctionDefinition *ASTFunctionDefinition::clone()
-    {
-        ASTVariableList arguments = cloneList(this->getArguments());
-        ASTFunctionDefinition *clone = new ASTFunctionDefinition(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments, this->getBlock()->clone());
-        clone->location = this->location;
-        return clone;
-    }
-
     // ASTFunctionCall
 
     void ASTFunctionCall::accept(ASTVisitor *visitor) { visitor->visit(this); }
@@ -492,7 +477,7 @@ namespace stark
     ASTFunctionDeclaration *ASTFunctionDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
+        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments, this->getBlock() != nullptr ? this->getBlock()->clone() : nullptr);
         clone->location = this->location;
         clone->external = this->external;
         return clone;
