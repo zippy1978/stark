@@ -23,12 +23,22 @@ namespace stark
     FunctionType *CodeGenFunctionHelper::createFunctionType(ASTFunctionSignature *signature)
     {
 
-        // If no return type : void is assumed
+        
         Type *returnType;
         if (signature->getType() == nullptr)
         {
-            returnType = context->getPrimaryType("void")->getType();
+            // Function signature
+            if (signature->getFunctionSignature() != nullptr)
+            {
+                returnType = context->declareFunctionType(signature->getFunctionSignature())->getType()->getPointerTo();
+            }
+            // If no return type : void is assumed
+            else
+            {
+                returnType = context->getPrimaryType("void")->getType();
+            }
         }
+        // Type
         else
         {
             returnType = context->getTypeHelper()->getType(signature->getType());
@@ -138,7 +148,7 @@ namespace stark
         }
 
         // Determine return type
-        Type *returnType = context->getFunctionHelper()->getReturnType(functionDeclaration->getType());
+        Type *returnType = context->getFunctionHelper()->getReturnType(functionDeclaration);
 
         // Create function
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
@@ -239,25 +249,36 @@ namespace stark
         return argTypes;
     }
 
-    Type *CodeGenFunctionHelper::getReturnType(ASTIdentifier *id)
+    Type *CodeGenFunctionHelper::getReturnType(ASTFunctionDeclaration *functionDeclaration)
     {
+        ASTWriter w;
+
         Type *result = context->getPrimaryType("void")->getType();
-        if (id != nullptr)
+        ASTIdentifier *typeId = functionDeclaration->getType();
+        ASTFunctionSignature *signatureType = functionDeclaration->getFunctionSignatureType();
+        // Type
+        if (typeId != nullptr)
         {
 
-            result = context->getType(id->getFullName());
+            result = context->getType(typeId->getFullName());
 
             // Array case
-            if (id->isArray())
+            if (typeId->isArray())
             {
-                result = context->getArrayComplexType(id->getFullName())->getType()->getPointerTo();
+                result = context->getArrayComplexType(typeId->getFullName())->getType()->getPointerTo();
             }
 
             // Complex types are pointers !
-            if (!context->isPrimaryType(id->getFullName()) && !id->isArray())
+            if (!context->isPrimaryType(typeId->getFullName()) && !typeId->isArray())
             {
                 result = result->getPointerTo();
             }
+        }
+        // Signature type
+        else if (signatureType != nullptr)
+        {
+            // Signatures are pointers
+            result = context->declareFunctionType(signatureType)->getType()->getPointerTo();
         }
 
         return result;
@@ -333,6 +354,7 @@ namespace stark
         // If no return : add a default one
         if (context->getReturnValue() != nullptr)
         {
+            // Type *actualType = context->getReturnValue()->getType
             if (!context->getChecker()->canAssign(context->getReturnValue(), context->getTypeName(function->getReturnType())))
             {
                 context->logger.logError(formatv("function is expecting {0} type as return type, not {1}", context->getTypeName(function->getReturnType()), context->getTypeName(context->getReturnValue()->getType())));

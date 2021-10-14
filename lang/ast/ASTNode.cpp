@@ -305,7 +305,7 @@ namespace stark
 
     ASTVariableDeclaration *ASTVariableDeclaration::clone()
     {
-        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getFunctionSignature() != nullptr ? this->getFunctionSignature()->clone() : nullptr,this->getId()->clone(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getFunctionSignature() != nullptr ? this->getFunctionSignature()->clone() : nullptr, this->getId()->clone(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
         clone->location = this->location;
         return clone;
     }
@@ -323,6 +323,10 @@ namespace stark
     {
         ASTIdentifierList arguments = cloneList(this->getArguments());
         ASTFunctionSignature *clone = new ASTFunctionSignature(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments);
+        if (this->functionSignatureType != nullptr)
+        {
+            clone->functionSignatureType = std::unique_ptr<ASTFunctionSignature>(this->functionSignatureType->clone());
+        }
         clone->setClosure(this->isClosure());
         clone->setArray(this->isArray());
         clone->location = this->location;
@@ -342,6 +346,10 @@ namespace stark
     {
         ASTVariableList arguments = cloneList(this->getArguments());
         ASTAnonymousFunction *clone = new ASTAnonymousFunction(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments, this->getBlock()->clone());
+        if (this->functionSignatureType != nullptr)
+        {
+            clone->functionSignatureType = std::unique_ptr<ASTFunctionSignature>(this->functionSignatureType->clone());
+        }
         clone->location = this->location;
         return clone;
     }
@@ -478,6 +486,10 @@ namespace stark
     {
         ASTVariableList arguments = cloneList(this->getArguments());
         ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments, this->getBlock() != nullptr ? this->getBlock()->clone() : nullptr);
+        if (this->functionSignatureType != nullptr)
+        {
+            clone->functionSignatureType = std::unique_ptr<ASTFunctionSignature>(this->functionSignatureType->clone());
+        }
         clone->location = this->location;
         clone->external = this->external;
         return clone;

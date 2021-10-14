@@ -233,14 +233,17 @@ namespace stark
   class ASTFunctionSignature : public ASTExpression
   {
     std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignatureType;
     ASTIdentifierList arguments;
     bool closure = false;
     bool array = false;
 
   public:
-    ASTFunctionSignature(ASTIdentifier *type, ASTIdentifierList &arguments) : type(type), arguments(arguments) {}
+    ASTFunctionSignature(ASTIdentifier *type, ASTIdentifierList &arguments) : type(type), arguments(arguments) { functionSignatureType = nullptr; }
+    ASTFunctionSignature(ASTFunctionSignature *functionSignatureType, ASTIdentifierList &arguments) : functionSignatureType(functionSignatureType), arguments(arguments) { type = nullptr; }
     ~ASTFunctionSignature();
     ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignature() { return functionSignatureType.get(); }
     ASTIdentifierList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     bool isClosure() { return closure; }
@@ -253,13 +256,21 @@ namespace stark
   class ASTAnonymousFunction : public ASTExpression
   {
     std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignatureType;
     std::unique_ptr<ASTBlock> block;
     ASTVariableList arguments;
 
   public:
-    ASTAnonymousFunction(ASTIdentifier *type, ASTVariableList &arguments, ASTBlock *block) : type(type), arguments(arguments), block(block) {}
+    ASTAnonymousFunction(ASTVariableList &arguments, ASTBlock *block) : arguments(arguments), block(block)
+    {
+      type = nullptr;
+      functionSignatureType = nullptr;
+    }
+    ASTAnonymousFunction(ASTIdentifier *type, ASTVariableList &arguments, ASTBlock *block) : type(type), arguments(arguments), block(block) { functionSignatureType = nullptr; }
+    ASTAnonymousFunction(ASTFunctionSignature *functionSignatureType, ASTVariableList &arguments, ASTBlock *block) : functionSignatureType(functionSignatureType), arguments(arguments), block(block) { type = nullptr; }
     ~ASTAnonymousFunction();
     ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignatureType() { return functionSignatureType.get(); }
     ASTVariableList getArguments() { return arguments; }
     ASTBlock *getBlock() { return block.get(); }
     void accept(ASTVisitor *visitor);
@@ -284,17 +295,50 @@ namespace stark
   class ASTFunctionDeclaration : public ASTStatement
   {
     std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignatureType;
     std::unique_ptr<ASTIdentifier> id;
     std::unique_ptr<ASTBlock> block;
     ASTVariableList arguments;
     bool external = false;
 
   public:
-    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : type(type), id(id), arguments(arguments), block(block) {}
-    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) { block = nullptr; }
-    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, bool external) : type(type), id(id), arguments(arguments), external(external) { block = nullptr; }
+    ASTFunctionDeclaration(ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : id(id), arguments(arguments), block(block)
+    {
+      functionSignatureType = nullptr;
+      type = nullptr;
+    }
+    ASTFunctionDeclaration(ASTIdentifier *id, ASTVariableList &arguments, bool external) : id(id), arguments(arguments), external(external)
+    {
+      block = nullptr;
+      functionSignatureType = nullptr;
+      type = nullptr;
+    }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : type(type), id(id), arguments(arguments), block(block) { functionSignatureType = nullptr; }
+    ASTFunctionDeclaration(ASTFunctionSignature *functionSignatureType, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : functionSignatureType(functionSignatureType), id(id), arguments(arguments), block(block) { type = nullptr; }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments)
+    {
+      block = nullptr;
+      functionSignatureType = nullptr;
+    }
+    ASTFunctionDeclaration(ASTFunctionSignature *functionSignatureType, ASTIdentifier *id, ASTVariableList &arguments) : functionSignatureType(functionSignatureType), id(id), arguments(arguments)
+    {
+      block = nullptr;
+      type = nullptr;
+    }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, bool external) : type(type), id(id), arguments(arguments), external(external)
+    {
+      block = nullptr;
+      functionSignatureType = nullptr;
+    }
+    ASTFunctionDeclaration(ASTFunctionSignature *functionSignatureType, ASTIdentifier *id, ASTVariableList &arguments, bool external) : functionSignatureType(functionSignatureType), id(id), arguments(arguments), external(external)
+    {
+      block = nullptr;
+      type = nullptr;
+    }
     ~ASTFunctionDeclaration();
     ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignatureType() { return functionSignatureType.get(); }
+    void setFunctionSignatureType(ASTFunctionSignature *s) { functionSignatureType = std::unique_ptr<ASTFunctionSignature>(s); }
     ASTIdentifier *getId() { return id.get(); }
     ASTVariableList getArguments() { return arguments; }
     ASTBlock *getBlock() { return block.get(); }

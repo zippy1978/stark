@@ -389,10 +389,14 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTAnonymousFunction *node)
     {
-        // Convert to an ASTFunctionefinition
+        // Convert to an ASTFunctionDeclaration
         ASTVariableList arguments = cloneList(node->getArguments());
 
         ASTFunctionDeclaration fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
+        if (node->getFunctionSignatureType() != nullptr)
+        {
+            fd.setFunctionSignatureType(node->getFunctionSignatureType()->clone());
+        }
         CodeGenVisitor v(context);
         fd.accept(&v);
 

@@ -201,6 +201,12 @@ namespace stark
 		CodeGenFunctionType *functionType = new CodeGenFunctionType(typeName, this, ft);
 		functionTypes[typeName] = std::unique_ptr<CodeGenFunctionType>(functionType);
 
+		// Recursive declaration
+		if (signature->getFunctionSignature() != nullptr)
+		{
+			declareFunctionType(signature->getFunctionSignature());
+		}
+
 		return functionType;
 	}
 

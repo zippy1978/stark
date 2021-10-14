@@ -49,10 +49,10 @@ namespace stark
         std::vector<Type *> checkAndExtractArgumentTypes(ASTVariableList arguments);
 
         /**
-         * Creates a function return type from an identifier.
+         * Creates a function return type from an AST function declaration.
          * If id is null, a void type will be created.
          */
-        Type *getReturnType(ASTIdentifier *id);
+        Type *getReturnType(ASTFunctionDeclaration *functionDeclaration);
 
         /**
          * Expands main functions arguments as local variables on a block.

@@ -36,6 +36,34 @@ func caller(called: func (int, int) => int) => int {
 }
 assertIntEquals(caller(fn), 3)
 
+// Return type is a function
+func funcToFunc() => func () => int {
+    func () => int {
+        12
+    }
+}
+f := funcToFunc()
+assertIntEquals(f(), 12)
+
+anonymousFuncToFunc := func () => func () => int {
+    func () => int {
+        24
+    }
+}
+af := anonymousFuncToFunc()
+assertIntEquals(af(), 24)
+
+func funcToFuncToFunc() => func () => func () => int {
+    return func () => func () => int {
+        return func () => int {
+            32
+        }
+    }
+}
+ftf := funcToFuncToFunc()
+f = ftf()
+assertIntEquals(f(), 32)
+
 // Null assignment
 fnnull: func (int, int) => int 
 fnnull = null

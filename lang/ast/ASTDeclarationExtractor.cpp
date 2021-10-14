@@ -125,7 +125,21 @@ namespace stark
             ASTIdentifier *idWithModule = new ASTIdentifier(moduleName, nullptr, members);
             delete members;
 
-            ASTFunctionDeclaration *fd = new ASTFunctionDeclaration(extractType(node->getType()), idWithModule, clonedArguments);
+            ASTFunctionDeclaration *fd;
+            // Function signature type
+            if (node->getFunctionSignatureType() != nullptr)
+            {
+                ASTWriter w;
+                w.visit(node->getFunctionSignatureType());
+                ASTIdentifier *signatureId = new ASTIdentifier(w.getSourceCode(), nullptr, nullptr);
+                fd = new ASTFunctionDeclaration(signatureId, idWithModule, clonedArguments);
+            }
+            // Type
+            else
+            {
+                fd = new ASTFunctionDeclaration(extractType(node->getType()), idWithModule, clonedArguments);
+            }
+
             fd->location = node->location;
             declarationBlock->addStatement(fd);
         }

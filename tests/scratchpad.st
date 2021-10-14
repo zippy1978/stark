@@ -1,41 +1,27 @@
-/*
-// No arg
-func noArg() => void {
-}
-noArg()
-
-// With args
-func withArgs(a: int, b: int) => int {
-    return a
-}
-*/
-
-
-
-// With function args (function and function array)
-callee := func (i: int) => int { return i}
-/*calledArrayReturn := func (i: int) => int[] { return [i, i]}
-func withFunctionArgs(f: func (int) => int, fa: (func (int) => int)[], fra: func (int) => int[]) => int {
-    x := fra(1)
-    return f(1) + fa[0](1) + x[0]
-}*/
-
-/*
-
-
-// Recursive function call
-func fib(x: int) => int {
-    if (x < 3) {
-        return 1
-    } else {
-        return fib(x - 1) + fib(x - 2)
+// Return type is a function
+func funcToFunc() => func () => int {
+    func () => int {
+        12
     }
 }
-assertIntEquals(fib(9), 34)
+f := funcToFunc()
+println(f() as string)
 
-// Null return
-func echoString(s: string) => string {
-    return s
+anonymousFuncToFunc := func () => func () => int {
+    func () => int {
+        24
+    }
 }
-assertNull(echoString(null) as any)
-*/
+af := anonymousFuncToFunc()
+println(af() as string)
+
+func funcToFuncToFunc() => func () => func () => int {
+    return func () => func () => int {
+        return func () => int {
+            32
+        }
+    }
+}
+ftf := funcToFuncToFunc()
+f = ftf()
+println(f() as string)

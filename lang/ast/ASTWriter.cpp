@@ -125,7 +125,14 @@ namespace stark
             i++;
         }
         output << ") => ";
-        node->getType()->accept(this);
+        if (node->getType() != nullptr)
+        {
+            node->getType()->accept(this);
+        }
+        if (node->getFunctionSignature() != nullptr)
+        {
+            node->getFunctionSignature()->accept(this);
+        }
 
         if (node->isArray())
         {
@@ -150,7 +157,14 @@ namespace stark
         }
 
         output << ") => ";
-        node->getType()->accept(this);
+        if (node->getType() != nullptr)
+        {
+            node->getType()->accept(this);
+        }
+        if (node->getFunctionSignatureType() != nullptr)
+        {
+            node->getFunctionSignatureType()->accept(this);
+        }
         output << "{\n";
         node->getBlock()->accept(this);
         output << "}";
@@ -340,7 +354,14 @@ namespace stark
         }
 
         output << ") => ";
-        node->getType()->accept(this);
+        if (node->getType() != nullptr)
+        {
+            node->getType()->accept(this);
+        }
+        if (node->getFunctionSignatureType() != nullptr)
+        {
+            node->getFunctionSignatureType()->accept(this);
+        }
         if (node->getBlock() != nullptr)
         {
             output << "{\n";
