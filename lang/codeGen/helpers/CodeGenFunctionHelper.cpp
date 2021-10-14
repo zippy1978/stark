@@ -67,21 +67,7 @@ namespace stark
     {
         vector<Type *> argTypes = this->checkAndExtractArgumentTypes(arguments);
 
-        Type *returnType;
-        if (type == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType()->getPointerTo() : context->getType(type->getFullName());
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(type->getFullName()) && !type->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
+        Type *returnType = context->getFunctionHelper()->getReturnType(type);
 
         FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
         Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
