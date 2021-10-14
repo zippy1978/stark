@@ -199,29 +199,6 @@ namespace stark
         }
     }
 
-    void ASTWriter::visit(ASTExternDeclaration *node)
-    {
-
-        output << "extern ";
-        node->getId()->accept(this);
-        output << "(";
-        ASTVariableList args = node->getArguments();
-        int i = 0;
-        for (auto it = args.begin(); it != args.end(); it++)
-        {
-            ASTVariableDeclaration *v = *it;
-            v->accept(this);
-            if (i < (args.size() - 1))
-            {
-                output << ", ";
-            }
-            i++;
-        }
-
-        output << ") => ";
-        node->getType()->accept(this);
-    }
-
     void ASTWriter::visit(ASTReturnStatement *node)
     {
 
@@ -359,7 +336,12 @@ namespace stark
 
     void ASTWriter::visit(ASTFunctionDeclaration *node)
     {
-        output << "declare ";
+        if (node->isExternal()) {
+            output << "extern ";    
+        } else {
+            output << "declare ";
+        }
+        
         node->getId()->accept(this);
         output << "(";
         ASTVariableList args = node->getArguments();

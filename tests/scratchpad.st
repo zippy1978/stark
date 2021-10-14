@@ -1,7 +1,3 @@
-/*count := func () => int[] {
-    return [1, 2, 3]
+func incept() => func () => int {
+    
 }
-myCount := count()*/
-//f := [1, 2, 3]
-
-c : (int) => void 

@@ -232,7 +232,7 @@ var_decl:
 extern_decl:
       EXTERN ident LPAREN decl_args RPAREN ARROW ident
       { 
-            $$ = new stark::ASTExternDeclaration($7, $2, *$4); 
+            $$ = new stark::ASTFunctionDeclaration($7, $2, *$4, true); 
             delete $4;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
@@ -240,7 +240,7 @@ extern_decl:
 |
       EXTERN ident LPAREN decl_args RPAREN
       { 
-            $$ = new stark::ASTExternDeclaration(nullptr, $2, *$4); 
+            $$ = new stark::ASTFunctionDeclaration(nullptr, $2, *$4, true); 
             delete $4;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;
@@ -249,7 +249,7 @@ extern_decl:
       EXTERN ident LPAREN decl_args RPAREN ARROW ident EMPTYBRACKETS
       { 
             $7->setArray(true);
-            $$ = new stark::ASTExternDeclaration($7, $2, *$4); 
+            $$ = new stark::ASTFunctionDeclaration($7, $2, *$4, true);
             delete $4;
             $$->location.line = @1.begin.line;
             $$->location.column = @1.begin.column;

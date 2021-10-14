@@ -79,7 +79,6 @@ namespace stark
     void visit(ASTAnonymousFunction *node);
     void visit(ASTFunctionDefinition *node);
     void visit(ASTFunctionCall *node);
-    void visit(ASTExternDeclaration *node);
     void visit(ASTReturnStatement *node);
     void visit(ASTBinaryOperation *node);
     void visit(ASTComparison *node);

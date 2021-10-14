@@ -380,18 +380,6 @@ namespace stark
         return clone;
     }
 
-    // ASTExternDeclaration
-
-    void ASTExternDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
-
-    ASTExternDeclaration *ASTExternDeclaration::clone()
-    {
-        ASTVariableList arguments = cloneList(this->getArguments());
-        ASTExternDeclaration *clone = new ASTExternDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
-        clone->location = this->location;
-        return clone;
-    }
-
     // ASTReturnStatement
 
     void ASTReturnStatement::accept(ASTVisitor *visitor) { visitor->visit(this); }
@@ -506,6 +494,7 @@ namespace stark
         ASTVariableList arguments = cloneList(this->getArguments());
         ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
         clone->location = this->location;
+        clone->external = this->external;
         return clone;
     }
 

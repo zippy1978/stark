@@ -366,7 +366,7 @@ namespace stark
             std::string typeName = context->getTypeName(type);
 
             bool isFunction = type->isPointerTy() ? type->getPointerElementType()->isFunctionTy() : false;
-        
+
             bool isArray = false;
             if (context->isArrayType(typeName))
             {
@@ -582,43 +582,46 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
-        context->setCurrentLocation(node->location);
-
-        std::string moduleName = context->getModuleName();
-        std::string functionName = node->getId()->getName();
-
-        int memberCount = node->getId()->countNestedMembers();
-        // If identifier has a member : then it is module.function
-        if (memberCount == 1)
+        // External
+        if (node->isExternal())
         {
-            moduleName = node->getId()->getName();
-            functionName = node->getId()->getMember()->getName();
+            context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
+            context->setCurrentLocation(node->location);
+
+            std::string functionName = node->getId()->getName();
+            ASTVariableList arguments = node->getArguments();
+
+            // Create external
+            this->result = context->getFunctionHelper()->createExternalDeclaration(functionName, arguments, node->getType());
         }
-        // If more than one member : identifier is invalid
-        else if (memberCount > 1)
+        // Declaration
+        else
         {
-            context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->getId()->getFullName()));
+            context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
+            context->setCurrentLocation(node->location);
+
+            std::string moduleName = context->getModuleName();
+            std::string functionName = node->getId()->getName();
+
+            int memberCount = node->getId()->countNestedMembers();
+            // If identifier has a member : then it is module.function
+            if (memberCount == 1)
+            {
+                moduleName = node->getId()->getName();
+                functionName = node->getId()->getMember()->getName();
+            }
+            // If more than one member : identifier is invalid
+            else if (memberCount > 1)
+            {
+                context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->getId()->getFullName()));
+            }
+
+            // Mangle
+            std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
+
+            // Create external
+            this->result = context->getFunctionHelper()->createExternalDeclaration(mangledName, node->getArguments(), node->getType());
         }
-
-        // Mangle
-        std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
-
-        // Create external
-        this->result = context->getFunctionHelper()->createExternalDeclaration(mangledName, node->getArguments(), node->getType());
-    }
-
-    void CodeGenVisitor::visit(ASTExternDeclaration *node)
-    {
-
-        context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
-        context->setCurrentLocation(node->location);
-
-        std::string functionName = node->getId()->getName();
-        ASTVariableList arguments = node->getArguments();
-
-        // Create external
-        this->result = context->getFunctionHelper()->createExternalDeclaration(functionName, arguments, node->getType());
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)

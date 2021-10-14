@@ -179,7 +179,7 @@ namespace stark
      * Sort order is : types, then functions, then the rest.
      * */
     void sort();
-    /** 
+    /**
      * Prepend statements of a block to the current block.
      * If the first statement of the target (this) block is a module declaration :
      * then statements are inserted right after it.
@@ -299,50 +299,38 @@ namespace stark
     ASTFunctionCall *clone();
   };
 
-  class ASTExternDeclaration : public ASTStatement
-  {
-    std::unique_ptr<ASTIdentifier> type;
-    std::unique_ptr<ASTIdentifier> id;
-    ASTVariableList arguments;
-
-  public:
-    ASTExternDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
-    ~ASTExternDeclaration()
-    {
-      for (int i = 0; i < arguments.size(); i++)
-      {
-        delete arguments[i];
-      }
-    }
-    ASTIdentifier *getType() { return type.get(); }
-    ASTIdentifier *getId() { return id.get(); }
-    ASTVariableList getArguments() { return arguments; }
-    void accept(ASTVisitor *visitor);
-    ASTExternDeclaration *clone();
-    int getPriority()
-    {
-      // Very special case : runtime alloc function must be on top of the block !
-      // Should not be here (an AST should not know about specific function name)
-      // But, no idea where to put it (CodeGenVisitor : it is too late, as we are still generating code)
-      return id->getFullName().compare("stark_runtime_priv_mm_alloc") == 0 ? 1 : 3;
-    }
-  };
-
   class ASTFunctionDeclaration : public ASTStatement
   {
     std::unique_ptr<ASTIdentifier> type;
     std::unique_ptr<ASTIdentifier> id;
     ASTVariableList arguments;
+    bool external = false;
 
   public:
     ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, bool external) : type(type), id(id), arguments(arguments), external(external) {}
     ~ASTFunctionDeclaration();
     ASTIdentifier *getType() { return type.get(); }
     ASTIdentifier *getId() { return id.get(); }
     ASTVariableList getArguments() { return arguments; }
     void accept(ASTVisitor *visitor);
     ASTFunctionDeclaration *clone();
-    int getPriority() { return 3; }
+    bool isExternal() { return external; }
+    void setExternal(bool e) { external = e; }
+    int getPriority()
+    {
+      if (external)
+      {
+        // Very special case : runtime alloc function must be on top of the block !
+        // Should not be here (an AST should not know about specific function name)
+        // But, no idea where to put it (CodeGenVisitor : it is too late, as we are still generating code)
+        return id->getFullName().compare("stark_runtime_priv_mm_alloc") == 0 ? 1 : 3;
+      }
+      else
+      {
+        return 3;
+      }
+    }
   };
 
   class ASTReturnStatement : public ASTStatement
@@ -467,8 +455,8 @@ namespace stark
   };
 
   /*
- * Virtual class to visit the AST.
- */
+   * Virtual class to visit the AST.
+   */
   class ASTVisitor
   {
   public:
@@ -485,7 +473,6 @@ namespace stark
     virtual void visit(ASTAnonymousFunction *node) = 0;
     virtual void visit(ASTFunctionDefinition *node) = 0;
     virtual void visit(ASTFunctionCall *node) = 0;
-    virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperation *node) = 0;
     virtual void visit(ASTComparison *node) = 0;
