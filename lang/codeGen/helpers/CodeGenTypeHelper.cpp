@@ -56,10 +56,11 @@ namespace stark
         else
         {
             CodeGenFunctionType *ft = context->declareFunctionType(functionSignature);
-            result = context->declareFunctionType(functionSignature)->getType()->getPointerTo();
+            result = ft->getType()->getPointerTo();
             // Array case
             if (functionSignature->isArray())
             {
+
                 result = context->getArrayComplexType(ft->getName())->getType()->getPointerTo();
             }
         }
