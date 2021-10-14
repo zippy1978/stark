@@ -63,7 +63,7 @@ namespace stark
         return FunctionType::get(returnType, makeArrayRef(argTypes), false);
     }
 
-    Function *CodeGenFunctionHelper::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
+    Function *CodeGenFunctionHelper::createFunctionDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
     {
         vector<Type *> argTypes = this->checkAndExtractArgumentTypes(arguments);
 

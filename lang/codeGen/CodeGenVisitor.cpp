@@ -582,46 +582,33 @@ namespace stark
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
-        // External
-        if (node->isExternal())
+        context->logger.logDebug(node->location, formatv("creating {0} declaration for {1}", node->isExternal() ? "extern" : "", node->getId()->getName()));
+        context->setCurrentLocation(node->location);
+
+        std::string functionName = node->getId()->getName();
+        std::string moduleName = context->getModuleName();
+
+        int memberCount = node->getId()->countNestedMembers();
+        // If identifier has a member : then it is module.function
+        if (memberCount == 1)
         {
-            context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
-            context->setCurrentLocation(node->location);
-
-            std::string functionName = node->getId()->getName();
-            ASTVariableList arguments = node->getArguments();
-
-            // Create external
-            this->result = context->getFunctionHelper()->createExternalDeclaration(functionName, arguments, node->getType());
+            moduleName = node->getId()->getName();
+            functionName = node->getId()->getMember()->getName();
         }
-        // Declaration
-        else
+        // If more than one member : identifier is invalid
+        else if (memberCount > 1)
         {
-            context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
-            context->setCurrentLocation(node->location);
-
-            std::string moduleName = context->getModuleName();
-            std::string functionName = node->getId()->getName();
-
-            int memberCount = node->getId()->countNestedMembers();
-            // If identifier has a member : then it is module.function
-            if (memberCount == 1)
-            {
-                moduleName = node->getId()->getName();
-                functionName = node->getId()->getMember()->getName();
-            }
-            // If more than one member : identifier is invalid
-            else if (memberCount > 1)
-            {
-                context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->getId()->getFullName()));
-            }
-
-            // Mangle
-            std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
-
-            // Create external
-            this->result = context->getFunctionHelper()->createExternalDeclaration(mangledName, node->getArguments(), node->getType());
+            context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->getId()->getFullName()));
         }
+
+        // If not an external declaration : mangle name
+        if (!node->isExternal())
+        {
+            functionName = context->getMangler()->mangleFunctionName(functionName, moduleName);
+        }
+
+        // Create external
+        this->result = context->getFunctionHelper()->createFunctionDeclaration(functionName, node->getArguments(), node->getType());
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)

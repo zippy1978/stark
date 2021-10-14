@@ -35,7 +35,7 @@ namespace stark
         /**
          * Creates a function declaration.
          */
-        Function *createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
+        Function *createFunctionDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
 
         /**
          * Creates a vector of argument types from a ASTVariableList.
