@@ -35,7 +35,17 @@ extern "C" stark::string_t *stark_runtime_pub_fromCSubString(stark::any_t s, sta
     return result;
 }
 
-extern "C" stark::any_t stark_runtime_pub_asIntPointer(stark::int_t i)
+extern "C" stark::any_t stark_runtime_pub_toIntPointer(stark::int_t i)
 {
-    return &i;
+    stark::any_t *result = (stark::any_t *)stark_runtime_priv_mm_alloc(sizeof(stark::int_t));
+    memcpy(result, &i, sizeof(stark::int_t));
+    return result;
 }
+
+extern "C" stark::int_t stark_runtime_pub_fromIntPointer(stark::any_t p)
+{
+    stark::int_t *ptr = (stark::int_t *)p;
+    stark::int_t result = *ptr;
+    return result;
+}
+

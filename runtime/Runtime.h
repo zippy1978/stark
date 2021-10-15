@@ -39,7 +39,8 @@ namespace stark
                 "extern stark_runtime_pub_toCString(s: string) => any\n"
                 "extern stark_runtime_pub_fromCString(s: any) => string\n"
                 "extern stark_runtime_pub_fromCSubString(s: any, start: int, end: int) => string\n"
-                "extern stark_runtime_pub_asIntPointer(i: int) => any\n"
+                "extern stark_runtime_pub_toIntPointer(i: int) => any\n"
+                "extern stark_runtime_pub_fromIntPointer(i: any) => int\n"
 
                 // Util
                 "extern stark_runtime_priv_extract_args(argc: int, argv: any) => any\n"

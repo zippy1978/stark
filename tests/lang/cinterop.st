@@ -17,3 +17,8 @@ assertStringEquals(fromCString(toCString("Hello")), "Hello")
 
 // fromCSubString
 assertStringEquals(fromCSubString(toCString("Hello"), 0, 2), "He")
+
+// toIntPointer / fromIntPointer
+i := 12
+ptr := toIntPointer(i)
+assertIntEquals(fromIntPointer(ptr), 12)
