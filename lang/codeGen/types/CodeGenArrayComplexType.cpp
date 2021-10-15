@@ -27,6 +27,7 @@ namespace stark
 
     Value *CodeGenArrayComplexType::createDefaultValue()
     {
+        context->logger.logDebug("creating default value for array");
         std::vector<Value *> values;
         return create(values);
     }

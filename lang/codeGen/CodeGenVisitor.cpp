@@ -351,10 +351,11 @@ namespace stark
 
                 this->result = var->getValue();
             }
-            // If no assignement : assign default value
+            // If no assignment : assign default value
             else
             {
-                this->result = new StoreInst(context->getVariableHelper()->createDefaultValue(var), var->getValue(), false, context->getCurrentBlock());
+                Value *defaultValue = context->getVariableHelper()->createDefaultValue(var);
+                this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
             }
         }
         // Type not provided : infer it

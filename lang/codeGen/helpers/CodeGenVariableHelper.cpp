@@ -61,9 +61,25 @@ namespace stark
         }
         // Types
         else
-        { 
-            result = context->isPrimaryType(variable->getTypeName()) ? context->getPrimaryType(variable->getTypeName())->createDefaultValue() : variable->isArray() ? context->getArrayComplexType(variable->getTypeName())->createDefaultValue()
-                                                                                                                                                 : context->getComplexType(variable->getTypeName())->createDefaultValue();
+        {
+            // Array
+            if (variable->isArray())
+            {
+                result = context->getArrayComplexType(variable->getTypeName())->createDefaultValue();
+            }
+            else
+            {
+                // Primary
+                if (context->isPrimaryType(variable->getTypeName()))
+                {
+                    result = context->getPrimaryType(variable->getTypeName())->createDefaultValue();
+                }
+                // Other complex
+                else
+                {
+                    result = context->getComplexType(variable->getTypeName())->createDefaultValue();
+                }
+            }
         }
 
         return result;
