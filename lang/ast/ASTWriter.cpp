@@ -92,6 +92,7 @@ namespace stark
         }
         if (node->getFunctionSignature() != nullptr)
         {
+            
             node->getFunctionSignature()->accept(this);
         }
 
@@ -329,13 +330,16 @@ namespace stark
         {
             output << "func ";
         }
-        if (node->isExternal())
-        {
-            output << "extern ";
-        }
         else
         {
-            output << "declare ";
+            if (node->isExternal())
+            {
+                output << "extern ";
+            }
+            else
+            {
+                output << "declare ";
+            }
         }
 
         node->getId()->accept(this);
@@ -352,7 +356,6 @@ namespace stark
             }
             i++;
         }
-
         output << ") => ";
         if (node->getType() != nullptr)
         {

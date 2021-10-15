@@ -36,7 +36,13 @@ namespace stark
         for (auto it = list.begin(); it != list.end(); it++)
         {
             ASTVariableDeclaration *vd = *it;
-            ASTVariableDeclaration *newDeclaration = new ASTVariableDeclaration(extractType(vd->getType()), vd->getId()->clone(), vd->getAssignmentExpr() != nullptr ? vd->getAssignmentExpr()->clone() : nullptr);
+            ASTVariableDeclaration *newDeclaration;
+            // Only variable with regular type needs to be modified
+            if (vd->getFunctionSignature() == nullptr) {
+                newDeclaration = new ASTVariableDeclaration(extractType(vd->getType()), vd->getId()->clone(), vd->getAssignmentExpr() != nullptr ? vd->getAssignmentExpr()->clone() : nullptr);
+            } else {
+                newDeclaration = vd->clone();
+            }
             result.push_back(newDeclaration);
         }
 
@@ -129,10 +135,7 @@ namespace stark
             // Function signature type
             if (node->getFunctionSignatureType() != nullptr)
             {
-                ASTWriter w;
-                w.visit(node->getFunctionSignatureType());
-                ASTIdentifier *signatureId = new ASTIdentifier(w.getSourceCode(), nullptr, nullptr);
-                fd = new ASTFunctionDeclaration(signatureId, idWithModule, clonedArguments);
+                fd = new ASTFunctionDeclaration(node->getFunctionSignatureType()->clone(), idWithModule, clonedArguments);
             }
             // Type
             else

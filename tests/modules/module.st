@@ -23,3 +23,8 @@
  func empty() {
 
  }
+
+ // Function with function signature
+ func sig(c: func () => int) {
+     
+ }

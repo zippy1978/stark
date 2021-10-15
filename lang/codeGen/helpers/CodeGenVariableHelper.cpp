@@ -57,7 +57,7 @@ namespace stark
         // Function signature type
         if (variable->isFunction())
         {
-            result = ConstantPointerNull::getNullValue(variable->getType()->getPointerTo());
+            result = ConstantPointerNull::getNullValue(variable->getType());
         }
         // Types
         else
