@@ -41,6 +41,10 @@ func withNestedFunx() {
         b := a()
     }
     f3(func() => int {2})
+    // Struct
+    f4 := func (a: Test) => Test {
+        a
+    }
 }
 
 // Function with function signature

@@ -192,7 +192,7 @@ namespace stark
     Value *CodeGenComplexType::createDefaultValue()
     {
         // Default value for a complex type is null
-        return ConstantPointerNull::getNullValue(type);
+        return ConstantPointerNull::getNullValue(type->getPointerTo());
     }
 
     Value *CodeGenComplexType::create(std::vector<Value *> values)
