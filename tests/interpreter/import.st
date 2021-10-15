@@ -8,7 +8,7 @@ extern assertIntEquals(actual: int, expected: int)
 extern assertStringEquals(actual: string, expected: string)
 
 // Call function, calling a module function
-func anotherFunc(): int {
+func anotherFunc() => int {
     return test.addTest(1, 2)
 }
 assertIntEquals(anotherFunc(), 3)

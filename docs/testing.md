@@ -14,11 +14,11 @@ Here is the basic ``math``module under test:
 // math.st
 module math
 
-func add(a: int, b: int): int {
+func add(a: int, b: int) => int {
     return a + b
 }
 
-func sub(a: int, b: int): int {
+func sub(a: int, b: int) => int {
     return a - b
 }
 ```

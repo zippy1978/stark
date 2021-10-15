@@ -17,7 +17,6 @@ using namespace stark;
 
 namespace stark
 {
-
     /*
     static void printDebugType(Value *value)
     {
@@ -35,8 +34,7 @@ namespace stark
         value->print(rso);
         std::string llvmTypeName = rso.str();
         cout << ">>>>>> " << llvmTypeName << endl;
-    }
-    */
+    }*/
 
     /**
      * Get variable as llvm:Value for a complex type from an identifier.
@@ -124,62 +122,6 @@ namespace stark
 
     // Code generation
 
-    Function *CodeGenVisitor::createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type)
-    {
-        vector<Type *> argTypes;
-
-        for (auto it = arguments.begin(); it != arguments.end(); it++)
-        {
-            ASTVariableDeclaration *v = *it;
-            Type *type = context->getType(v->getType()->getFullName());
-            if (v->isArray())
-            {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            if (type == nullptr)
-            {
-                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-            }
-
-            // Complex types are pointer variables !
-            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
-            {
-                type = type->getPointerTo();
-            }
-
-            argTypes.push_back(type);
-        }
-
-        Type *returnType;
-        if (type == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-            returnType = type->isArray() ? context->getArrayComplexType(type->getFullName())->getType()->getPointerTo() : typeOf(*type, context);
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(type->getFullName()) && !type->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
-
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
-
-        // If in interpreter mode : try to init the memory manager
-        // as soon as the required runtime function is declared
-        if (context->isInterpreterMode())
-        {
-            context->initMemoryManager();
-        }
-
-        return function;
-    }
-
     void CodeGenVisitor::visit(ASTInteger *node)
     {
 
@@ -261,24 +203,37 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating identifier reference {0}", node->getFullName()));
         context->setCurrentLocation(node->location);
 
-        CodeGenVariable *var = context->getLocal(node->getName());
-        if (var == nullptr)
-        {
-            context->logger.logError(node->location, formatv("undeclared identifier {0}", node->getName()));
-        }
-
         IRBuilder<> Builder(context->getLlvmContext());
         Builder.SetInsertPoint(context->getCurrentBlock());
 
-        // Retrieve variable complex type
-        // Special case for array : if it is an array, use the array type
-        CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
+        // Look for a variable
+        CodeGenVariable *var = context->getLocal(node->getName());
+        if (var != nullptr)
+        {
+            // Retrieve variable complex type
+            // Special case for array : if it is an array, use the array type
+            CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
 
-        Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
+            Value *varValue = getComplexTypeMemberValue(complexType, var->getValue(), node, context);
 
-        Type *type = varValue->getType()->getPointerElementType();
+            Type *type = varValue->getType()->getPointerElementType();
 
-        this->result = Builder.CreateLoad(type, varValue, "load");
+            this->result = Builder.CreateLoad(type, varValue, "load");
+            return;
+        }
+        else
+        {
+            // Look for a function
+            Function *function = context->getIdentifierResolver()->resolveFunction(node);
+            if (function != nullptr)
+            {
+                Function *function = context->getIdentifierResolver()->resolveFunction(node);
+                this->result = function;
+                return;
+            }
+        }
+
+        context->logger.logError(node->location, formatv("undeclared identifier {0}", node->getName()));
     }
 
     void CodeGenVisitor::visit(ASTBlock *node)
@@ -380,32 +335,12 @@ namespace stark
         // Check that variable name is available
         context->getChecker()->checkAvailableLocalVariable(node->getId());
 
-        // var: type [= expr]
-        if (node->getType() != nullptr)
+        // Type is provided
+        if (node->getType() != nullptr || node->getFunctionSignature() != nullptr)
         {
-            // Type selection : based on the value of the declaration
-            // Except if it is an array
-            std::string typeName = node->getType()->getFullName();
-            Type *type = context->getType(typeName);
-            if (node->isArray())
-            {
-                // Array variables are pointers !
-                type = context->getArrayComplexType(typeName)->getType()->getPointerTo();
-            }
-
-            if (type == nullptr)
-            {
-                context->logger.logError(node->location, formatv("unknown type {0}", typeName));
-            }
-
-            // All complex types are pointer variables (be careful not to process array type once again)
-            if (!context->isPrimaryType(typeName) && !node->isArray())
-            {
-                type = type->getPointerTo();
-            }
-
-            CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, node->isArray(), type);
-            context->declareLocal(var);
+            // Create (and declare) variable
+            CodeGenVariable *var = context->getVariableHelper()->createVariable(node);
+            std::string typeName = var->getTypeName();
 
             // If assignment expression : assign variable
             if (node->getAssignmentExpr() != nullptr)
@@ -419,18 +354,18 @@ namespace stark
             // If no assignement : assign default value
             else
             {
-                Value *defaultValue = context->isPrimaryType(typeName) ? context->getPrimaryType(typeName)->createDefaultValue() : node->isArray() ? context->getArrayComplexType(typeName)->createDefaultValue()
-                                                                                                                                                   : context->getComplexType(typeName)->createDefaultValue();
-                this->result = new StoreInst(defaultValue, var->getValue(), false, context->getCurrentBlock());
+                this->result = new StoreInst(context->getVariableHelper()->createDefaultValue(var), var->getValue(), false, context->getCurrentBlock());
             }
         }
-        // No type: infer it from assignement (var := expr)
+        // Type not provided : infer it
         else
         {
             CodeGenVisitor v(context);
             node->getAssignmentExpr()->accept(&v);
             Type *type = v.result->getType();
             std::string typeName = context->getTypeName(type);
+
+            bool isFunction = type->isPointerTy() ? type->getPointerElementType()->isFunctionTy() : false;
 
             bool isArray = false;
             if (context->isArrayType(typeName))
@@ -440,187 +375,32 @@ namespace stark
             }
 
             CodeGenVariable *var = new CodeGenVariable(node->getId()->getName(), typeName, isArray, type);
+            var->setFunction(isFunction);
             context->declareLocal(var);
 
             this->result = new StoreInst(v.result, var->getValue(), false, context->getCurrentBlock());
         }
     }
 
-    void CodeGenVisitor::visit(ASTFunctionDefinition *node)
+    void CodeGenVisitor::visit(ASTFunctionSignature *node)
     {
-
-        context->logger.logDebug(node->location, formatv("creating function definition for {0}", node->getId()->getName()));
-        context->setCurrentLocation(node->location);
-
-        // Check declaration
-        context->getChecker()->checkAllowedFunctionDeclaration(node->getId());
-
-        // Mangle name
-        std::string functionName = context->getMangler()->mangleFunctionName(node->getId()->getName(), context->getModuleName());
-
-        ASTVariableList arguments = node->getArguments();
-
-        // Build parameters
-        vector<Type *> argTypes;
-        ASTVariableList::const_iterator it;
-        for (it = arguments.begin(); it != arguments.end(); it++)
-        {
-            ASTVariableDeclaration *v = *it;
-            Type *type = context->getType(v->getType()->getFullName());
-            if (v->isArray())
-            {
-                type = context->getArrayComplexType(v->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            if (type == nullptr)
-            {
-                context->logger.logError(v->location, formatv("unknown type {0}", v->getType()->getFullName()));
-            }
-
-            // Complex types are pointer variables !
-            if (!context->isPrimaryType(v->getType()->getFullName()) && !v->isArray())
-            {
-                type = type->getPointerTo();
-            }
-
-            argTypes.push_back(type);
-        }
-
-        // Create function
-
-        // If no return type : void is assumed
-        Type *returnType;
-        if (node->getType() == nullptr)
-        {
-            returnType = context->getPrimaryType("void")->getType();
-        }
-        else
-        {
-
-            returnType = typeOf(*node->getType(), context);
-
-            // Array case
-            if (node->getType()->isArray())
-            {
-                returnType = context->getArrayComplexType(node->getType()->getFullName())->getType()->getPointerTo();
-            }
-
-            // Complex types are pointers !
-            if (!context->isPrimaryType(node->getType()->getFullName()) && !node->getType()->isArray())
-            {
-                returnType = returnType->getPointerTo();
-            }
-        }
-
-        // Test if function is main with args: string[] as single parameter
-        bool isMainWithArgs = false;
-        std::string mainArgsParameterName = "args";
-        if (argTypes.size() == 1 && functionName.compare(MAIN_FUNCTION_NAME) == 0)
-        {
-            CodeGenComplexType *stringArrayType = context->getArrayComplexType("string");
-            if (context->getTypeName(stringArrayType->getType()).compare(context->getTypeName(argTypes[0])) == 0)
-            {
-                isMainWithArgs = true;
-
-                mainArgsParameterName = arguments[0]->getId()->getFullName();
-
-                // Replace arg types with argc & argv
-                argTypes.clear();
-                argTypes.push_back(context->getPrimaryType("int")->getType());
-                argTypes.push_back(context->getPrimaryType("any")->getType());
-            }
-        }
-
-        FunctionType *ftype = FunctionType::get(returnType, makeArrayRef(argTypes), false);
-        // TODO : being able to change function visibility by changing ExternalLinkage
-        // See https://llvm.org/docs/LangRef.html
-        Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, functionName.c_str(), context->getLlvmModule());
-
-        BasicBlock *bblock = BasicBlock::Create(context->getLlvmContext(), "entry", function, 0);
-
-        context->pushBlock(bblock);
-
-        Function::arg_iterator argsValues = function->arg_begin();
-        Value *argumentValue;
-
-        // If main function with args: create args local variable
-        if (isMainWithArgs)
-        {
-            // Create variable
-            std::string typeName = "string";
-            CodeGenVariable *var = new CodeGenVariable(mainArgsParameterName, typeName, true, context->getArrayComplexType(typeName)->getType()->getPointerTo());
-            context->declareLocal(var);
-
-            // Call runtime function to create args string[]
-            Function *extractFunction = context->getLlvmModule()->getFunction(STARK_RUNTIME_EXTRACT_ARGS_FUNCTION);
-            if (extractFunction == nullptr)
-            {
-                context->logger.logError("cannot extract main args: cannot find runtime function");
-            }
-            std::vector<Value *> args;
-            args.push_back(&*argsValues++);
-            args.push_back(&*argsValues++);
-            Value *alloc = CallInst::Create(extractFunction, makeArrayRef(args), "argsalloc", context->getCurrentBlock());
-            StoreInst *inst = new StoreInst(alloc, var->getValue(), false, context->getCurrentBlock());
-            //return new BitCastInst(alloc, type->getPointerTo(), "", insertAtEnd);
-        }
-        // Otherwise: create local variables for each argument
-        else
-        {
-            for (it = arguments.begin(); it != arguments.end(); it++)
-            {
-                CodeGenVisitor v(context);
-                (**it).accept(&v);
-
-                argumentValue = &*argsValues++;
-                argumentValue->setName((*it)->getId()->getName().c_str());
-                StoreInst *inst = new StoreInst(argumentValue, context->getLocal((*it)->getId()->getName())->getValue(), false, context->getCurrentBlock());
-            }
-        }
-
-        // When not running in interpreter mode : try init memory manager
-        // (must be done after the begining of the main function)
-        if (!context->isInterpreterMode())
-        {
-            context->initMemoryManager();
-        }
-
-        CodeGenVisitor v(context);
-        node->getBlock()->accept(&v);
-
-        // Add return at the end.
-        // If no return : add a default one
-        if (context->getReturnValue() != nullptr)
-        {
-            ReturnInst::Create(context->getLlvmContext(), context->getReturnValue(), context->getCurrentBlock());
-        }
-        else
-        {
-            if (function->getReturnType()->isVoidTy())
-            {
-                // Add return to void function
-                context->logger.logDebug(node->location, formatv("adding void return in {0}.{1}", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->getLlvmContext(), context->getCurrentBlock());
-            }
-            else
-            {
-                context->logger.logDebug(node->location, formatv("missing return in {0}.{1}, adding one with block value", context->getCurrentBlock()->getParent()->getName(), context->getCurrentBlock()->getName()));
-                ReturnInst::Create(context->getLlvmContext(), v.result, context->getCurrentBlock());
-            }
-        }
-
-        context->popBlock();
-
-        this->result = function;
+        // Nothing to generate here
     }
 
-    static void printDebugType(Value *value)
+    void CodeGenVisitor::visit(ASTAnonymousFunction *node)
     {
-        std::string typeStr;
-        llvm::raw_string_ostream rso(typeStr);
-        value->getType()->print(rso);
-        std::string llvmTypeName = rso.str();
-        cout << ">>>>>> " << llvmTypeName << endl;
+        // Convert to an ASTFunctionDeclaration
+        ASTVariableList arguments = cloneList(node->getArguments());
+
+        ASTFunctionDeclaration fd(node->getType() != nullptr ? node->getType()->clone() : nullptr, nullptr, arguments, node->getBlock()->clone());
+        if (node->getFunctionSignatureType() != nullptr)
+        {
+            fd.setFunctionSignatureType(node->getFunctionSignatureType()->clone());
+        }
+        CodeGenVisitor v(context);
+        fd.accept(&v);
+
+        this->result = v.result;
     }
 
     void CodeGenVisitor::visit(ASTFunctionCall *node)
@@ -628,26 +408,65 @@ namespace stark
         context->logger.logDebug(node->location, formatv("creating function call {0}", node->getId()->getFullName()));
         context->setCurrentLocation(node->location);
 
-        // Resolve function
+        IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
+
+        // Look for a function
         Function *function = context->getIdentifierResolver()->resolveFunction(node->getId());
+        CodeGenVariable *var = nullptr;
+        FunctionType *varFunctionType = nullptr;
+        Value *functionPtrValue = nullptr;
         if (function == nullptr)
         {
-            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
+            // Look for a variable
+            var = context->getLocal(node->getId()->getName());
+            if (var != nullptr)
+            {
+                // Variable is a function
+                if (var->isFunction() && !var->isArray())
+                {
+                    varFunctionType = static_cast<FunctionType *>(var->getType()->getPointerElementType());
+                    functionPtrValue = var->getValue();
+                }
+                // Not a function: need to resolve members /array
+                else
+                {
+                    CodeGenComplexType *complexType = var->isArray() ? context->getArrayComplexType(var->getTypeName()) : context->getComplexType(var->getTypeName());
+                    if (complexType != nullptr)
+                    {
+                        functionPtrValue = getComplexTypeMemberValue(complexType, var->getValue(), node->getId(), context);
+
+                        if (functionPtrValue->getType()->getPointerElementType()->getPointerElementType()->isFunctionTy())
+                        {
+                            varFunctionType = static_cast<FunctionType *>(functionPtrValue->getType()->getPointerElementType()->getPointerElementType());
+                        }
+                    }
+                }
+            }
         }
+
+        if (function == nullptr && varFunctionType == nullptr)
+        {
+            context->logger.logError(node->location, formatv("undeclared function {0}", node->getId()->getFullName()));
+            return;
+        }
+
+        // Get function argument count
+        size_t argSize = function != nullptr ? function->arg_size() : varFunctionType->getNumParams();
 
         // Generate argument values
         std::vector<Value *> args;
         ASTExpressionList arguments = node->getArguments();
 
-        if (function->arg_size() != node->getArguments().size())
+        if (argSize != arguments.size())
         {
-            context->logger.logError(node->location, formatv("function {0} is expecting {1} argument(s), not {2}", node->getId()->getFullName(), function->arg_size(), args.size()));
+            context->logger.logError(node->location, formatv("function {0} is expecting {1} argument(s), not {2}", node->getId()->getFullName(), argSize, arguments.size()));
         }
 
         int i = 0;
         for (auto it = arguments.begin(); it != arguments.end(); it++)
         {
-            Value *argVar = function->getArg(i);
+            Type *argType = function != nullptr ? function->getArg(i)->getType() : varFunctionType->getParamType(i);
             CodeGenVisitor v(context);
             (**it).accept(&v);
 
@@ -655,7 +474,7 @@ namespace stark
             Value *assignedValue = v.result;
             if (context->getChecker()->isNull(v.result))
             {
-                assignedValue = ConstantPointerNull::getNullValue(argVar->getType());
+                assignedValue = ConstantPointerNull::getNullValue(argType);
             }
 
             args.push_back(assignedValue);
@@ -663,53 +482,32 @@ namespace stark
         }
 
         // Check that function can be called
-        context->getChecker()->checkAllowedFunctionCall(node->getId(), function, args);
+        if (function != nullptr)
+        {
+            context->getChecker()->checkAllowedFunctionCall(node->getId(), function, args);
+        }
 
         // Create call
-        CallInst *call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());
+        CallInst *call = nullptr;
+        if (function != nullptr)
+        {
+            call = CallInst::Create(function, makeArrayRef(args), function->getReturnType()->isVoidTy() ? "" : "call", context->getCurrentBlock());
+        }
+        else
+        {
+            call = CallInst::Create(varFunctionType, Builder.CreateLoad(functionPtrValue), makeArrayRef(args), "", context->getCurrentBlock());
+        }
+
         this->result = call;
     }
 
     void CodeGenVisitor::visit(ASTFunctionDeclaration *node)
     {
-        context->logger.logDebug(node->location, formatv("creating function declaration for {0}", node->getId()->getFullName()));
+        context->logger.logDebug(node->location, formatv("creating {0} declaration for {1}", node->isExternal() ? "extern" : "", node->getId() ? node->getId()->getName() : "anonymous function"));
         context->setCurrentLocation(node->location);
 
-        std::string moduleName = context->getModuleName();
-        std::string functionName = node->getId()->getName();
-
-        int memberCount = node->getId()->countNestedMembers();
-        // If identifier has a member : then it is module.function
-        if (memberCount == 1)
-        {
-            moduleName = node->getId()->getName();
-            functionName = node->getId()->getMember()->getName();
-        }
-        // If more than one member : identifier is invalid
-        else if (memberCount > 1)
-        {
-            context->logger.logError(node->location, formatv("invalid identifier {0} for function declaration, expecting <function name> or <module name>.<function name>", node->getId()->getFullName()));
-        }
-
-        // Mangle
-        std::string mangledName = context->getMangler()->mangleFunctionName(functionName, moduleName);
-
-        // Create external
-        // TODO : get rid of this : create and evaluate ASTExternDeclaration node instead
-        this->result = createExternalDeclaration(mangledName, node->getArguments(), node->getType());
-    }
-
-    void CodeGenVisitor::visit(ASTExternDeclaration *node)
-    {
-
-        context->logger.logDebug(node->location, formatv("creating extern declaration for {0}", node->getId()->getName()));
-        context->setCurrentLocation(node->location);
-
-        std::string functionName = node->getId()->getName();
-        ASTVariableList arguments = node->getArguments();
-
-        // Create external
-        this->result = createExternalDeclaration(functionName, arguments, node->getType());
+        // Create function declaration
+        this->result = context->getFunctionHelper()->createFunctionDeclaration(node);
     }
 
     void CodeGenVisitor::visit(ASTReturnStatement *node)
@@ -754,12 +552,21 @@ namespace stark
             context->logger.logError(node->location, formatv("operands must be of same type for binary operations"));
         }
 
-        // Complex type
         if (!context->isPrimaryType(lhsTypeName))
         {
             // Special case for array : if it is an array, use the array type
             CodeGenComplexType *complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
-            this->result = complexType->createBinaryOperation(vl.result, node->getOp(), vr.result);
+
+            // Complex type
+            if (complexType != nullptr)
+            {
+                this->result = complexType->createBinaryOperation(vl.result, node->getOp(), vr.result);
+            }
+            // Function signature
+            else
+            {
+                context->logger.logError(node->location, formatv("binary operations are not supported on functions"));
+            }
         }
         // Primary type
         else
@@ -775,6 +582,7 @@ namespace stark
         context->setCurrentLocation(node->location);
 
         IRBuilder<> Builder(context->getLlvmContext());
+        Builder.SetInsertPoint(context->getCurrentBlock());
 
         CodeGenVisitor vl(context);
         node->getLhs()->accept(&vl);
@@ -783,6 +591,8 @@ namespace stark
 
         std::string lhsTypeName = context->getTypeName(vl.result->getType());
         std::string rhsTypeName = context->getTypeName(vr.result->getType());
+
+        this->result = nullptr;
 
         // Primary type
         if (context->isPrimaryType(lhsTypeName) && context->isPrimaryType(rhsTypeName))
@@ -795,10 +605,9 @@ namespace stark
 
             this->result = this->context->getPrimaryType(lhsTypeName)->createComparison(vl.result, node->getOp(), vr.result);
         }
-        // Complex type
         else
         {
-            CodeGenComplexType *complexType;
+            CodeGenComplexType *complexType = nullptr;
             if (context->isPrimaryType(lhsTypeName))
             {
                 complexType = context->isArrayType(rhsTypeName) ? context->getArrayComplexType(rhsTypeName) : context->getComplexType(rhsTypeName);
@@ -808,7 +617,44 @@ namespace stark
                 complexType = context->isArrayType(lhsTypeName) ? context->getArrayComplexType(lhsTypeName) : context->getComplexType(lhsTypeName);
             }
 
-            this->result = complexType->createComparison(vl.result, node->getOp(), vr.result);
+            // Complex type
+            if (complexType != nullptr)
+            {
+                this->result = complexType->createComparison(vl.result, node->getOp(), vr.result);
+            }
+            // Function signature
+            else
+            {
+                if (context->getChecker()->isNull(vl.result) || context->getChecker()->isNull(vr.result))
+                {
+
+                    // Convert pointer address to int for comparison
+                    Value *lhsPointerInt = Builder.CreatePtrToInt(vl.result, context->getPrimaryType("int")->getType());
+                    Value *rhsPointerInt = Builder.CreatePtrToInt(vr.result, context->getPrimaryType("int")->getType());
+
+                    switch (node->getOp())
+                    {
+                    case EQ:
+                        this->result = Builder.CreateICmpEQ(lhsPointerInt, rhsPointerInt, "cmp");
+                        break;
+                    case NE:
+                        this->result = Builder.CreateICmpNE(lhsPointerInt, rhsPointerInt, "cmp");
+                        break;
+                    case LT:
+                    case LE:
+                    case GT:
+                    case GE:
+                    default:
+
+                        break;
+                    }
+                }
+
+                if (this->result == nullptr)
+                {
+                    context->logger.logError(node->location, "comparison not supported");
+                }
+            }
         }
     }
 
@@ -1042,17 +888,27 @@ namespace stark
         {
             ASTVariableDeclaration *vd = *it;
 
-            // Nested type declaration
-            // Create a forward declaration (empty type)
-            // That will be redefined at the end of the delcaration
-            if (vd->getType()->getFullName().compare(node->getId()->getFullName()) == 0)
+            // Types
+            if (vd->getType() != nullptr)
             {
-                hasNestedType = true;
-                CodeGenComplexType *forwardStructType = new CodeGenComplexType(node->getId()->getFullName(), context);
-                context->declareComplexType(forwardStructType);
-            }
+                // Nested type declaration
+                // Create a forward declaration (empty type)
+                // That will be redefined at the end of the delcaration
+                if (vd->getType()->getFullName().compare(node->getId()->getFullName()) == 0)
+                {
+                    hasNestedType = true;
+                    CodeGenComplexType *forwardStructType = new CodeGenComplexType(node->getId()->getFullName(), context);
+                    context->declareComplexType(forwardStructType);
+                }
 
-            structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), (**it).isArray());
+                structType->addMember(vd->getId()->getName(), vd->getType()->getFullName(), typeOf(*(vd->getType()), context), vd->getType()->isArray(), false);
+            }
+            // Function signatures
+            else
+            {
+                CodeGenFunctionType *ft = context->declareFunctionType(vd->getFunctionSignature());
+                structType->addMember(vd->getId()->getName(), ft->getName(), ft->getType(), vd->getFunctionSignature()->isArray(), true);
+            }
         }
 
         context->declareComplexType(structType);

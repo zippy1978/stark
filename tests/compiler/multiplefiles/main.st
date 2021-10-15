@@ -3,7 +3,7 @@
  *  main.st
  */
 
-func main(): int {
+func main() => int {
 
     tony: Employee  = createEmployee("Tony Stark", 40)
     pepper: Employee = createEmployee("Pepper Pots", 38)
@@ -16,15 +16,15 @@ func main(): int {
     print("Number of employees: ")
     println(starkIndustries.employees.len as string)
 
+    formatEmployee := func (e: Employee) => string {
+        return "- " + e.name + " (age " + e.age as string + ")"
+    }
+
     println("Employees are:")
     i: int = 0
     while (i < starkIndustries.employees.len) {
-        e: Employee = starkIndustries.employees[i]
-        print("- ")
-        print(e.name)
-        print(" (age ")
-        print(e.age as string)
-        println(")")
+        e := starkIndustries.employees[i]
+        println(formatEmployee(e))
         i = i + 1
     }
 

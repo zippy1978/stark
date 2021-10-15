@@ -14,10 +14,22 @@ struct Prices {
     beer: int
 }
 
+struct Customer {
+    name: string
+}
+
 // Struct with nested complex types
 struct Shop {
     name: string,
-    prices: Prices
+    prices: Prices,
+    customers : Customer[]
+}
+
+// Struct with function types
+struct Operations {
+    add: func (int, int) => int,
+    sub: func (int, int) => int,
+    sum: func (int[]) => int
 }
 
 // Nested type declaration

@@ -15,6 +15,7 @@ namespace stark
   class ASTExpression;
   class ASTVariableDeclaration;
   class ASTIdentifier;
+  class ASTFunctionSignature;
 
   typedef std::vector<ASTStatement *> ASTStatementList;
   typedef std::vector<ASTExpression *> ASTExpressionList;
@@ -178,7 +179,7 @@ namespace stark
      * Sort order is : types, then functions, then the rest.
      * */
     void sort();
-    /** 
+    /**
      * Prepend statements of a block to the current block.
      * If the first statement of the target (this) block is a module declaration :
      * then statements are inserted right after it.
@@ -214,36 +215,66 @@ namespace stark
   class ASTVariableDeclaration : public ASTStatement
   {
     std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignature;
     std::unique_ptr<ASTIdentifier> id;
     std::unique_ptr<ASTExpression> assignmentExpr;
-    bool array;
 
   public:
-    ASTVariableDeclaration(ASTIdentifier *type, ASTIdentifier *id, bool array, ASTExpression *assignmentExpr) : type(type), id(id), array(array), assignmentExpr(assignmentExpr) {}
+    ASTVariableDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTExpression *assignmentExpr) : type(type), id(id), assignmentExpr(assignmentExpr) {}
+    ASTVariableDeclaration(ASTIdentifier *type, ASTFunctionSignature *functionSignature, ASTIdentifier *id, ASTExpression *assignmentExpr) : type(type), functionSignature(functionSignature), id(id), assignmentExpr(assignmentExpr) {}
     ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignature() { return functionSignature.get(); }
     ASTIdentifier *getId() { return id.get(); }
     ASTExpression *getAssignmentExpr() { return assignmentExpr.get(); }
-    bool isArray() { return array; }
     void accept(ASTVisitor *visitor);
     ASTVariableDeclaration *clone();
   };
 
-  class ASTFunctionDefinition : public ASTStatement
+  class ASTFunctionSignature : public ASTExpression
   {
     std::unique_ptr<ASTIdentifier> type;
-    std::unique_ptr<ASTIdentifier> id;
+    std::unique_ptr<ASTFunctionSignature> functionSignatureType;
+    ASTIdentifierList arguments;
+    bool closure = false;
+    bool array = false;
+
+  public:
+    ASTFunctionSignature(ASTIdentifier *type, ASTIdentifierList &arguments) : type(type), arguments(arguments) { functionSignatureType = nullptr; }
+    ASTFunctionSignature(ASTFunctionSignature *functionSignatureType, ASTIdentifierList &arguments) : functionSignatureType(functionSignatureType), arguments(arguments) { type = nullptr; }
+    ~ASTFunctionSignature();
+    ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignature() { return functionSignatureType.get(); }
+    ASTIdentifierList getArguments() { return arguments; }
+    void accept(ASTVisitor *visitor);
+    bool isClosure() { return closure; }
+    void setClosure(bool c) { closure = c; }
+    bool isArray() { return array; }
+    void setArray(bool a) { array = a; }
+    ASTFunctionSignature *clone();
+  };
+
+  class ASTAnonymousFunction : public ASTExpression
+  {
+    std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignatureType;
     std::unique_ptr<ASTBlock> block;
     ASTVariableList arguments;
 
   public:
-    ASTFunctionDefinition(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : type(type), id(id), arguments(arguments), block(block) {}
-    ~ASTFunctionDefinition();
+    ASTAnonymousFunction(ASTVariableList &arguments, ASTBlock *block) : arguments(arguments), block(block)
+    {
+      type = nullptr;
+      functionSignatureType = nullptr;
+    }
+    ASTAnonymousFunction(ASTIdentifier *type, ASTVariableList &arguments, ASTBlock *block) : type(type), arguments(arguments), block(block) { functionSignatureType = nullptr; }
+    ASTAnonymousFunction(ASTFunctionSignature *functionSignatureType, ASTVariableList &arguments, ASTBlock *block) : functionSignatureType(functionSignatureType), arguments(arguments), block(block) { type = nullptr; }
+    ~ASTAnonymousFunction();
     ASTIdentifier *getType() { return type.get(); }
-    ASTIdentifier *getId() { return id.get(); }
+    ASTFunctionSignature *getFunctionSignatureType() { return functionSignatureType.get(); }
     ASTVariableList getArguments() { return arguments; }
     ASTBlock *getBlock() { return block.get(); }
     void accept(ASTVisitor *visitor);
-    ASTFunctionDefinition *clone();
+    ASTAnonymousFunction *clone();
   };
 
   class ASTFunctionCall : public ASTExpression
@@ -261,50 +292,82 @@ namespace stark
     ASTFunctionCall *clone();
   };
 
-  class ASTExternDeclaration : public ASTStatement
-  {
-    std::unique_ptr<ASTIdentifier> type;
-    std::unique_ptr<ASTIdentifier> id;
-    ASTVariableList arguments;
-
-  public:
-    ASTExternDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
-    ~ASTExternDeclaration()
-    {
-      for (int i = 0; i < arguments.size(); i++)
-      {
-        delete arguments[i];
-      }
-    }
-    ASTIdentifier *getType() { return type.get(); }
-    ASTIdentifier *getId() { return id.get(); }
-    ASTVariableList getArguments() { return arguments; }
-    void accept(ASTVisitor *visitor);
-    ASTExternDeclaration *clone();
-    int getPriority()
-    {
-      // Very special case : runtime alloc function must be on top of the block !
-      // Should not be here (an AST should not know about specific function name)
-      // But, no idea where to put it (CodeGenVisitor : it is too late, as we are still generating code)
-      return id->getFullName().compare("stark_runtime_priv_mm_alloc") == 0 ? 1 : 3;
-    }
-  };
-
   class ASTFunctionDeclaration : public ASTStatement
   {
     std::unique_ptr<ASTIdentifier> type;
+    std::unique_ptr<ASTFunctionSignature> functionSignatureType;
     std::unique_ptr<ASTIdentifier> id;
+    std::unique_ptr<ASTBlock> block;
     ASTVariableList arguments;
+    bool external = false;
 
   public:
-    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments) {}
+    ASTFunctionDeclaration(ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : id(id), arguments(arguments), block(block)
+    {
+      functionSignatureType = nullptr;
+      type = nullptr;
+    }
+    ASTFunctionDeclaration(ASTIdentifier *id, ASTVariableList &arguments, bool external) : id(id), arguments(arguments), external(external)
+    {
+      block = nullptr;
+      functionSignatureType = nullptr;
+      type = nullptr;
+    }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : type(type), id(id), arguments(arguments), block(block) { functionSignatureType = nullptr; }
+    ASTFunctionDeclaration(ASTFunctionSignature *functionSignatureType, ASTIdentifier *id, ASTVariableList &arguments, ASTBlock *block) : functionSignatureType(functionSignatureType), id(id), arguments(arguments), block(block) { type = nullptr; }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments) : type(type), id(id), arguments(arguments)
+    {
+      block = nullptr;
+      functionSignatureType = nullptr;
+    }
+    ASTFunctionDeclaration(ASTFunctionSignature *functionSignatureType, ASTIdentifier *id, ASTVariableList &arguments) : functionSignatureType(functionSignatureType), id(id), arguments(arguments)
+    {
+      block = nullptr;
+      type = nullptr;
+    }
+    ASTFunctionDeclaration(ASTIdentifier *type, ASTIdentifier *id, ASTVariableList &arguments, bool external) : type(type), id(id), arguments(arguments), external(external)
+    {
+      block = nullptr;
+      functionSignatureType = nullptr;
+    }
+    ASTFunctionDeclaration(ASTFunctionSignature *functionSignatureType, ASTIdentifier *id, ASTVariableList &arguments, bool external) : functionSignatureType(functionSignatureType), id(id), arguments(arguments), external(external)
+    {
+      block = nullptr;
+      type = nullptr;
+    }
     ~ASTFunctionDeclaration();
     ASTIdentifier *getType() { return type.get(); }
+    ASTFunctionSignature *getFunctionSignatureType() { return functionSignatureType.get(); }
+    void setFunctionSignatureType(ASTFunctionSignature *s) { functionSignatureType = std::unique_ptr<ASTFunctionSignature>(s); }
     ASTIdentifier *getId() { return id.get(); }
     ASTVariableList getArguments() { return arguments; }
+    ASTBlock *getBlock() { return block.get(); }
     void accept(ASTVisitor *visitor);
     ASTFunctionDeclaration *clone();
-    int getPriority() { return 3; }
+    bool isExternal() { return external; }
+    void setExternal(bool e) { external = e; }
+    int getPriority()
+    {
+      if (external)
+      {
+        // Very special case : runtime alloc function must be on top of the block !
+        // Should not be here (an AST should not know about specific function name)
+        // But, no idea where to put it (CodeGenVisitor : it is too late, as we are still generating code)
+        return id->getFullName().compare("stark_runtime_priv_mm_alloc") == 0 ? 1 : 3;
+      }
+      else
+      {
+        // Definition only
+        if (getBlock() == nullptr)
+        {
+          return 3;
+        }
+        else
+        {
+          return ASTStatement::getPriority();
+        }
+      }
+    }
   };
 
   class ASTReturnStatement : public ASTStatement
@@ -429,8 +492,8 @@ namespace stark
   };
 
   /*
- * Virtual class to visit the AST.
- */
+   * Virtual class to visit the AST.
+   */
   class ASTVisitor
   {
   public:
@@ -443,9 +506,9 @@ namespace stark
     virtual void visit(ASTAssignment *node) = 0;
     virtual void visit(ASTExpressionStatement *node) = 0;
     virtual void visit(ASTVariableDeclaration *node) = 0;
-    virtual void visit(ASTFunctionDefinition *node) = 0;
+    virtual void visit(ASTFunctionSignature *node) = 0;
+    virtual void visit(ASTAnonymousFunction *node) = 0;
     virtual void visit(ASTFunctionCall *node) = 0;
-    virtual void visit(ASTExternDeclaration *node) = 0;
     virtual void visit(ASTReturnStatement *node) = 0;
     virtual void visit(ASTBinaryOperation *node) = 0;
     virtual void visit(ASTComparison *node) = 0;

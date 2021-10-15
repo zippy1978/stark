@@ -45,7 +45,7 @@ Variables are local to the code block they are declared in: they can be accessed
 
 In this example, *result* variable is accessible from the *if* block:
 ```stark
-func amIOld(age: int): string {
+func amIOld(age: int) => string {
     result := "No you are young !"
     if (age > 50) {
         result = "Sorry, you are old"
@@ -297,16 +297,21 @@ Functions are callable code blocks taking values as input (parameters), and outp
 
 The function definition syntax is:
 
-func ``name``(``paramname``: ``type``, ``paramname``: ``type``, ...): ``type`` {...}
+func ``name``(``paramname``: ``type``, ``paramname``: ``type``, ...) => ``type`` {...}
 
-A ``return`` statement is expected inside the function body, except if the return type is ``void``:
+A ``return`` statement can be used inside the function body, except if the return type is ``void``. If ``return`` statment is omitted for a function expecting a return value, then the last body expression will be returned :
 
 ```stark
-func add(a: int, b: int): int {
+func add(a: int, b: int) => int {
     return a + b
 }
 
-func sayHello(): void {
+func sub(a: int, b: int) => int { 
+    // Return can be omitted here.
+    a - b
+}
+
+func sayHello() => void {
     println("Hello")
     // No need to return here
 }
@@ -329,6 +334,51 @@ Parameters must match the function declaration (count and position).
 result: int = add(3, 7)
 sayHello()
 ```
+
+### Function type
+
+A function can be stored into a variable with a function type. And function types are defined using a function signature with the syntax:
+
+func (``type``, ``type``, ...) => ``type``
+
+```stark
+func add(a: int, b: int) => int {
+    a + b
+}
+
+myFunc : func (int, int) => int
+myFunc = add
+// Result is 3
+add(1, 2)
+
+// Arrays can hold function signatures as well
+// Note that parents are necessary to delimit the function signature
+myFuncArray := (func (int, int) => int)[]
+```
+
+### Anonymous declaration
+
+A function can be declared anonymously. An anonymous function is declared as a regular function expect that non name is provided
+
+```stark
+add := func (a: int, b: int) => int {
+    a + b
+}
+// Result is 3
+add(1, 2)
+
+// A function can return another function
+func inception() => func () => int {
+    func () => int {
+        10
+    }
+}
+f := inception()
+// Result is 10
+f()
+```
+
+!> Anonymous functions are not closures: they are not aware of their environment. See [closures sections](closures) to learn more about closure usage.
 
 ## Comments
 

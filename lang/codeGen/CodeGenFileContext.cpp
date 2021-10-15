@@ -64,6 +64,7 @@ namespace stark
 
 	Type *CodeGenFileContext::getType(std::string typeName)
 	{
+
 		// Primary types
 		CodeGenPrimaryType *primaryType = getPrimaryType(typeName);
 		if (primaryType != nullptr)
@@ -76,6 +77,13 @@ namespace stark
 		if (complexType != nullptr)
 		{
 			return complexType->getType();
+		}
+
+		// Function types
+		CodeGenFunctionType *functionType = getFunctionType(typeName);
+		if (functionType != nullptr)
+		{
+			return functionType->getType();
 		}
 
 		// Not found
@@ -93,10 +101,10 @@ namespace stark
 		rso.flush();
 		std::string llvmTypeName = rso.str();
 
-		// Strip type name to get the name only
+		// Strip type name to get the name only except if it is a function type (ends with ')*')
 		// Case adressed here :
 		// %trooper = type { %string, i64, %ship } is changed to trooper
-		if (llvmTypeName.rfind("%", 0) == 0)
+		if (llvmTypeName.rfind("%", 0) == 0 && !endsWith(llvmTypeName, ")*"))
 		{
 			llvmTypeName = llvmTypeName.erase(0, 1);
 			std::vector<std::string> nameParts = split(llvmTypeName, ' ');
@@ -114,12 +122,26 @@ namespace stark
 			}
 		}
 
-		// If not a primary type : must be a complex type : return llvm type name without the "*" pointer
-
+		// If not a primary type: drop pointer symbol
 		if (endsWith(llvmTypeName, "*"))
 		{
 			llvmTypeName = llvmTypeName.substr(0, llvmTypeName.size() - 1);
 		}
+
+		// Look for a function type
+		if (endsWith(llvmTypeName, ")"))
+		{
+			for (auto it = functionTypes.begin(); it != functionTypes.end(); it++)
+			{
+				CodeGenFunctionType *functionType = it->second.get();
+				if (functionType->getLLvmTypeName().compare(llvmTypeName) == 0)
+				{
+					return functionType->getName();
+				}
+			}
+		}
+
+		// If not a primary type or a function type : must be a complex type : return llvm type name
 		return llvmTypeName;
 	}
 
@@ -141,11 +163,68 @@ namespace stark
 		}
 	}
 
+	void CodeGenFileContext::declareClosureType(CodeGenClosureType *closureType)
+	{
+		CodeGenClosureType *existingType = getClosureType(closureType->getName());
+		// Type does not eist : create it
+		if (existingType == nullptr)
+		{
+			closureType->declare();
+			closureTypes[closureType->getName()] = std::unique_ptr<CodeGenClosureType>(closureType);
+		}
+	}
+
+	CodeGenFunctionType *CodeGenFileContext::declareFunctionType(ASTFunctionSignature *signature)
+	{
+		FunctionType *ft = getFunctionHelper()->createFunctionType(signature);
+		// Get a string version of the type from the signature
+		// Clone to remove array brackets
+		ASTWriter w;
+		ASTFunctionSignature *clone = signature->clone();
+		clone->setArray(false);
+		w.visit(clone);
+		std::string typeName = w.getSourceCode();
+		delete clone;
+
+		// Remove spaces to avoid LLVM naming issues
+		std::replace(typeName.begin(), typeName.end(), '(', '_');
+		std::replace(typeName.begin(), typeName.end(), ')', '_');
+		std::replace(typeName.begin(), typeName.end(), '=', '_');
+		std::replace(typeName.begin(), typeName.end(), '>', '_');
+		std::replace(typeName.begin(), typeName.end(), ':', '_');
+		std::replace(typeName.begin(), typeName.end(), ',', '_');
+		std::string::iterator newEnd = std::remove(typeName.begin(), typeName.end(), ' ');
+		typeName.erase(newEnd, typeName.end());
+
+		logger.logDebug(signature->location, formatv("declaring function type {0}", typeName));
+
+		CodeGenFunctionType *functionType = new CodeGenFunctionType(typeName, this, ft);
+		functionTypes[typeName] = std::unique_ptr<CodeGenFunctionType>(functionType);
+
+		// Recursive declaration
+		if (signature->getFunctionSignature() != nullptr)
+		{
+			declareFunctionType(signature->getFunctionSignature());
+		}
+
+		return functionType;
+	}
+
 	CodeGenComplexType *CodeGenFileContext::getComplexType(std::string typeName)
 	{
 		if (complexTypes.find(typeName) != complexTypes.end())
 		{
 			return complexTypes[typeName].get();
+		}
+
+		return nullptr;
+	}
+
+	CodeGenClosureType *CodeGenFileContext::getClosureType(std::string typeName)
+	{
+		if (closureTypes.find(typeName) != closureTypes.end())
+		{
+			return closureTypes[typeName].get();
 		}
 
 		return nullptr;
@@ -189,6 +268,16 @@ namespace stark
 		return nullptr;
 	}
 
+	CodeGenFunctionType *CodeGenFileContext::getFunctionType(std::string typeName)
+	{
+		if (functionTypes.find(typeName) != functionTypes.end())
+		{
+			return functionTypes[typeName].get();
+		}
+
+		return nullptr;
+	}
+
 	void CodeGenFileContext::declareLocal(CodeGenVariable *var)
 	{
 		CodeGenBlock *top = blocks.top();
@@ -205,6 +294,16 @@ namespace stark
 		}
 
 		return nullptr;
+	}
+
+	std::vector<CodeGenVariable *> CodeGenFileContext::getLocals()
+	{
+		std::vector<CodeGenVariable *> result;
+		for (auto v : blocks.top()->locals)
+		{
+			result.push_back(v.second.get());
+		}
+		return result;
 	}
 
 	/* Push new block on the stack */

@@ -5,9 +5,9 @@
 extern assertIntEquals(actual: int, expected: int)
 extern assertStringEquals(actual: string, expected: string)
 extern assertDoubleEquals(actual: double, expected: double)
-extern assertTrue(actual: bool): void
-extern assertNull(actual: any): void
-extern failure(): void
+extern assertTrue(actual: bool)
+extern assertNull(actual: any)
+extern failure()
 
 struct Shop {
     id: int,
@@ -61,3 +61,11 @@ assertIntEquals(oneLineInt.len, 2)
 oneLineShops := shops
 assertIntEquals(oneLineShops.len, 2)
 assertStringEquals(oneLineShops[0].name, "shop 1")
+
+// Array with functions types
+func nestedFunc() => int {
+    return 1
+}
+f : (func () => int)[]
+f = [nestedFunc]
+assertIntEquals(f[0](), 1)

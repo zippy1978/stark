@@ -27,7 +27,7 @@ namespace stark
     public:
         CodeGenIdentifierResolver(CodeGenFileContext *context) : context(context) {}
         /** 
-         * Resolve LLVM function forn an identifier.
+         * Resolve LLVM function form an identifier.
          * If not funciton found, return null.
          */
         Function *resolveFunction(ASTIdentifier *id);

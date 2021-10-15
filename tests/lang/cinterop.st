@@ -7,7 +7,7 @@ extern assertDoubleEquals(actual: double, expected: double)
 extern assertStringEquals(actual: string, expected: string)
 extern assertTrue(actual: bool)
 
-extern atoi(s: any): int
+extern atoi(s: any) => int
 
 // toCString
 assertIntEquals(atoi(toCString("12")), 12)

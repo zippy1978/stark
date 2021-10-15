@@ -25,8 +25,9 @@ namespace stark
         int position;
         Type *type;
         bool array;
+        bool function;
         std::string typeName;
-        CodeGenComplexTypeMember(std::string name, std::string typeName, int position, Type *type, bool array) : name(name), typeName(typeName), position(position), type(type), array(array) {}
+        CodeGenComplexTypeMember(std::string name, std::string typeName, int position, Type *type, bool array, bool function) : name(name), typeName(typeName), position(position), type(type), array(array), function(function) {}
     };
 
     /**
@@ -63,8 +64,8 @@ namespace stark
 
         /** Returns the complex type llvm::StructType, returns nullptr is complex type is not declared yet */
         StructType *getType() { return type; }
-        void addMember(std::string name, std::string typeName, Type *type, bool array);
-        void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false); }
+        void addMember(std::string name, std::string typeName, Type *type, bool array, bool function);
+        void addMember(std::string name, std::string typeName, Type *type) { addMember(name, typeName, type, false, false); }
         CodeGenComplexTypeMember *getMember(std::string name);
         std::vector<CodeGenComplexTypeMember *> getMembers();
         std::string getName() { return name; }

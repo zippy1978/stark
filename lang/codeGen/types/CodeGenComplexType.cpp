@@ -100,7 +100,7 @@ namespace stark
         for (auto it = newMembers.begin(); it != newMembers.end(); it++)
         {
             CodeGenComplexTypeMember *m = *it;
-            members.push_back(std::make_unique<CodeGenComplexTypeMember>(m->name, m->typeName, pos, m->type, m->array));
+            members.push_back(std::make_unique<CodeGenComplexTypeMember>(m->name, m->typeName, pos, m->type, m->array, m->function));
             pos++;
 
             if (m->array)
@@ -151,7 +151,7 @@ namespace stark
         this->defineConstructor();
     }
 
-    void CodeGenComplexType::addMember(std::string name, std::string typeName, Type *type, bool array)
+    void CodeGenComplexType::addMember(std::string name, std::string typeName, Type *type, bool array, bool function)
     {
 
         // Complex types are pointers !
@@ -159,7 +159,7 @@ namespace stark
         {
             type = type->getPointerTo();
         }
-        members.push_back(std::make_unique<CodeGenComplexTypeMember>(name, typeName, members.size(), type, array));
+        members.push_back(std::make_unique<CodeGenComplexTypeMember>(name, typeName, members.size(), type, array, function));
     }
 
     CodeGenComplexTypeMember *CodeGenComplexType::getMember(std::string name)

@@ -1,14 +1,27 @@
-extern strtok(str: any, delim: any): any
-
-func join(parts: string[], separator: string): string {
-    result := ""
-    /*if (parts != null) {
-        i := 0
-        while (i < parts.len) {
-            result = result + parts[i]
-            i = i + 1
-        }
-    }*/
-    return result
+// Return type is a function
+func funcToFunc() => func () => int {
+    func () => int {
+        12
+    }
 }
-r := join(["gg", "dd"], "ff")
+f := funcToFunc()
+println(f() as string)
+
+anonymousFuncToFunc := func () => func () => int {
+    func () => int {
+        24
+    }
+}
+af := anonymousFuncToFunc()
+println(af() as string)
+
+func funcToFuncToFunc() => func () => func () => int {
+    return func () => func () => int {
+        return func () => int {
+            32
+        }
+    }
+}
+ftf := funcToFuncToFunc()
+f = ftf()
+println(f() as string)

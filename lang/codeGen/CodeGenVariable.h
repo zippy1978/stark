@@ -23,19 +23,23 @@ namespace stark
         Value *value;
         Type *type;
         bool array;
+        bool function;
 
     public:
         CodeGenVariable(std::string name, std::string typeName, bool array, Type *type) : name(name), typeName(typeName), array(array), type(type)
         {
             type = nullptr;
             value = nullptr;
+            function = false;
         }
         void declare(BasicBlock *block);
         std::string getName() { return name; }
         std::string getTypeName() { return typeName; }
         Type *getType() { return type; }
         Value *getValue() { return value; }
-        bool isArray() {return array; }
+        bool isArray() { return array; }
+        bool isFunction() { return function; }
+        void setFunction(bool f) { function = f; }
     };
 
 } // namespace stark

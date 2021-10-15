@@ -121,16 +121,16 @@ void parseOptions(int argc, char *argv[])
 /**
  * Extract function definitions from an ASTBlock, where name match the provided prefix
  */
-std::vector<ASTFunctionDefinition *> extractFunctions(ASTBlock *block, std::string prefix)
+std::vector<ASTFunctionDeclaration *> extractFunctions(ASTBlock *block, std::string prefix)
 {
-    std::vector<ASTFunctionDefinition *> result;
+    std::vector<ASTFunctionDeclaration *> result;
     ASTStatementList stmts = block->getStatements();
     for (auto it = stmts.begin(); it != stmts.end(); it++)
     {
         ASTStatement *stmt = *it;
-        if (dynamic_cast<ASTFunctionDefinition *>(stmt))
+        if (dynamic_cast<ASTFunctionDeclaration *>(stmt))
         {
-            ASTFunctionDefinition *fd = static_cast<ASTFunctionDefinition *>(stmt);
+            ASTFunctionDeclaration *fd = static_cast<ASTFunctionDeclaration *>(stmt);
             if (fd->getId()->getName().rfind(prefix, 0) == 0)
             {
                 result.push_back(fd);
@@ -211,12 +211,12 @@ int main(int argc, char *argv[])
             ASTBlock *program = parser.parse(&input);
 
             // Retrieve test function names
-            std::vector<ASTFunctionDefinition *> testFunctions = extractFunctions(program, options.prefix);
+            std::vector<ASTFunctionDeclaration *> testFunctions = extractFunctions(program, options.prefix);
 
             // Run tests
             for (auto it = testFunctions.begin(); it != testFunctions.end(); it++)
             {
-                ASTFunctionDefinition *fd = *it;
+                ASTFunctionDeclaration *fd = *it;
                 std::string testFunctionName = fd->getId()->getName();
                 std::cout << testFunctionName << " ... running\r" << std::flush;
 

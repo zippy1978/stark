@@ -26,7 +26,7 @@ namespace stark
         {
             linkerCommand = linkerParts[0];
         }
-        std::string linkerFlags = "-lpthread";
+        std::string linkerFlags = "-lpthread -no-pie";
         if (linkerParts.size() > 1 && linkerParts[1].size() > 0)
         {
             linkerFlags = linkerParts[1];

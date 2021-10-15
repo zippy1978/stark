@@ -13,13 +13,15 @@
 #include "../ast/AST.h"
 #include "../util/Util.h"
 
-#include "types/CodeGenComplexType.h"
-#include "types/CodeGenPrimaryType.h"
+#include "types/CodeGenTypes.h"
 #include "CodeGenVariable.h"
 #include "CodeGenMangler.h"
 #include "CodeGenBitcode.h"
 #include "CodeGenChecker.h"
 #include "CodeGenIdentifierResolver.h"
+#include "helpers/CodeGenFunctionHelper.h"
+#include "helpers/CodeGenTypeHelper.h"
+#include "helpers/CodeGenVariableHelper.h"
 
 using namespace llvm;
 
@@ -82,6 +84,17 @@ namespace stark
     /** Holds primary types */
     std::map<std::string, std::unique_ptr<CodeGenPrimaryType>> primaryTypes;
 
+    /** Holds function types */
+    std::map<std::string, std::unique_ptr<CodeGenFunctionType>> functionTypes;
+
+    /** Holds closure types */
+    std::map<std::string, std::unique_ptr<CodeGenClosureType>> closureTypes;
+
+    /** Counter holding the next id to use to generate 
+     * an anonymous item name (sucha as an anonymous function)
+     */
+    int anonymousIdCounter = 0;
+
     /** Run code generation in debug mode if enabled */
     bool debugEnabled = false;
 
@@ -100,6 +113,15 @@ namespace stark
     /** Identifier resolver */
     std::unique_ptr<CodeGenIdentifierResolver> identifierResolver;
 
+    /** Function helper */
+    std::unique_ptr<CodeGenFunctionHelper> functionHelper;
+
+    /** Type helper */
+    std::unique_ptr<CodeGenTypeHelper> typeHelper;
+
+    /** Variable helper */
+    std::unique_ptr<CodeGenVariableHelper> variableHelper;
+
     FileLocation currentLocation;
 
   private:
@@ -117,10 +139,16 @@ namespace stark
       mangler = std::make_unique<CodeGenMangler>();
       checker = std::make_unique<CodeGenChecker>(this);
       identifierResolver = std::make_unique<CodeGenIdentifierResolver>(this);
+      functionHelper = std::make_unique<CodeGenFunctionHelper>(this);
+      typeHelper = std::make_unique<CodeGenTypeHelper>(this);
+      variableHelper = std::make_unique<CodeGenVariableHelper>(this);
     }
 
     CodeGenMangler *getMangler() { return mangler.get(); }
     CodeGenChecker *getChecker() { return checker.get(); }
+    CodeGenFunctionHelper *getFunctionHelper() { return functionHelper.get(); }
+    CodeGenTypeHelper *getTypeHelper() { return typeHelper.get(); }
+    CodeGenVariableHelper *getVariableHelper() { return variableHelper.get(); }
     CodeGenIdentifierResolver *getIdentifierResolver() { return identifierResolver.get(); }
 
     /** Generate llvm program code */
@@ -129,21 +157,37 @@ namespace stark
     /** Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
 
+    /** Generate a complex type declaration */
+    void declareClosureType(CodeGenClosureType *closureType);
+
+    /** Declare a function type from a function signature */
+    CodeGenFunctionType *declareFunctionType(ASTFunctionSignature *signature);
+
     /** Return matching complex type information from a type name */
     CodeGenComplexType *getComplexType(std::string typeName);
 
+    /** Return matching complex type information from a type name */
+    CodeGenClosureType *getClosureType(std::string typeName);
+
     /** 
      * Return matching array type (complex type) for a given enclosing type name.
-     * If type not found, thet it is created.
+     * If type not found, then it is created.
      */
     CodeGenArrayComplexType *getArrayComplexType(std::string typeName);
 
     /** Return matching primary type from a type name */
     CodeGenPrimaryType *getPrimaryType(std::string typeName);
 
+    /** Return matching function type from a type name */
+    CodeGenFunctionType *getFunctionType(std::string typeName);
+
     /** Check if the given type name is a primary type */
     bool isPrimaryType(std::string typeName) { return (primaryTypes.find(typeName) != primaryTypes.end()); }
 
+    /** Check if the given type name is a function signature */
+    bool isFunctionSignature(std::string typeName) { return (typeName.rfind("func_") == 0); }
+
+    /** Check if the given type name is an array type */
     bool isArrayType(std::string typeName) { return (typeName.rfind("array.") == 0); }
 
     /** Return LLVM type from a type name */
@@ -154,6 +198,7 @@ namespace stark
 
     void declareLocal(CodeGenVariable *var);
     CodeGenVariable *getLocal(std::string name);
+    std::vector<CodeGenVariable *> getLocals();
 
     void addImportedModuleName(std::string moduleName) { importedModuleNames.push_back(moduleName); }
     std::vector<std::string> getImportedModuleNames() { return importedModuleNames; }
@@ -173,6 +218,15 @@ namespace stark
     void setInterpreterMode(bool m) { interpreterMode = m; }
     bool isInterpreterMode() { return interpreterMode; }
 
+    /** Return a unique identifier 
+     * for the source file being processed 
+     */
+    int getNextAnonymousId()
+    {
+      anonymousIdCounter++;
+      return anonymousIdCounter;
+    }
+
     /**
     * Try to initialize the memory manager. 
     * Can be called many times, will initialize only once, if conditions are met.
@@ -186,6 +240,8 @@ namespace stark
 
     std::string getModuleName() { return moduleName; }
     void setModuleName(std::string name) { moduleName = name; }
+
+    std::string getFilename() { return filename; }
 
     /** Returns llvm module of the context.
      * Be careful : it is only available during code generation

@@ -13,6 +13,7 @@ namespace stark
 
     CodeGenArrayComplexType::CodeGenArrayComplexType(std::string typeName, CodeGenFileContext *context) : CodeGenComplexType(formatv("array.{0}", typeName), context, true)
     {
+
         Type *t = context->getType(typeName);
 
         addMember("elements", typeName, t->getPointerTo());
@@ -40,7 +41,6 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Alloc inner array
-        // If element type is a complex type : it is a pointer
         Type *innerArrayType = ArrayType::get(elementType, values.size());
         Value *innerArrayAllocSize = ConstantExpr::getSizeOf(innerArrayType);
         Value *innerArrayAlloc = context->createMemoryAllocation(innerArrayType, innerArrayAllocSize, context->getCurrentBlock());

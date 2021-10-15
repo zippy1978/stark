@@ -58,6 +58,27 @@ namespace stark
             delete list[i];
     }
 
+    /** Creates a deep copy of a ASTIdentifierList */
+    ASTIdentifierList cloneList(ASTIdentifierList list)
+    {
+        ASTIdentifierList clone;
+
+        for (auto it = list.begin(); it != list.end(); it++)
+        {
+            ASTIdentifier *s = *it;
+            clone.push_back(s->clone());
+        }
+
+        return clone;
+    }
+
+    /** Deletes an ASTIdentifierList */
+    void deleteList(ASTIdentifierList list)
+    {
+        for (int i = 0; i < list.size(); i++)
+            delete list[i];
+    }
+
     /** Creates a deep copy of a ASTExpressionList */
     ASTExpressionList cloneList(ASTExpressionList list)
     {
@@ -284,27 +305,56 @@ namespace stark
 
     ASTVariableDeclaration *ASTVariableDeclaration::clone()
     {
-        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), this->isArray(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        ASTVariableDeclaration *clone = new ASTVariableDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getFunctionSignature() != nullptr ? this->getFunctionSignature()->clone() : nullptr, this->getId()->clone(), this->getAssignmentExpr() != nullptr ? this->getAssignmentExpr()->clone() : nullptr);
+        clone->location = this->location;
+        return clone;
+    }
+
+    // ASTFunctionSignature
+
+    void ASTFunctionSignature::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTFunctionSignature::~ASTFunctionSignature()
+    {
+        deleteList(arguments);
+    }
+
+    ASTFunctionSignature *ASTFunctionSignature::clone()
+    {
+        ASTIdentifierList arguments = cloneList(this->getArguments());
+        ASTFunctionSignature *clone = new ASTFunctionSignature(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments);
+        if (this->functionSignatureType != nullptr)
+        {
+            clone->functionSignatureType = std::unique_ptr<ASTFunctionSignature>(this->functionSignatureType->clone());
+        }
+        clone->setClosure(this->isClosure());
+        clone->setArray(this->isArray());
+        clone->location = this->location;
+        return clone;
+    }
+
+    // ASTAnonymousFunction
+
+    void ASTAnonymousFunction::accept(ASTVisitor *visitor) { visitor->visit(this); }
+
+    ASTAnonymousFunction::~ASTAnonymousFunction()
+    {
+        deleteList(arguments);
+    }
+
+    ASTAnonymousFunction *ASTAnonymousFunction::clone()
+    {
+        ASTVariableList arguments = cloneList(this->getArguments());
+        ASTAnonymousFunction *clone = new ASTAnonymousFunction(this->getType() != nullptr ? this->getType()->clone() : nullptr, arguments, this->getBlock()->clone());
+        if (this->functionSignatureType != nullptr)
+        {
+            clone->functionSignatureType = std::unique_ptr<ASTFunctionSignature>(this->functionSignatureType->clone());
+        }
         clone->location = this->location;
         return clone;
     }
 
     // ASTFunctionDefinition
-
-    void ASTFunctionDefinition::accept(ASTVisitor *visitor) { visitor->visit(this); }
-
-    ASTFunctionDefinition::~ASTFunctionDefinition()
-    {
-        deleteList(arguments);
-    }
-
-    ASTFunctionDefinition *ASTFunctionDefinition::clone()
-    {
-        ASTVariableList arguments = cloneList(this->getArguments());
-        ASTFunctionDefinition *clone = new ASTFunctionDefinition(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments, this->getBlock()->clone());
-        clone->location = this->location;
-        return clone;
-    }
 
     // ASTFunctionCall
 
@@ -319,18 +369,6 @@ namespace stark
     {
         ASTExpressionList arguments = cloneList(this->getArguments());
         ASTFunctionCall *clone = new ASTFunctionCall(this->getId()->clone(), arguments);
-        clone->location = this->location;
-        return clone;
-    }
-
-    // ASTExternDeclaration
-
-    void ASTExternDeclaration::accept(ASTVisitor *visitor) { visitor->visit(this); }
-
-    ASTExternDeclaration *ASTExternDeclaration::clone()
-    {
-        ASTVariableList arguments = cloneList(this->getArguments());
-        ASTExternDeclaration *clone = new ASTExternDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
         clone->location = this->location;
         return clone;
     }
@@ -447,8 +485,13 @@ namespace stark
     ASTFunctionDeclaration *ASTFunctionDeclaration::clone()
     {
         ASTVariableList arguments = cloneList(this->getArguments());
-        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments);
+        ASTFunctionDeclaration *clone = new ASTFunctionDeclaration(this->getType() != nullptr ? this->getType()->clone() : nullptr, this->getId()->clone(), arguments, this->getBlock() != nullptr ? this->getBlock()->clone() : nullptr);
+        if (this->functionSignatureType != nullptr)
+        {
+            clone->functionSignatureType = std::unique_ptr<ASTFunctionSignature>(this->functionSignatureType->clone());
+        }
         clone->location = this->location;
+        clone->external = this->external;
         return clone;
     }
 

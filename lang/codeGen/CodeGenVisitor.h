@@ -15,10 +15,6 @@ namespace stark
     CodeGenFileContext *context;
 
   private:
-    /**
-     * Generic external function declaration.
-     */
-    Function* createExternalDeclaration(std::string functionName, ASTVariableList arguments, ASTIdentifier *type);
 
   public:
     CodeGenVisitor(CodeGenFileContext *context) : context(context) {}
@@ -32,9 +28,9 @@ namespace stark
     void visit(ASTAssignment *node);
     void visit(ASTExpressionStatement *node);
     void visit(ASTVariableDeclaration *node);
-    void visit(ASTFunctionDefinition *node);
+    void visit(ASTFunctionSignature *node);
+    void visit(ASTAnonymousFunction *node);
     void visit(ASTFunctionCall *node);
-    void visit(ASTExternDeclaration *node);
     void visit(ASTReturnStatement *node);
     void visit(ASTBinaryOperation *node);
     void visit(ASTComparison *node);

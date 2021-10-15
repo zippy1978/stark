@@ -69,5 +69,6 @@ null                    return parser::token::NULL_VALUE;
 ","                     return parser::token::COMMA;
 ":"                     return parser::token::COLON;
 "."                     return parser::token::DOT;
+"=>"                    return parser::token::ARROW;
 
 .                       { std::cerr << "Line " << lineno() << ": Unexpected character: '" << YYText() << "'." << std::endl; exit(1); }
