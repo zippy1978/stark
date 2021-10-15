@@ -5,6 +5,7 @@
 * [Common programming concepts](common-concepts.md)
 * [Arrays](arrays.md)
 * [Structs](structs.md)
+* [Closures](closures.md)
 * [Modules](modules.md)
 * [Compiler](compiler.md)
 * [Interpreter](interpreter.md)
