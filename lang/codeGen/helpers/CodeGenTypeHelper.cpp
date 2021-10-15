@@ -32,7 +32,7 @@ namespace stark
 
         if (result == nullptr)
         {
-            context->logger.logError(formatv("unknown type {0}", typeName));
+            context->logger.logError(context->getCurrentLocation(), formatv("unknown type {0}", typeName));
         }
 
         // All complex types are pointer variables (be careful not to process array type once again)

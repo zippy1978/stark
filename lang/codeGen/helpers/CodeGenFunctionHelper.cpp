@@ -23,7 +23,6 @@ namespace stark
     FunctionType *CodeGenFunctionHelper::createFunctionType(ASTFunctionSignature *signature)
     {
 
-        
         Type *returnType;
         if (signature->getType() == nullptr)
         {
@@ -357,7 +356,7 @@ namespace stark
             // Type *actualType = context->getReturnValue()->getType
             if (!context->getChecker()->canAssign(context->getReturnValue(), context->getTypeName(function->getReturnType())))
             {
-                context->logger.logError(formatv("function is expecting {0} type as return type, not {1}", context->getTypeName(function->getReturnType()), context->getTypeName(context->getReturnValue()->getType())));
+                context->logger.logError(context->getCurrentLocation(), formatv("function is expecting {0} type as return type, not {1}", context->getTypeName(function->getReturnType()), context->getTypeName(context->getReturnValue()->getType())));
             }
 
             ReturnInst::Create(context->getLlvmContext(), context->getReturnValue(), block);
@@ -367,12 +366,12 @@ namespace stark
             if (function->getReturnType()->isVoidTy())
             {
                 // Add return to void function
-                context->logger.logDebug(formatv("adding void return in {0}.{1}", function->getName(), block->getName()));
+                context->logger.logDebug(context->getCurrentLocation(), formatv("adding void return in {0}.{1}", function->getName(), block->getName()));
                 ReturnInst::Create(context->getLlvmContext(), block);
             }
             else
             {
-                context->logger.logDebug(formatv("missing return in {0}.{1}, adding one with block value", function->getName(), block->getName()));
+                context->logger.logDebug(context->getCurrentLocation(), formatv("missing return in {0}.{1}, adding one with block value", function->getName(), block->getName()));
                 ReturnInst::Create(context->getLlvmContext(), value, block);
             }
         }
