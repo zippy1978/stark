@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "RuntimeTypes.h"
 #include "Memory.h"
@@ -21,4 +22,12 @@ extern "C" stark::any_t stark_runtime_priv_extract_args(stark::int_t argc, stark
     args->elements = elements;
 
     return args;
+}
+
+extern "C" stark::int_t stark_runtime_pub_time()
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    return (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
 }

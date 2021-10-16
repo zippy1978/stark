@@ -44,6 +44,7 @@ namespace stark
 
                 // Util
                 "extern stark_runtime_priv_extract_args(argc: int, argv: any) => any\n"
+                "extern stark_runtime_pub_time() => int\n"
 
                 // IO
                 "extern stark_runtime_pub_stdout() => any\n"
