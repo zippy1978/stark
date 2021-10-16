@@ -18,7 +18,7 @@ extern "C" stark::string_t *stark_runtime_priv_conv_int_string(stark::int_t i)
 
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = strlen(str);
-    result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len);
+    result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len + 1);
     strcpy(result->data, str);
     return result;
 }
@@ -37,7 +37,7 @@ extern "C" stark::string_t *stark_runtime_priv_conv_double_string(stark::double_
 
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = strlen(str);
-    result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len);
+    result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len + 1);
     strcpy(result->data, str);
     return result;
 }
@@ -51,7 +51,7 @@ extern "C" stark::string_t *stark_runtime_priv_conv_bool_string(stark::bool_t b)
 
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = strlen(str);
-    result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len);
+    result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * result->len + 1);
     strcpy(result->data, str);
     return result;
 }

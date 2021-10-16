@@ -28,7 +28,7 @@ extern "C" stark::bool_t stark_runtime_priv_conv_string_bool(stark::string_t *s)
 
 extern "C" stark::string_t *stark_runtime_priv_concat_string(stark::string_t *ls, stark::string_t *rs)
 {
-    char *dest = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (ls->len + rs->len));
+    char *dest = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (ls->len + rs->len + 2));
     strcpy(dest, ls->data);
     strcat(dest, rs->data);
 
