@@ -40,10 +40,20 @@ extern "C" stark::string_t *stark_runtime_priv_concat_string(stark::string_t *ls
 
 extern "C" stark::bool_t stark_runtime_priv_eq_string(stark::string_t *ls, stark::string_t *rs)
 {
-    return (stark::bool_t)(strcmp(ls->data, rs->data) == 0);
+    if (ls->len == rs->len) {
+        return (stark::bool_t)(strncmp(ls->data, rs->data, ls->len) == 0);
+    } else {
+        return false;
+    }
 }
 
 extern "C" stark::bool_t stark_runtime_priv_neq_string(stark::string_t *ls, stark::string_t *rs)
 {
-    return (stark::bool_t)(strcmp(ls->data, rs->data) != 0);
+    if (ls->len == rs->len) {
+        return (stark::bool_t)(strncmp(ls->data, rs->data, ls->len) != 0);
+    } else {
+        return true;
+    }
+    
+    
 }
