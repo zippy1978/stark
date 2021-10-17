@@ -36,6 +36,11 @@ extern "C" stark::string_t *stark_runtime_pub_fromCSubString(stark::any_t s, sta
     return result;
 }
 
+extern "C" stark::any_t *stark_runtime_pub_offsetCharPointer(stark::any_t p, stark::int_t offset)
+{
+    return (stark::any_t *)(((char *)p) + offset);
+}
+
 extern "C" stark::any_t stark_runtime_pub_toIntPointer(stark::int_t i)
 {
     stark::any_t *result = (stark::any_t *)stark_runtime_priv_mm_alloc(sizeof(stark::int_t));

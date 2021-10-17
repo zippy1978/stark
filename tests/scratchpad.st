@@ -1,12 +1,39 @@
+/**
+ * Time manipulation utility functions.
+ */
+//module time
 
-extern sleep(t: int)
+extern localtime(t: any) => any
+extern localtime_r(t: any, lt: any)
+extern strftime(buffer: any, bufferSize: int, format: any, time: any) => int
 
-start := time()
+/**
+ * Time struct.
+ */
+/*struct Time {
+    timeInfo: any
+}*/
 
-sleep(5)
+/**
+ * Return Time struct at the current date.
+ */
+/*func now() => Time {
+    return Time(localtime(toIntPointer(time(null))))
+}*/
 
-end := time()
+/**
+ * Format a Time struct to a string.
+ */
+func formatTime(time: int, format: string) => string {
+    println(time as string)
+    timePtr := toIntPointer(time)
+    lt := toCString("              ")
+    localtime_r(timePtr, lt)
+    cstr := toCString(format)
+    strftime(cstr, format.len, toCString(format), lt)
+    return fromCString(cstr)
+}
 
-duration := end - start
+t := time()
+println(formatTime(t, "%H:%M:%S"))
 
-println(duration as string + " ms")

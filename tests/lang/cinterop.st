@@ -22,3 +22,8 @@ assertStringEquals(fromCSubString(toCString("Hello"), 0, 2), "He")
 i := 12
 ptr := toIntPointer(i)
 assertIntEquals(fromIntPointer(ptr), 12)
+
+// offsetCharPointer
+s := "abcdefg"
+newS := fromCString(offsetCharPointer(s.data, 2))
+assertStringEquals(newS, "cdefg")
