@@ -12,7 +12,7 @@
 extern "C" stark::int_t stark_runtime_priv_conv_string_int(stark::string_t *s)
 {
     char *ptr;
-    return strtoll(s->data, &ptr, 10);
+    stark::int_t result =  strtoll(s->data, &ptr, 10);
 }
 
 extern "C" stark::double_t stark_runtime_priv_conv_string_double(stark::string_t *s)
@@ -23,14 +23,14 @@ extern "C" stark::double_t stark_runtime_priv_conv_string_double(stark::string_t
 
 extern "C" stark::bool_t stark_runtime_priv_conv_string_bool(stark::string_t *s)
 {
-    return (stark::bool_t)(strcmp(s->data, "true") == 0);
+    return (stark::bool_t)(strncmp(s->data, "true", s->len) == 0);
 }
 
 extern "C" stark::string_t *stark_runtime_priv_concat_string(stark::string_t *ls, stark::string_t *rs)
 {
     char *dest = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (ls->len + rs->len + 2));
-    strcpy(dest, ls->data);
-    strcat(dest, rs->data);
+    strncpy(dest, ls->data, ls->len);
+    strncat(dest, rs->data, rs->len);
 
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = strlen((char *)dest);
