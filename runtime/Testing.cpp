@@ -3,6 +3,8 @@
 #include <cstring>
 
 #include "RuntimeTypes.h"
+#include "String.h"
+#include "Memory.h"
 
 /**
  * Set of built-in functions that can be used from the JIT.
@@ -28,7 +30,23 @@ extern "C" void assertDoubleEquals(stark::double_t actual, stark::double_t expec
 }
 extern "C" void assertStringEquals(stark::string_t *actual, stark::string_t *expected)
 {
-    char actualCString[actual->len + 1];
+
+    if (!stark_runtime_priv_eq_string(actual, expected))
+    {
+        char *actualCString = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (actual->len + 1));
+        strncpy(actualCString, actual->data, actual->len);
+        actualCString[actual->len] = '\0';
+
+        char *expectedCString = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (expected->len + 1));
+        strncpy(expectedCString, expected->data, expected->len);
+        expectedCString[actual->len] = '\0';
+    
+        fprintf(stderr, "Assert failure : actual value '%s' is different from expected '%s'\n", actualCString, expectedCString);
+        exit(1);
+    }
+
+
+    /*char actualCString[actual->len + 1];
     strcpy(actualCString, actual->data);
 
     char expectedCString[expected->len + 1];
@@ -38,7 +56,7 @@ extern "C" void assertStringEquals(stark::string_t *actual, stark::string_t *exp
     {
         fprintf(stderr, "Assert failure : actual value '%s' is different from expected '%s'\n", actualCString, expectedCString);
         exit(1);
-    }
+    }*/
 }
 
 extern "C" void assertTrue(bool actual)
