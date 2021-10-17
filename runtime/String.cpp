@@ -12,7 +12,7 @@
 extern "C" stark::int_t stark_runtime_priv_conv_string_int(stark::string_t *s)
 {
     char *ptr;
-    stark::int_t result =  strtoll(s->data, &ptr, 10);
+    return  strtoll(s->data, &ptr, 10);
 }
 
 extern "C" stark::double_t stark_runtime_priv_conv_string_double(stark::string_t *s)
