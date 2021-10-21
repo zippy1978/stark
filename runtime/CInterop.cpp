@@ -11,7 +11,7 @@
 
 extern "C" stark::any_t stark_runtime_pub_toCString(stark::string_t *s)
 {
-    char *result = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * s->len + 1);
+    char *result = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (s->len + 1));
     strcpy(result, s->data);
     return (stark::any_t)result;
 }
@@ -21,7 +21,7 @@ extern "C" stark::string_t *stark_runtime_pub_fromCString(stark::any_t s)
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = strlen((char *)s);
     result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (result->len + 1));
-    memcpy(result->data, (char *)s, result->len + 1);
+    memcpy(result->data, (char *)s, result->len);
     result->data[result->len] = 0;
     return result;
 }
@@ -31,7 +31,7 @@ extern "C" stark::string_t *stark_runtime_pub_fromCSubString(stark::any_t s, sta
     stark::string_t *result = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t));
     result->len = end - start;
     result->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * (result->len + 1));
-    memcpy(result->data, ((char *)s) + start, result->len + 1);
+    memcpy(result->data, ((char *)s) + start, result->len);
     result->data[result->len] = 0;
     return result;
 }
