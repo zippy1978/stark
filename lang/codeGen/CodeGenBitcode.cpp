@@ -36,6 +36,8 @@ namespace stark
             logger.setFilename(error.getFilename().str());
             logger.logError(formatv("{0} {1}", error.getMessage(), error.getLineContents()));
         }
+
+        llvmModule->setDataLayout("");
     }
 
     void CodeGenBitcode::write(std::string filename)

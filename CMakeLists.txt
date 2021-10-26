@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # Options
 option(VERSION_SUFFIX "VERSION_SUFFIX" "")
 
-
 # Project settings
 file (STRINGS "CURRENT_VERSION" VERSION)
 project(Stark VERSION "${VERSION}")
@@ -96,6 +95,7 @@ if (${LLVM_PACKAGE_VERSION} VERSION_LESS LLVM_MIN_VERSION)
 endif()
 
 # Plug conan dependencies
+set(CONAN_DISABLE_CHECK_COMPILER TRUE)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
