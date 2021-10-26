@@ -24,7 +24,16 @@ namespace stark
         Builder.SetInsertPoint(context->getCurrentBlock());
 
         // Mangle name
-        std::string functionName = context->getMangler()->mangleStructConstructorName(name, context->getModuleName());
+        // If type already contains a module name: use it
+        std::string nameWithoutModule = name;
+        std::string moduleName = context->getModuleName();
+        std::vector<std::string> nameParts = split(name, '.');
+        if (nameParts.size() > 1) {
+            moduleName = nameParts[0];
+            nameWithoutModule = nameParts[1];            
+        }
+        
+        std::string functionName = context->getMangler()->mangleStructConstructorName(nameWithoutModule, moduleName);
 
         // Build parameters from members
         vector<Type *> argTypes;

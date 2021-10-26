@@ -1,10 +1,17 @@
-extern assertStringEquals(a: string, e: string)
 
+cb := func () => void {
+    
+    shouldClose := 0    
+    while(shouldClose == 0) {
+        println("in")
+        /*println("before")
+        al_wait_for_event(queue, event)
+        println("after")
+        e := toAllegroEvent(event)
+        if (e != null && e.type == "ALLEGRO_EVENT_DISPLAY_CLOSE") {
+            shouldClose = true
+        }*/
+    }
+}
 
-a := "abcdefg"
-
-slice: string
-slice.data = offsetCharPointer(a.data, 1)
-slice.len = a.len - 1
-println(slice)
-assertStringEquals(slice, "bcdefg")
+cb()
