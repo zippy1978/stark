@@ -14,7 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-18.04, macos-10.15]
+        # Disabled ubuntu-20.04 because of wrong LLVM install (keeps using 10 instead of 12)
+        os: [ubuntu-18.04, macos-10.15]
 
     steps:
     
