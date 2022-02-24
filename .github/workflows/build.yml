@@ -31,8 +31,8 @@ jobs:
               sudo apt-get purge --auto-remove llvm
               wget https://apt.llvm.org/llvm.sh
               chmod +x llvm.sh
-              sudo ./llvm.sh 10
-              echo LLVM default version is $(/usr/bin/llvm-config-10 --version)
+              sudo ./llvm.sh 12
+              echo LLVM default version is $(/usr/bin/llvm-config-12 --version)
          else
               brew install cmake
               brew install conan
