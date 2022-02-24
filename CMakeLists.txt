@@ -75,7 +75,7 @@ endif()
 # Set required versions
 set(BISON_MIN_VERSION "3.0.0")
 set(FLEX_MIN_VERSION "2.6.0")
-set(LLVM_MIN_VERSION "12.0.0")
+set(LLVM_MIN_VERSION "10.0.0")
 
 # Find required packages
 find_package(BISON ${BISON_MIN_VERSION} REQUIRED)
