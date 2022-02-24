@@ -260,10 +260,10 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
+                    // Link
                     CompilerSystemLinker systemLinker;
                     systemLinker.link(module, options.outputFile, runtimeStaticLib, target, options.linker == nullptr ? "cc:" : options.linker);
                 }
-
             }
             else
             {

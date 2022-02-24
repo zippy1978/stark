@@ -16,6 +16,7 @@
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Transforms/Utils/Cloning.h>
+#include <llvm/Passes/PassBuilder.h>
 // This is the interpreter implementation
 #include <llvm/ExecutionEngine/MCJIT.h>
 
@@ -33,7 +34,7 @@ namespace stark
     int Interpreter::run(CodeGenBitcode *code, int argc, char *argv[])
     {
         logger.logDebug("running code...");
-        
+
         std::string err;
 
         LLVMInitializeNativeTarget();
@@ -47,17 +48,15 @@ namespace stark
             logger.logError(formatv("JIT error: {0}", err));
         }
 
-        // TODO: pass manager here !
-
         ee->finalizeObject();
 
         // Build stark string array to pass to main function
-        stark::array_t* args = (stark::array_t*)stark_runtime_priv_mm_alloc(sizeof(stark::array_t));
+        stark::array_t *args = (stark::array_t *)stark_runtime_priv_mm_alloc(sizeof(stark::array_t));
         args->len = argc;
-        stark::string_t **elements = (stark::string_t **)stark_runtime_priv_mm_alloc(sizeof(stark::string_t*) * argc);
+        stark::string_t **elements = (stark::string_t **)stark_runtime_priv_mm_alloc(sizeof(stark::string_t *) * argc);
         for (int i = 0; i < argc; i++)
         {
-            stark::string_t* s = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t*));
+            stark::string_t *s = (stark::string_t *)stark_runtime_priv_mm_alloc(sizeof(stark::string_t *));
             s->len = strlen(argv[i]);
             s->data = (char *)stark_runtime_priv_mm_alloc(sizeof(char) * s->len + 1);
             strcpy(s->data, argv[i]);
@@ -66,7 +65,7 @@ namespace stark
         args->elements = elements;
 
         // Call main function
-        int (*main_func)(stark::array_t*) = (int (*)(stark::array_t*))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
+        int (*main_func)(stark::array_t *) = (int (*)(stark::array_t *))ee->getFunctionAddress(MAIN_FUNCTION_NAME);
         int retValue = main_func(args);
 
         /*for (int i = 0; i < argc; i++)

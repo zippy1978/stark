@@ -27,3 +27,7 @@ CTestTestfile.cmake
 _deps
 *.code-workspace
 .DS_Store
+
+# VS Code
+.vscode
+.VSCodeCounter

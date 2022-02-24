@@ -168,7 +168,7 @@ namespace stark
 
         // Main module
         if (name.compare("main") == 0)
-        {            
+        {
 
             // Link main module with all external modules required
             std::vector<CompilerModule *> externalModules = moduleLoader->getModules();
@@ -179,6 +179,12 @@ namespace stark
             }
 
             CodeGenBitcode *moduleCode = linker->link();
+
+            // Optimize code before linking
+            CodeGenOptimizer optimizer;
+            optimizer.setDebugEnabled(debugEnabled);
+            optimizer.optimize(moduleCode);
+
             return new CompilerModule(name, moduleCode, "");
         }
         // Other module : create directory layout

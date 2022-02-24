@@ -222,6 +222,11 @@ int main(int argc, char *argv[])
         }
         CodeGenBitcode *linkedCode = linker.link();
 
+        // Optimize code
+        CodeGenOptimizer optimizer;
+        optimizer.setDebugEnabled(options.debug);
+        optimizer.optimize(linkedCode);
+
         // Run code
         Interpreter interpreter;
         int result = interpreter.run(linkedCode, options.argc, options.argv);
