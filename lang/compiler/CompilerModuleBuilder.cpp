@@ -180,10 +180,11 @@ namespace stark
 
             CodeGenBitcode *moduleCode = linker->link();
 
+            // FIXME : hangs compilation and segfaults !
             // Optimize code before linking
-            CodeGenOptimizer optimizer;
+            /*CodeGenOptimizer optimizer;
             optimizer.setDebugEnabled(debugEnabled);
-            optimizer.optimize(moduleCode);
+            optimizer.optimize(moduleCode);*/
 
             return new CompilerModule(name, moduleCode, "");
         }
