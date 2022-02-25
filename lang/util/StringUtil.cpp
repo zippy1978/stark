@@ -3,6 +3,7 @@
 #include <regex>
 #include <algorithm>
 #include <cctype>
+#include <set>
 
 #include "StringUtil.h"
 
@@ -29,17 +30,16 @@ namespace stark
 
     std::string ltrim(std::string s)
     {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-                    return !std::isspace(ch);
-                }));
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch)
+                                        { return !std::isspace(ch); }));
         return s;
     }
 
     std::string rtrim(std::string s)
     {
-        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-                    return !std::isspace(ch);
-                }).base(),
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch)
+                             { return !std::isspace(ch); })
+                    .base(),
                 s.end());
         return s;
     }
@@ -52,7 +52,7 @@ namespace stark
     std::string unescape(std::string s)
     {
         std::string result;
-        
+
         result = std::regex_replace(s, std::regex("\\\\'"), "\'");
         result = std::regex_replace(result, std::regex("\\\\a"), "\a");
         result = std::regex_replace(result, std::regex("\\\\b"), "\b");
@@ -63,6 +63,25 @@ namespace stark
         result = std::regex_replace(result, std::regex("\\\\v"), "\v");
         result = std::regex_replace(result, std::regex("\\\\\\\\"), "\\");
         result = std::regex_replace(result, std::regex("\\\\\""), "\"");
+        return result;
+    }
+
+    std::string removeDuplicatedLines(std::string s)
+    {
+        std::string result = "";
+        std::vector<std::string> lines = split(s, '\n');
+        std::vector<std::string> deduplicated;
+        for (auto it = lines.begin(); it != lines.end(); it++)
+        {
+            // Add line only if not already present
+            if (std::find(deduplicated.begin(), deduplicated.end(), *it) == deduplicated.end())
+            {
+                deduplicated.push_back(*it);
+                result.append(*it);
+                result.append("\n");
+            }
+        }
+
         return result;
     }
 

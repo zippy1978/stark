@@ -34,6 +34,8 @@ namespace stark
 
     std::string unescape(std::string s);
 
+    std::string removeDuplicatedLines(std::string s);
+
 } // namespace stark
 
 #endif

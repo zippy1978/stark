@@ -11,6 +11,7 @@
 #include "../ast/AST.h"
 #include "../codeGen/CodeGen.h"
 #include "../parser/StarkParser.h"
+#include "../util/StringUtil.h"
 
 #include "CompilerModuleBuilder.h"
 
@@ -208,7 +209,8 @@ namespace stark
             ASTWriter writer;
             writer.visit(&moduleDelcarations);
 
-            return new CompilerModule(name, moduleCode, writer.getSourceCode());
+            // Duplicated header lines are removed
+            return new CompilerModule(name, moduleCode, removeDuplicatedLines(writer.getSourceCode()));
         }
     }
 
