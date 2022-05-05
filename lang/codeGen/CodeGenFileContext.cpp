@@ -163,7 +163,7 @@ namespace stark
 		}
 	}
 
-	CodeGenClosureType* CodeGenFileContext::declareClosureType(ASTFunctionSignature *signature)
+	CodeGenClosureType *CodeGenFileContext::declareClosureType(ASTFunctionSignature *signature)
 	{
 		std::string typeName = getFunctionHelper()->generateFunctionTypeName(signature);
 
@@ -175,9 +175,12 @@ namespace stark
 
 			// Clone signature and add extra param for env passing
 			ASTIdentifierList arguments = cloneList(signature->getArguments());
-			ASTFunctionSignature *signatureWithEnv = new ASTFunctionSignature(signature->getType(), arguments);
-			// Genrerate funciton type
+			ASTIdentifier *anyId = new ASTIdentifier("any", nullptr, nullptr);
+			arguments.push_back(anyId);
+			ASTFunctionSignature *signatureWithEnv = new ASTFunctionSignature(signature->getType()->clone(), arguments);
+			// Generate function type
 			CodeGenFunctionType *functionType = declareFunctionType(signatureWithEnv);
+			delete signatureWithEnv;
 
 			closureType = new CodeGenClosureType(typeName, this, functionType);
 			closureTypes[typeName] = std::unique_ptr<CodeGenClosureType>(closureType);

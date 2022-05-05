@@ -1,2 +1,12 @@
+// Type support
 cl: (string) => void
-fn : func (string) => void
+
+// TODO
+// Declaration / assignation
+/*cl = (n: string) => void {
+
+}*/
+
+// TODO
+// Call
+//cl("gilles")
