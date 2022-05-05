@@ -210,6 +210,11 @@ int main(int argc, char *argv[])
         CodeGenBitcode *code = context.generateCode(program);
         delete program;
 
+        // Optimize code
+        CodeGenOptimizer optimizer;
+        optimizer.setDebugEnabled(options.debug);
+        optimizer.optimize(code);
+
         // Link modules
         CodeGenBitcodeLinker linker("main");
         linker.setDebugEnabled(options.debug);
@@ -222,10 +227,6 @@ int main(int argc, char *argv[])
         }
         CodeGenBitcode *linkedCode = linker.link();
 
-        // Optimize code
-        CodeGenOptimizer optimizer;
-        optimizer.setDebugEnabled(options.debug);
-        optimizer.optimize(linkedCode);
 
         // Run code
         Interpreter interpreter;

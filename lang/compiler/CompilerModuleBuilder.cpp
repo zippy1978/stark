@@ -155,6 +155,12 @@ namespace stark
             context->setDebugEnabled(debugEnabled);
             CodeGenBitcode *code = context->generateCode(sourceBlock.get());
 
+            std::cout << ">>>>>> start OPTIM " << std::endl;
+            CodeGenOptimizer optimizer;
+            optimizer.setDebugEnabled(debugEnabled);
+            optimizer.optimize(code);
+            std::cout << ">>>>>> end OPTIM " << std::endl;
+
             // Maintain context until module is compiled
             contexts.push_back(std::unique_ptr<CodeGenFileContext>(context));
 
@@ -180,12 +186,6 @@ namespace stark
             }
 
             CodeGenBitcode *moduleCode = linker->link();
-
-            // FIXME : hangs compilation and segfaults !
-            // Optimize code before linking
-            /*CodeGenOptimizer optimizer;
-            optimizer.setDebugEnabled(debugEnabled);
-            optimizer.optimize(moduleCode);*/
 
             return new CompilerModule(name, moduleCode, "");
         }

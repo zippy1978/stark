@@ -30,9 +30,12 @@ namespace stark
         PB.registerFunctionAnalyses(FAM);
         PB.registerLoopAnalyses(LAM);
         PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
-
-        ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(PassBuilder::OptimizationLevel::O2);
-
+        /*if (this->debugEnabled) {
+            PB.printPassNames(llvm::errs());
+        }*/
+        
+        ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(PassBuilder::OptimizationLevel::O3);
+        
         MPM.run(*llvmModule, MAM);
 
         if (this->debugEnabled)
