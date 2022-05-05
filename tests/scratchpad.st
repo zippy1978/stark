@@ -1,5 +1,2 @@
-
-while(true) {
-    e := "toto"
-    println(e)
-}
+cl: (string) => void
+fn : func (string) => void

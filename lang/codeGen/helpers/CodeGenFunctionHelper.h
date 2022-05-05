@@ -44,6 +44,11 @@ namespace stark
         std::string checkAndGenerateMangledFunctionName(ASTFunctionDeclaration *functionDeclaration);
 
         /**
+         * Generate a LLVM compliant type name for a function signature.
+         */
+        std::string generateFunctionTypeName(ASTFunctionSignature *signature);
+
+        /**
          * Creates a vector of argument types from a ASTVariableList.
          */
         std::vector<Type *> checkAndExtractArgumentTypes(ASTVariableList arguments);

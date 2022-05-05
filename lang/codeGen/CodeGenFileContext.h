@@ -157,8 +157,8 @@ namespace stark
     /** Generate a complex type declaration */
     void declareComplexType(CodeGenComplexType *complexType);
 
-    /** Generate a complex type declaration */
-    void declareClosureType(CodeGenClosureType *closureType);
+    /** Declare a closure type from a function signature */
+    CodeGenClosureType* declareClosureType(ASTFunctionSignature *signature);
 
     /** Declare a function type from a function signature */
     CodeGenFunctionType *declareFunctionType(ASTFunctionSignature *signature);
@@ -186,6 +186,9 @@ namespace stark
 
     /** Check if the given type name is a function signature */
     bool isFunctionSignature(std::string typeName) { return (typeName.rfind("func_") == 0); }
+
+    /** Check if the given type name is a closure signature */
+    bool isClosureSignature(std::string typeName) { return (typeName.rfind("cls_") == 0); }
 
     /** Check if the given type name is an array type */
     bool isArrayType(std::string typeName) { return (typeName.rfind("array.") == 0); }

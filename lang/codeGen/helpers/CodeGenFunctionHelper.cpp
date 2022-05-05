@@ -124,6 +124,39 @@ namespace stark
         return functionName;
     }
 
+    std::string CodeGenFunctionHelper::generateFunctionTypeName(ASTFunctionSignature *signature)
+    {
+        ASTWriter w;
+        ASTFunctionSignature *clone = signature->clone();
+        clone->setArray(false);
+        w.visit(clone);
+        std::string typeName = w.getSourceCode();
+        delete clone;
+
+        // Remove spaces to avoid LLVM naming issues
+        std::replace(typeName.begin(), typeName.end(), '(', '_');
+        std::replace(typeName.begin(), typeName.end(), ')', '_');
+        std::replace(typeName.begin(), typeName.end(), '=', '_');
+        std::replace(typeName.begin(), typeName.end(), '>', '_');
+        std::replace(typeName.begin(), typeName.end(), ':', '_');
+        std::replace(typeName.begin(), typeName.end(), ',', '_');
+        std::string::iterator newEnd = std::remove(typeName.begin(), typeName.end(), ' ');
+        typeName.erase(newEnd, typeName.end());
+
+        std::string result = "";
+        if (signature->isClosure())
+        {
+            result.append("cls_");
+        }
+        else
+        {
+            result.append("func_");
+        }
+        result.append(typeName);
+
+        return result;
+    }
+
     Function *CodeGenFunctionHelper::createFunctionDeclaration(ASTFunctionDeclaration *functionDeclaration)
     {
         bool anonymous = functionDeclaration->getId() == nullptr;

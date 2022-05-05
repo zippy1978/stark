@@ -28,6 +28,8 @@ namespace stark
   void deleteList(ASTVariableList list);
   ASTExpressionList cloneList(ASTExpressionList list);
   void deleteList(ASTExpressionList list);
+  ASTIdentifierList cloneList(ASTIdentifierList list);
+  void deleteList(ASTIdentifierList list);
 
   enum ASTBinaryOperator
   {

@@ -50,7 +50,8 @@ namespace stark
         // Closure
         if (functionSignature->isClosure())
         {
-            context->logger.logError(functionSignature->location, "closures are not yet supported");
+            CodeGenClosureType *ct = context->declareClosureType(functionSignature);
+            result = ct->getType();
         }
         // Regular function
         else

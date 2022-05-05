@@ -163,38 +163,35 @@ namespace stark
 		}
 	}
 
-	void CodeGenFileContext::declareClosureType(CodeGenClosureType *closureType)
+	CodeGenClosureType* CodeGenFileContext::declareClosureType(ASTFunctionSignature *signature)
 	{
-		CodeGenClosureType *existingType = getClosureType(closureType->getName());
-		// Type does not eist : create it
-		if (existingType == nullptr)
+		std::string typeName = getFunctionHelper()->generateFunctionTypeName(signature);
+
+		CodeGenClosureType *closureType = getClosureType(typeName);
+		// Type does not exist : create it
+		if (closureType == nullptr)
 		{
+			logger.logDebug(signature->location, formatv("declaring closure type {0}", typeName));
+
+			// Clone signature and add extra param for env passing
+			ASTIdentifierList arguments = cloneList(signature->getArguments());
+			ASTFunctionSignature *signatureWithEnv = new ASTFunctionSignature(signature->getType(), arguments);
+			// Genrerate funciton type
+			CodeGenFunctionType *functionType = declareFunctionType(signatureWithEnv);
+
+			closureType = new CodeGenClosureType(typeName, this, functionType);
+			closureTypes[typeName] = std::unique_ptr<CodeGenClosureType>(closureType);
 			closureType->declare();
-			closureTypes[closureType->getName()] = std::unique_ptr<CodeGenClosureType>(closureType);
 		}
+
+		return closureType;
 	}
 
 	CodeGenFunctionType *CodeGenFileContext::declareFunctionType(ASTFunctionSignature *signature)
 	{
 		FunctionType *ft = getFunctionHelper()->createFunctionType(signature);
 		// Get a string version of the type from the signature
-		// Clone to remove array brackets
-		ASTWriter w;
-		ASTFunctionSignature *clone = signature->clone();
-		clone->setArray(false);
-		w.visit(clone);
-		std::string typeName = w.getSourceCode();
-		delete clone;
-
-		// Remove spaces to avoid LLVM naming issues
-		std::replace(typeName.begin(), typeName.end(), '(', '_');
-		std::replace(typeName.begin(), typeName.end(), ')', '_');
-		std::replace(typeName.begin(), typeName.end(), '=', '_');
-		std::replace(typeName.begin(), typeName.end(), '>', '_');
-		std::replace(typeName.begin(), typeName.end(), ':', '_');
-		std::replace(typeName.begin(), typeName.end(), ',', '_');
-		std::string::iterator newEnd = std::remove(typeName.begin(), typeName.end(), ' ');
-		typeName.erase(newEnd, typeName.end());
+		std::string typeName = getFunctionHelper()->generateFunctionTypeName(signature);
 
 		logger.logDebug(signature->location, formatv("declaring function type {0}", typeName));
 

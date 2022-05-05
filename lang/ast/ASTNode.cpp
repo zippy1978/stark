@@ -58,7 +58,7 @@ namespace stark
             delete list[i];
     }
 
-    /** Creates a deep copy of a ASTIdentifierList */
+    /** Creates a deep copy of an ASTIdentifierList */
     ASTIdentifierList cloneList(ASTIdentifierList list)
     {
         ASTIdentifierList clone;

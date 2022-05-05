@@ -8,6 +8,8 @@
 #include <llvm/IR/Value.h>
 #include <llvm/IR/LLVMContext.h>
 
+#include "CodeGenFunctionType.h"
+
 using namespace llvm;
 
 namespace stark
@@ -22,11 +24,12 @@ namespace stark
     {
     protected:
         CodeGenFileContext *context;
+        CodeGenFunctionType *functionType;
         StructType *type;
         std::string name;
 
     public:
-        CodeGenClosureType(std::string name, CodeGenFileContext *context) : name(name), context(context)
+        CodeGenClosureType(std::string name, CodeGenFileContext *context, CodeGenFunctionType *functionType) : name(name), context(context), functionType(functionType)
         {
             type = nullptr;
         }
