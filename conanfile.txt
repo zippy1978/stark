@@ -1,5 +1,0 @@
- [requires]
- bdwgc/8.0.4
-
- [generators]
- cmake

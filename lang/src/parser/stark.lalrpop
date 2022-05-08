@@ -1,0 +1,81 @@
+use num_bigint::BigInt;
+use crate::ast;
+use crate::parser::LexicalError;
+use crate::parser::Token;
+
+grammar(filename: &String);
+
+pub Unit: ast::Unit = <Statment*> => <>;
+
+Statment: ast::Stmt = {
+    ExpressionStatement,
+};
+
+ExpressionStatement: ast::Stmt = {
+    <location:@L> <e:Expression> ("\n")* => {
+        ast::Stmt {
+            custom: (),
+            location,
+            node: ast::StmtKind::Expr { value: Box::new(e) }
+        }
+    },
+    <location:@L> <variable:Identifier> ":" <var_type:Identifier> ("\n")* => {
+        ast::Stmt {
+            custom: (),
+            location,
+            node: ast::StmtKind::Declaration { variable: variable, var_type: var_type }
+        }
+    },
+   
+};
+
+Expression: ast::Expr = {
+    <location:@L> <i:Identifier> => ast::Expr {
+        location,
+        custom: (),
+        node: ast::ExprKind::Name { id: i}
+    },
+    <location:@L> <i:Integer> => ast::Expr {
+        location,
+        custom: (),
+        node: ast::ExprKind::Constant { value: ast::Constant::Int(i)}
+    },
+};
+
+Identifier: String = <s:name> => {
+    match s {
+        Token::Identifier(name) => name,
+        _ => panic!(),
+    }
+};
+
+Integer: BigInt = <i:integer> => {
+    match i {
+        Token::Integer(int) => int,
+        _ => panic!(),
+    }
+};
+
+// Hook external lexer:
+extern {
+    type Location = ast::Location;
+    type Error = LexicalError;
+
+    //enum Tok {
+        //":" => lexer::Tok::Colon,
+        //"=" => lexer::Tok::Equal,
+        //int => lexer::Tok::Int { value: <BigInt> },
+        //double => lexer::Tok::Double { value: <f64> },
+        //name => Tok::Name { name: <String> },
+        //"\n" => lexer::Tok::Newline,
+        
+    //}
+
+    enum Token {
+        name => Token::Identifier(_),
+        integer => Token::Integer(_),
+        "\n" => Token::NewLine,
+        ":" => Token::Colon,
+        "=" => Token::Equal,
+      }
+}
