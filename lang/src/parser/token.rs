@@ -23,7 +23,13 @@ pub enum Token {
     #[token("=")]
     Equal,
 
+    // Skip spaces
     #[regex(r"[ \t\f]+", logos::skip)]
+    // Skip single line comment
+    #[regex(r"//[^\n\r]*[\n\r]*", logos::skip)]
+    // Skip multiline comment
+    #[regex(r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/", logos::skip)]
+
     #[error]
     Error, // requis pour tout les tokens invalides
 }

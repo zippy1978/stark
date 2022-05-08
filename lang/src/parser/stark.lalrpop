@@ -5,7 +5,7 @@ use crate::parser::Token;
 
 grammar(filename: &String);
 
-pub Unit: ast::Unit = <Statment*> => <>;
+pub Unit: ast::Unit = ("\n")* <Statment*> => <>;
 
 Statment: ast::Stmt = {
     ExpressionStatement,

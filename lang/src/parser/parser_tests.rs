@@ -46,7 +46,7 @@ mod parser_tests {
     ) -> Result<(), TestError> {
         let error = Result::<(), TestError>::Err(String::from("Failed to parse identifier"));
 
-        match parser::parser::parse(input) {
+        match parser::parse(input) {
             Ok(unit) => {
                 let stmt = unit.get(0).unwrap();
                 return assert_fn(&stmt.node);
@@ -57,7 +57,15 @@ mod parser_tests {
 
     #[test]
     fn parse_statements() {
-        let unit = parser::parser::parse("123\nabc: string").unwrap();
+        let input = r#"
+
+            123
+            // single line comment
+            abc
+            /* multi line 
+             * comment */
+        "#;
+        let unit = parser::parse(input).unwrap();
         assert_eq!(unit.len(), 2);
     }
 

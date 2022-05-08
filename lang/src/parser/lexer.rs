@@ -38,15 +38,15 @@ impl<'input> Iterator for Lexer<'input> {
                     Span::new(span.start, span.end),
                 );
                 match token {
-                    /*Token::Error => Some(Err(LexicalError {
+                    Token::Error => Some(Err(LexicalError {
                         error: LexicalErrorType::Eof,
                         location: location,
-                    })),*/
+                    })),
                     Token::NewLine => {
                         self.row_no += 1;
                         self.column_no = 0;
                         self.line_start = span.start;
-                        return Some(Ok((location, token, location)));
+                        Some(Ok((location, token, location)))
                     }
                     _ => Some(Ok((location, token, location))),
                 }

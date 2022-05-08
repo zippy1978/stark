@@ -1,2 +1,3 @@
-name: string
-counter: int <>;
+
+123
+d: g
