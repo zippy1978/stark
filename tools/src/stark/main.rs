@@ -1,9 +1,9 @@
 extern crate exitcode;
 
-use std::fs;
+use std::{fs, task::Context};
 
 use clap::Parser;
-use lang::{ast, parser, code_gen::Generator};
+use lang::{ast, code_gen, parser};
 use tools::reporter::report;
 
 #[derive(Parser, Debug)]
@@ -16,14 +16,21 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
 
-    let mut generator = Generator::new();
+    let filename = &args.path.to_str().unwrap();
+    let context = code_gen::Context::create();
+    let mut generator = code_gen::Generator::new(&context, code_gen::Config::new(&filename));
 
-    match fs::read_to_string(args.path) {
+    match fs::read_to_string(&args.path) {
         Ok(input) => match parser::parse(&input) {
-            Ok(unit) => generator.generate(&unit),
+            Ok(unit) => match generator.generate(&unit) {
+                Ok(_) => std::process::exit(exitcode::OK),
+                Err(err) => {
+                    report(&filename, &input, lang::StarkError::CodeGen(err));
+                    std::process::exit(exitcode::USAGE);
+                }
+            },
             Err(err) => {
-                // TODO use nice reporter here !
-                report(&input, err);
+                report(&filename, &input, lang::StarkError::Parser(err));
                 std::process::exit(exitcode::USAGE);
             }
         },
