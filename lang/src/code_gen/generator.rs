@@ -1,9 +1,20 @@
-use crate::ast::{self, Visitor, Location, Span};
+use crate::ast::{self, Visitor};
+use crate::code_gen::typing::Type;
 use inkwell::context::Context as LLVMContext;
+use inkwell::values::PointerValue;
 use inkwell::{builder::Builder, module::Module};
 
 use super::log::Log;
+use super::symbol::{SymbolScope, SymbolScopeType, SymbolTable};
 use super::{Bitcode, CodeGenError, LogLevel, Logger};
+
+pub type GenerableResult<'a> = Result<PointerValue<'a>, CodeGenError<'a>>;
+
+pub trait Generable<'a> {
+    fn generate(&'a self, generator: &'a Generator) -> GenerableResult<'a>;
+}
+
+struct VisitorError {}
 
 pub type Context = LLVMContext;
 
@@ -18,17 +29,17 @@ impl<'a> Config<'a> {
     }
 }
 
-pub struct GeneratorResult<'a> {
-    bitcode: Bitcode,
-    logs: Vec<Log<'a>>,
+pub struct GeneratorResult<'ctx> {
+    //pub bitcode: Bitcode,
+    pub logs: Vec<Log<'ctx>>,
 }
 
 pub struct Generator<'ctx> {
     context: &'ctx Context,
-    builder: Builder<'ctx>,
     module: Module<'ctx>,
+    builder: Builder<'ctx>,
+    symbol_table: SymbolTable<'ctx>,
     config: Config<'ctx>,
-    // TODO : use ref and declare above ???
     logger: Logger<'ctx>,
 }
 
@@ -36,68 +47,71 @@ impl<'ctx> Generator<'ctx> {
     pub fn new(context: &'ctx Context, config: Config<'ctx>) -> Generator<'ctx> {
         Generator {
             context,
-            builder: context.create_builder(),
             module: context.create_module(config.name),
+            builder: context.create_builder(),
+            symbol_table: SymbolTable::new(),
             config,
             logger: Logger::new(),
         }
     }
 
-    pub fn generate(&mut self, unit: &ast::Unit) -> Result<(GeneratorResult), CodeGenError> {
-        self.visit_unit(unit);
-
-        /*Result::Ok(GeneratorResult {
-            bitcode: Bitcode {},
-            logs: self.logs.to_vec(),
-        })*/
-        Result::Err(CodeGenError { logs: self.logger.logs() })
+    pub(crate) fn context(&self) -> &Context {
+        self.context
     }
 
-}
-
-impl<'ctx> Visitor for Generator<'ctx> {
-    fn visit_unit(&mut self, unit: &ast::Unit) {
-        let unit_iter = unit.iter();
-        for s in unit_iter {
-            self.visit_stmt(s);
-        }
+    pub(crate) fn builder(&self) -> &Builder {
+        &self.builder
     }
 
-    fn visit_stmt(&mut self, stmt: &ast::Stmt) {
-
-        self.logger.add(Log {
-            location: stmt.location,
-            level: LogLevel::Warning,
-            message: "Not implemented yet !",
-        });
-
+    pub fn generate(&mut self, unit: &ast::Unit) -> Result<GeneratorResult, CodeGenError> {
+        // Root block
         let i64_type = self.context.i64_type();
         let fn_type = i64_type.fn_type(&[i64_type.into(), i64_type.into(), i64_type.into()], false);
         let function = self.module.add_function("sum", fn_type, None);
-        let basic_block = self.context.append_basic_block(function, "entry");
-
+        let basic_block = self.context.append_basic_block(function, "test");
         self.builder.position_at_end(basic_block);
 
-        let x = function.get_nth_param(0).unwrap().into_int_value();
-        let y = function.get_nth_param(1).unwrap().into_int_value();
-        let z = function.get_nth_param(2).unwrap().into_int_value();
+        match self.visit_unit(unit) {
+            Ok(_) => Result::Ok(GeneratorResult {
+                logs: self.logger.logs(),
+            }),
+            Err(_) => Result::Err(CodeGenError {
+                logs: self.logger.logs(),
+            }),
+        }
+    }
+}
 
-        let sum = self.builder.build_int_add(x, y, "sum");
-        let sum = self.builder.build_int_add(sum, z, "sum");
+impl<'ctx> Visitor<Result<(), ()>> for Generator<'ctx> {
+    fn visit_unit(&mut self, unit: &ast::Unit) -> Result<(), ()> {
+        // Push initial scope
+        self.symbol_table
+            .push_scope(SymbolScope::new(SymbolScopeType::Global));
 
-        self.builder.build_return(Some(&sum));
-
-        match &stmt.node {
-            ast::StmtKind::Expr { value } => self.visit_expr(&value),
-            ast::StmtKind::Declaration { variable, var_type } => {
-                println!("declaration {} : {}", variable, var_type)
+        for s in unit {
+            match self.visit_stmt(s) {
+                Ok(_) => (),
+                Err(_) => return Result::Err(()),
             }
-            ast::StmtKind::Assign => todo!(),
+        }
+
+        Result::Ok(())
+    }
+
+    fn visit_stmt(&mut self, stmt: &ast::Stmt) -> Result<(), ()> {
+        // Test = works here !
+        let i64_type = self.context.i64_type();
+        let builder = &self.builder;
+        builder.build_alloca(i64_type, "ddd");
+
+        // TODO : handle result
+        match stmt.generate(self) {
+            Ok(_) => Result::Ok(()),
+            Err(_) => Result::Err(()),
         }
     }
 
-    fn visit_expr(&mut self, expr: &ast::Expr) {
-
+    fn visit_expr(&mut self, expr: &ast::Expr) -> Result<(), ()> {
         self.logger.add(Log {
             location: expr.location,
             level: LogLevel::Warning,
@@ -106,8 +120,8 @@ impl<'ctx> Visitor for Generator<'ctx> {
 
         match &expr.node {
             ast::ExprKind::Mock { m } => todo!(),
-            ast::ExprKind::Name { id } => println!("{:?}", id),
-            ast::ExprKind::Constant { value } => println!("{:?}", value),
+            ast::ExprKind::Name { id } => Result::Err(()),
+            ast::ExprKind::Constant { value } => Result::Err(()),
         }
     }
 }

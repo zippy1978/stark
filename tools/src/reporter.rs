@@ -27,25 +27,12 @@ fn parse_error_diagnostic(file_id: usize, error: ParseError) -> Diagnostic<usize
         .with_message(message)
         //.with_code("XXX")
         .with_labels(vec![Label::primary(file_id, range).with_message(label)])
+
 }
 
 fn code_gen_error_diagnostic(file_id: usize, error: CodeGenError) -> Diagnostic<usize> {
-    /*let range = Range {
-        start: error.location.span().start(),
-        end: error.location.span().end(),
-    };
 
-
-    let label = match error.error {
-        lang::code_gen::CodeGenErrorType::Generic => "generic",
-    };
-
-    Diagnostic::error()
-        .with_message(message)
-        //.with_code("XXX")
-        .with_labels(vec![Label::primary(file_id, range).with_message(label)])*/
-
-    let message = "compile error";
+    let message = "compilation error";
 
     let mut diag = Diagnostic::error().with_message(message);
 
@@ -57,9 +44,14 @@ fn code_gen_error_diagnostic(file_id: usize, error: CodeGenError) -> Diagnostic<
             end: log.location.span().end(),
         };
 
-        diag = diag.with_labels(vec![
-            Label::primary(file_id, range).with_message(log.message)
-        ]);
+        diag = diag.with_labels(vec![match log.level {
+            lang::code_gen::LogLevel::Warning => {
+                Label::secondary(file_id, range).with_message(log.message)
+            }
+            lang::code_gen::LogLevel::Error => {
+                Label::primary(file_id, range).with_message(log.message)
+            }
+        }]);
     }
 
     diag
@@ -74,9 +66,6 @@ pub fn report(name: &str, input: &str, error: StarkError) {
         StarkError::CodeGen(err) => code_gen_error_diagnostic(file_id, err),
         StarkError::Parser(err) => parse_error_diagnostic(file_id, err),
     };
-
-    // We now set up the writer and configuration, and then finally render the
-    // diagnostic to standard error.
 
     let writer = StandardStream::stderr(ColorChoice::Always);
     let config = codespan_reporting::term::Config::default();
