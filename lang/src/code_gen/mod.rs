@@ -16,6 +16,8 @@ mod symbol;
 mod symbol_tests;
 
 mod typing;
+#[cfg(test)]
+mod typing_tests;
 
 mod statement;
 #[cfg(test)]

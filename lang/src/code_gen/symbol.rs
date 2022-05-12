@@ -1,6 +1,8 @@
 /// dfdf
-
-use std::{collections::HashMap, fmt::Display};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    fmt::Display,
+};
 
 use crate::ast::Location;
 
@@ -9,7 +11,7 @@ use super::typing::Type;
 #[derive(Debug, PartialEq)]
 pub struct Symbol<'a> {
     pub name: String,
-    pub symbol_type: Type<'a>,
+    pub symbol_type: &'a Type<'a>,
     pub definition_location: Location,
 }
 
@@ -17,6 +19,13 @@ impl<'a> Display for Symbol<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} => {}", self.name, self.symbol_type)
     }
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum SymbolError<'a> {
+    AlreadyDefined(&'a Symbol<'a>),
+    AlreadyDefinedInUpperScope(&'a Symbol<'a>),
+    NoScope,
 }
 
 #[derive(Debug, PartialEq)]
@@ -38,11 +47,21 @@ impl<'a> SymbolScope<'a> {
         }
     }
 
-    pub fn insert(&mut self, name: &String, symbol_type: Type<'a>, definition_location: Location) {
-        self.entries.insert(name.to_string(), Symbol { name: name.to_string(), symbol_type, definition_location});
+    pub(crate) fn insert(
+        &mut self,
+        name: &str,
+        symbol_type: &'a Type,
+        definition_location: Location,
+    ) {
+        let symbol = Symbol {
+            name: name.to_string(),
+            symbol_type,
+            definition_location,
+        };
+        self.entries.insert(name.to_string(), symbol);
     }
 
-    pub fn lookup_symbol(&self, name: &str) -> Option<&Symbol> {
+    pub(crate) fn lookup_symbol(&self, name: &str) -> Option<&'a Symbol> {
         self.entries.get(name)
     }
 }
@@ -57,8 +76,7 @@ impl<'a> Display for SymbolScope<'a> {
     }
 }
 
-pub enum SymbolTableError {}
-
+// Holds symbol definitions by scope.
 pub struct SymbolTable<'a> {
     scopes: Vec<SymbolScope<'a>>,
 }
@@ -95,13 +113,53 @@ impl<'a> SymbolTable<'a> {
         // Not found
         None
     }
+
+    pub fn insert(
+        &mut self,
+        name: &str,
+        symbol_type: &'a Type,
+        definition_location: Location,
+    ) -> Result<(), SymbolError> {
+        if self.scopes.len() == 0 {
+            return Result::Err(SymbolError::NoScope);
+        }
+
+        let mut found_scope_index: Option<usize> = None;
+        for (i, scope) in self.scopes.iter().rev().enumerate() {
+            if scope.entries.contains_key(name) {
+                // Don't forget the iteration is reverse !
+                found_scope_index = Some(self.scopes.len() - 1 - i);
+                break;
+            }
+        }
+
+        // Retrieve existing or create new symbol
+        match found_scope_index {
+            Some(i) => {
+                let scope = self.scopes.get(i).unwrap();
+                let symbol = scope.entries.get(name).unwrap();
+
+                if i == self.scopes.len() - 1 {
+                    return Result::Err(SymbolError::AlreadyDefined(symbol));
+                } else {
+                    return Result::Err(SymbolError::AlreadyDefinedInUpperScope(symbol));
+                }
+            }
+            None => {
+                self.current_scope_mut()
+                    .unwrap()
+                    .insert(name, symbol_type, definition_location);
+                Result::Ok(())
+            }
+        }
+    }
 }
 
 impl<'a> Display for SymbolTable<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::new().to_owned();
-        for scope in &self.scopes {
-            out.push_str(format!("{}\n", scope).as_str());
+        for (i, scope) in self.scopes.iter().enumerate() {
+            out.push_str(format!("{} - {}\n", i, scope).as_str());
         }
         write!(f, "{}", out)
     }

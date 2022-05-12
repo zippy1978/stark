@@ -6,6 +6,7 @@ use inkwell::{builder::Builder, module::Module};
 
 use super::log::Log;
 use super::symbol::{SymbolScope, SymbolScopeType, SymbolTable};
+use super::typing::TypeRegistry;
 use super::{Bitcode, CodeGenError, LogLevel, Logger};
 
 pub type GenerableResult<'a> = Result<PointerValue<'a>, CodeGenError<'a>>;
@@ -39,6 +40,7 @@ pub struct Generator<'ctx> {
     module: Module<'ctx>,
     builder: Builder<'ctx>,
     symbol_table: SymbolTable<'ctx>,
+    type_registry: TypeRegistry<'ctx>,
     config: Config<'ctx>,
     logger: Logger<'ctx>,
 }
@@ -50,6 +52,7 @@ impl<'ctx> Generator<'ctx> {
             module: context.create_module(config.name),
             builder: context.create_builder(),
             symbol_table: SymbolTable::new(),
+            type_registry: TypeRegistry::new(),
             config,
             logger: Logger::new(),
         }
@@ -63,7 +66,28 @@ impl<'ctx> Generator<'ctx> {
         &self.builder
     }
 
+    pub(crate) fn symbol_table(&self) -> &SymbolTable {
+        &self.symbol_table
+    }
+
+    pub(crate) fn symbol_table_mut(&mut self) -> &mut SymbolTable<'ctx> {
+        &mut self.symbol_table
+    }
+
+    pub(crate) fn type_registry(&self) -> &TypeRegistry {
+        &self.type_registry
+    }
+
     pub fn generate(&mut self, unit: &ast::Unit) -> Result<GeneratorResult, CodeGenError> {
+        // Built-in types
+        // int
+        self.type_registry.insert(
+            &String::from("int"),
+            super::typing::TypeKind::Primary,
+            self.context.i64_type(),
+            None,
+        );
+
         // Root block
         let i64_type = self.context.i64_type();
         let fn_type = i64_type.fn_type(&[i64_type.into(), i64_type.into(), i64_type.into()], false);
