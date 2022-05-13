@@ -1,4 +1,4 @@
-use inkwell::builder::Builder;
+use inkwell::{builder::Builder, context::Context};
 
 use crate::ast::{self, Visitor};
 
@@ -14,6 +14,7 @@ pub struct CodeGenBuilderResult {
 }
 
 pub struct CodeGenBuilder<'a> {
+    context: &'a Context,
     builder: &'a Builder<'a>,
     type_registry: &'a mut TypeRegistry<'a>,
     symbol_table: &'a mut SymbolTable<'a>,
@@ -22,12 +23,14 @@ pub struct CodeGenBuilder<'a> {
 
 impl<'a> CodeGenBuilder<'a> {
     pub fn new(
+        context: &'a Context,
         builder: &'a Builder,
         type_registry: &'a mut TypeRegistry<'a>,
         symbol_table: &'a mut SymbolTable<'a>,
         logger: &'a Logger,
     ) -> Self {
         CodeGenBuilder {
+            context,
             builder,
             type_registry,
             symbol_table,
@@ -70,6 +73,7 @@ impl<'a> Visitor<Result<(), ()>> for CodeGenBuilder<'a> {
             ast::StmtKind::Declaration { variable, var_type } => {
                 // TO CONTINUE ! :)
                 // Quick and dirty test
+                //self.context.i128_type();
                 let ty = self.type_registry.lookup_type(var_type).unwrap();
                 self.builder.build_alloca(ty.llvm_type, &variable);
                 Result::Ok(())
