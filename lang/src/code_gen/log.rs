@@ -1,15 +1,15 @@
 use crate::ast::Location;
 
-pub struct Logger<'a> {
-    logs: Vec<Log<'a>>,
+pub struct Logger {
+    logs: Vec<Log>,
 }
 
-impl<'a> Logger<'a> {
-    pub fn new() -> Logger<'a> {
+impl Logger {
+    pub fn new() -> Logger {
         Logger { logs: Vec::new() }
     }
 
-    pub fn add(&mut self, log: Log<'a>) {
+    pub fn add(&mut self, log: Log) {
         self.logs.push(log);
     }
 
@@ -19,13 +19,13 @@ impl<'a> Logger<'a> {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Log<'a> {
+pub struct Log {
     pub location: Location,
     pub level: LogLevel,
-    pub message: &'a str,
+    pub message: String,
 }
 
-impl<'a> Clone for Log<'a> {
+impl<'a> Clone for Log {
     fn clone(&self) -> Self {
         Self {
             location: self.location.clone(),

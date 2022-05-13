@@ -1,11 +1,11 @@
 use super::Log;
 
 #[derive(Debug, PartialEq)]
-pub struct CodeGenError<'ctx> {
-    pub logs: Vec<Log<'ctx>>,
+pub struct CodeGenError {
+    pub logs: Vec<Log>,
 }
 
-impl<'a> CodeGenError<'a> {
+impl CodeGenError {
     pub fn new() -> Self {
         CodeGenError { logs: Vec::new() }
     }

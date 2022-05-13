@@ -1,4 +1,6 @@
-use super::{typing::TypeRegistry, Context};
+use inkwell::context::Context;
+
+use super::{typing::TypeRegistry};
 
 #[test]
 fn lookup_type() {

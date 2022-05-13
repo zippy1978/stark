@@ -1,3 +1,5 @@
+use inkwell::context::Context;
+
 use crate::ast::{Location, Span};
 #[cfg(test)]
 use crate::code_gen::{
@@ -7,8 +9,7 @@ use crate::code_gen::{
 };
 
 use super::{
-    typing::{TypeKind, TypeRegistry},
-    Context,
+    typing::{TypeKind, TypeRegistry}, 
 };
 
 fn table_with_scope<'a>() -> SymbolTable<'a> {

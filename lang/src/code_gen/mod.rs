@@ -1,6 +1,13 @@
-mod generator;
+//mod generator;
+//pub use generator::*;
 
-pub use generator::*;
+mod gen;
+
+pub use gen::*;
+
+mod builder;
+pub use builder::*;
+
 
 mod error;
 pub use error::*;
@@ -19,6 +26,3 @@ mod typing;
 #[cfg(test)]
 mod typing_tests;
 
-mod statement;
-#[cfg(test)]
-mod statement_tests;

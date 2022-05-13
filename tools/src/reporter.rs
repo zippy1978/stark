@@ -46,10 +46,10 @@ fn code_gen_error_diagnostic(file_id: usize, error: CodeGenError) -> Diagnostic<
 
         diag = diag.with_labels(vec![match log.level {
             lang::code_gen::LogLevel::Warning => {
-                Label::secondary(file_id, range).with_message(log.message)
+                Label::secondary(file_id, range).with_message(log.message.to_string())
             }
             lang::code_gen::LogLevel::Error => {
-                Label::primary(file_id, range).with_message(log.message)
+                Label::primary(file_id, range).with_message(log.message.to_string())
             }
         }]);
     }

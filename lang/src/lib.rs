@@ -5,7 +5,7 @@ pub mod ast;
 pub mod code_gen;
 pub mod parser;
 
-pub enum StarkError<'ctx> {
-    CodeGen(CodeGenError<'ctx>),
+pub enum StarkError {
+    CodeGen(CodeGenError),
     Parser(ParseError),
 }
