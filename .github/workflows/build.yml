@@ -2,23 +2,31 @@ name: Build
 
 on: [push]
 
+env:
+  LLVM_SYS_120_PREFIX: ${{ runner.temp }}/llvm
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    # See https://actions-rs.github.io/
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v2
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
-            python-version: 3.8
+          profile: minimal
+          toolchain: stable
+          components: rustfmt, clippy
       
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "13.0"
-      
-      - name: Install conan
-        run: pip3 install conan
-      - uses: icepuma/rust-action@master
+          directory: ${{ runner.temp }}/llvm
+          
+      - name: Run tests
+        uses: actions-rs/cargo@v1
         with:
-          args: cargo test
+          command: test
