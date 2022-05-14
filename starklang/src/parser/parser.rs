@@ -7,8 +7,13 @@ use lalrpop_util::lalrpop_mod;
 pub struct Parser {}
 
 impl Parser {
-    /// Parses input string to AST
-    pub fn parse(input: &str) -> Result<ast::Unit, ParseError> {
+    /// Creates a new parser.
+    pub fn new() -> Self {
+        Parser {}
+    }
+
+    /// Parses input string to AST.
+    pub fn parse(&self, input: &str) -> Result<ast::Unit, ParseError> {
         let filename = String::from("main");
         let lexer = lexer::Lexer::new(input);
         match stark::UnitParser::new().parse(&filename, lexer) {
@@ -17,4 +22,3 @@ impl Parser {
         };
     }
 }
-
