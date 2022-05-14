@@ -2,8 +2,6 @@ name: Build
 
 on: [push]
 
-env:
-  LLVM_SYS_120_PREFIX: ${{ runner.temp }}/llvm
 
 jobs:
   build:
@@ -28,5 +26,7 @@ jobs:
           
       - name: Run tests
         uses: actions-rs/cargo@v1
+        env:
+          LLVM_SYS_120_PREFIX: ${{ runner.temp }}/llvm
         with:
           command: test
