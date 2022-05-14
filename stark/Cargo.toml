@@ -1,0 +1,13 @@
+[package]
+name = "stark"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+exitcode = "1.1.2"
+clap = { version = "3.0", features = ["derive"]}
+starklang = { path = "../starklang" }
+
+[[bin]]
+name = "stark"
+path = "src/main.rs"

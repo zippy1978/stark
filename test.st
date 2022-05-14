@@ -1,3 +1,2 @@
 
-a: gg
-a: int
+a::d

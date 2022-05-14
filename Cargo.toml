@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-    "lang",
-    "tools",
+    "starklang",
+    "stark",
 ]
