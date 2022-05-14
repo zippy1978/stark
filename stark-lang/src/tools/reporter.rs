@@ -11,6 +11,10 @@ use crate::ast::{Log, LogLevel};
 pub struct Reporter {}
 
 impl Reporter {
+
+    pub fn new() -> Self {
+        Reporter {}
+    }
     
     fn diag_from_log(file_id: usize, log: Log) -> Diagnostic<usize> {
         let diag: Diagnostic<usize> = match log.level {
@@ -31,7 +35,7 @@ impl Reporter {
     }
 
     /// TODO
-    pub fn report_logs(name: &str, source: &str, logs: Vec<Log>) {
+    pub fn report_logs(&self, name: &str, source: &str, logs: Vec<Log>) {
         let mut files = SimpleFiles::new();
         let file_id = files.add(name, source);
 

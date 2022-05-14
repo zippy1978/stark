@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-    "starklang",
+    "stark-lang",
     "stark",
 ]

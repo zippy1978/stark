@@ -3,7 +3,7 @@ extern crate exitcode;
 use std::fs;
 
 use clap::Parser;
-use starklang::{compiler::Compiler, tools::Reporter};
+use stark_lang::{tools::Reporter, compiler::Compiler};
 
 #[derive(Parser, Debug)]
 #[clap(name = "Stark compiler", author, version, about, long_about = None)]
@@ -17,16 +17,17 @@ fn main() {
 
     let filename = &args.path.to_str().unwrap();
 
+    let reporter = Reporter::new();
     let compiler = Compiler::new();
 
     match fs::read_to_string(&args.path) {
         Ok(input) => match compiler.compile_string(&input) {
             Ok(output) => {
-                Reporter::report_logs(&filename, &input, output.logs);
+                reporter.report_logs(&filename, &input, output.logs);
                 std::process::exit(exitcode::OK)
             }
             Err(err) => {
-                Reporter::report_logs(&filename, &input, err.logs);
+                reporter.report_logs(&filename, &input, err.logs);
                 std::process::exit(exitcode::USAGE)
             }
         },

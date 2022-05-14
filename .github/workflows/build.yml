@@ -12,24 +12,10 @@ jobs:
         with:
             python-version: 3.8
       
-      - name: Install tools
-        run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-                sudo apt-get update 
-                sudo apt-get -y install git cmake bison libfl-dev flex ninja-build
-                sudo apt-get purge --auto-remove llvm
-                wget https://apt.llvm.org/llvm.sh
-                chmod +x llvm.sh
-                sudo ./llvm.sh 12
-                echo LLVM default version is $(/usr/bin/llvm-config-12 --version)
-          else
-                brew install cmake
-                brew install conan
-                brew install llvm
-                brew install flex
-                brew install bison
-                brew install ninja
-          fi
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "13.0"
       
       - name: Install conan
         run: pip3 install conan
