@@ -17,8 +17,10 @@ fn main() {
 
     let filename = &args.path.to_str().unwrap();
 
+    let compiler = Compiler::new();
+
     match fs::read_to_string(&args.path) {
-        Ok(input) => match Compiler::from_string(&input) {
+        Ok(input) => match compiler.compile_string(&input) {
             Ok(output) => {
                 Reporter::report_logs(&filename, &input, output.logs);
                 std::process::exit(exitcode::OK)

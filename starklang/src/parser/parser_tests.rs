@@ -1,6 +1,6 @@
-use crate::parser::Parser;
 #[cfg(test)]
-use crate::{ast};
+use crate::ast;
+use crate::parser::Parser;
 
 type TestError = String;
 
@@ -45,7 +45,9 @@ fn assert_statment(
 ) -> Result<(), TestError> {
     let error = Result::<(), TestError>::Err(String::from("Failed to parse identifier"));
 
-    match Parser::parse(input) {
+    let parser = Parser::new();
+
+    match parser.parse(input) {
         Ok(unit) => {
             let stmt = unit.get(0).unwrap();
             return assert_fn(&stmt.node);
@@ -64,7 +66,8 @@ fn parse_statements() {
             /* multi line 
              * comment */
         "#;
-    let unit = Parser::parse(input).unwrap();
+    let parser = Parser::new();
+    let unit = parser.parse(input).unwrap();
     assert_eq!(unit.len(), 2);
 }
 

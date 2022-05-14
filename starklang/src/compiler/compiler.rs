@@ -1,8 +1,8 @@
 use inkwell::context::Context;
 
 use crate::{
-    ast::{self, Log, LogLevel, Logger, LoglLabel},
-    code_gen::{CodeGenBuilder, CodeGenError},
+    ast::{self, Log, LogLevel, Logger},
+    code_gen::CodeGenBuilder,
     parser::Parser,
     typing::{SymbolTable, TypeKind, TypeRegistry},
 };
@@ -26,20 +26,31 @@ type CompileResult = Result<CompileOutput, CompileError>;
 pub struct Compiler {}
 
 impl Compiler {
-    pub fn from_string(input: &str) -> CompileResult {
-        match Parser::parse(input) {
-            Ok(ast) => Self::from_ast(&ast),
+    pub fn new() -> Self {
+        Compiler {}
+    }
+    pub fn compile_string(&self, input: &str) -> CompileResult {
+        let parser = Parser {};
+
+        match parser.parse(input) {
+            Ok(ast) => self.compile_ast(&ast),
             Err(err) => {
                 let mut compile_error = CompileError::new();
                 let log = Log::new("syntax error", LogLevel::Error)
-                .with_label(err.to_string(), err.location);
+                    .with_label(err.to_string(), err.location);
                 compile_error.logs.push(log);
                 Result::Err(compile_error)
             }
         }
     }
 
-    pub fn from_ast(ast: &ast::Unit) -> CompileResult {
+    pub fn compile_ast(&self, ast: &ast::Unit) -> CompileResult {
+        let mut compile_output = CompileOutput::new();
+        let log = Log::new("code gen is not implemented yet !", LogLevel::Warning);
+        compile_output.logs.push(log);
+        Result::Ok(compile_output)
+
+        /*
         // TODO : rewrite it all !
 
         let context = Context::create();
@@ -74,6 +85,6 @@ impl Compiler {
                 logs: logger.logs(),
             }),
             Err(err) => Result::Err(CompileError { logs: err.logs }),
-        }
+        }*/
     }
 }

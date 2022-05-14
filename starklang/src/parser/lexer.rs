@@ -1,11 +1,13 @@
+//! Lexer.
 use crate::ast::{Location, Span};
 
 use super::error::LexicalError;
 use super::token::Token;
 use logos::{Logos, SpannedIter};
 
-pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
+type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
+/// Language lexer.
 pub struct Lexer<'input> {
     token_stream: SpannedIter<'input, Token>,
     row_no: usize,
@@ -14,6 +16,7 @@ pub struct Lexer<'input> {
 }
 
 impl<'input> Lexer<'input> {
+    /// Creates a new lexer.
     pub fn new(input: &'input str) -> Self {
         Self {
             token_stream: Token::lexer(input).spanned(),

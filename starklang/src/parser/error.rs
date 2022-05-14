@@ -1,5 +1,7 @@
 //! Defines internal parse error types.
 //! The goal is to provide a matching and a safe error API, maksing errors from LALR.
+use std::fmt::Display;
+
 use lalrpop_util::ParseError as LalrpopError;
 
 use super::token::Token;
@@ -32,17 +34,21 @@ pub enum ParseErrorType {
     Lexical,
 }
 
-impl ToString for ParseError {
-    fn to_string(&self) -> String {
-        match &self.error_type {
-            ParseErrorType::Eof => "unexpected end of input".to_string(),
-            ParseErrorType::ExtraToken(token) => format!("extra token encountred `{}`", token),
-            ParseErrorType::InvalidToken => "invalid token".to_string(),
-            ParseErrorType::UnrecognizedToken(token, _value) => {
-                format!("unrecognized token `{}`", token)
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match &self.error_type {
+                ParseErrorType::Eof => "unexpected end of input".to_string(),
+                ParseErrorType::ExtraToken(token) => format!("extra token encountred `{}`", token),
+                ParseErrorType::InvalidToken => "invalid token".to_string(),
+                ParseErrorType::UnrecognizedToken(token, _value) => {
+                    format!("unrecognized token `{}`", token)
+                }
+                ParseErrorType::Lexical => "unknown token".to_string(),
             }
-            ParseErrorType::Lexical => "unknown token".to_string(),
-        }
+        )
     }
 }
 

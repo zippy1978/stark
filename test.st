@@ -1,2 +1,3 @@
 
-a::d
+// a test
+a: int

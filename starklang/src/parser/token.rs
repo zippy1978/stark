@@ -1,3 +1,4 @@
+//! Lexer tokens.
 use std::fmt::Display;
 
 use logos::{Lexer, Logos};
@@ -8,6 +9,7 @@ fn big_int(lex: &mut Lexer<Token>) -> Option<BigInt> {
     Some(BigInt::from(n))
 }
 
+/// Lexer token.
 #[derive(Logos, Clone, Debug, PartialEq)]
 pub enum Token {
     #[regex(r"[_a-zA-Z][_0-9a-zA-Z]*", |lex| lex.slice().parse())]
@@ -32,18 +34,22 @@ pub enum Token {
     // Skip multiline comment
     #[regex(r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/", logos::skip)]
     #[error]
-    Error, // requis pour tout les tokens invalides
+    Error,
 }
 
 impl Display for Token {
     // TODO : fix display here
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value_string;
         write!(
             f,
-            "{}]",
+            "{}",
             match self {
                 Token::Identifier(value) => value,
-                Token::Integer(value) => "TODO === INT",
+                Token::Integer(value) => {
+                    value_string = value.to_string();
+                    value_string.as_str()
+                }
                 Token::NewLine => "\n",
                 Token::Colon => ":",
                 Token::Equal => "=",

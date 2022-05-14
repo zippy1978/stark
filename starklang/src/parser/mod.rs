@@ -6,10 +6,10 @@ mod parser_tests;
 
 mod error;
 pub use error::*;
+
 mod token;
-pub use token::*;
+pub(crate) use token::*;
 
 mod lexer;
-pub use lexer::*;
 #[cfg(test)]
 mod lexer_tests;
