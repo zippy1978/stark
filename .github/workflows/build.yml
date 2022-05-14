@@ -16,7 +16,6 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          components: rustfmt, clippy
       
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
