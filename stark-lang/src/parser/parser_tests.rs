@@ -10,7 +10,19 @@ fn assert_variable_definition(stmt: &ast::StmtKind) -> Result<(), TestError> {
             name: _,
             var_type: _,
         } => Result::Ok(()),
-        _ => Result::Err(String::from("Failed to parse declaration")),
+        _ => Result::Err(String::from("Failed to parse variable definition")),
+    }
+}
+
+fn assert_function_definition(stmt: &ast::StmtKind) -> Result<(), TestError> {
+    match stmt {
+        ast::StmtKind::FuncDef {
+            name: _,
+            args:_,
+            body:_,
+            returns:_,
+        } => Result::Ok(()),
+        _ => Result::Err(String::from("Failed to parse function declaration")),
     }
 }
 
@@ -105,4 +117,18 @@ fn parse_variable_definition() {
 fn parse_assign() {
     assert!(assert_statment("age = 1", assert_assign).is_ok());
     assert!(assert_statment("age = ", assert_assign).is_err());
+}
+
+#[test]
+fn parse_function_definition() {
+    assert!(assert_statment(r#"
+    func test() {
+        a = 1
+    }
+    "#, assert_function_definition).is_ok());
+    assert!(assert_statment(r#"
+    func test() => int {
+        a = 1
+    }
+    "#, assert_function_definition).is_ok());
 }

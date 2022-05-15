@@ -24,7 +24,7 @@ pub struct Arg {
     pub var_type: Ident,
 }
 
-pub type Arguments = Located<Vec<Arg>>;
+pub type Args = Located<Vec<Arg>>;
 
 #[derive(Debug, PartialEq)]
 pub enum StmtKind {
@@ -39,10 +39,10 @@ pub enum StmtKind {
         target: Box<Expr>,
         value: Box<Expr>,
     },
-    FunctionDef {
+    FuncDef {
         name: Ident,
-        args: Box<Arguments>,
-        body: Vec<Stmt>,
+        args: Box<Args>,
+        body: Stmts,
         returns: Option<Ident>,
     },
 }

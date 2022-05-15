@@ -45,6 +45,9 @@ pub enum Token {
     #[token("}")]
     RBrace,
 
+    #[token(",")]
+    Comma,
+
     // Skip spaces
     #[regex(r"[ \t\f]+", logos::skip)]
     // Skip single line comment
@@ -56,7 +59,6 @@ pub enum Token {
 }
 
 impl Display for Token {
-    
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let value_string;
         write!(
@@ -78,6 +80,7 @@ impl Display for Token {
                 Token::RParen => ")",
                 Token::LBrace => "{",
                 Token::RBrace => "}",
+                Token::Comma => ",",
             }
         )
     }

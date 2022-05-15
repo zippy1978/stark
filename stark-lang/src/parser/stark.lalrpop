@@ -10,6 +10,7 @@ pub Stmts: ast::Stmts = ("\n")* <Statment*> => <>;
 Statment: ast::Stmt = {
     ExpressionStatement,
     VariableDefinition,
+    FunctionDefinition,
     Assign,
 };
 
@@ -22,6 +23,8 @@ ExpressionStatement: ast::Stmt = {
     },   
 };
 
+// Variable
+
 VariableDefinition: ast::Stmt = {
     <location:@L> <name:Identifier> ":" <var_type:Identifier> ("\n")* => {
         ast::Stmt {
@@ -30,6 +33,26 @@ VariableDefinition: ast::Stmt = {
         }
     },
 };
+
+// Function
+
+// TODO
+//Args: ast::Args = ("\n")* <Arg*> => <>;
+
+FunctionType: String = {
+    ("\n")* "=>" ("\n")* <returns:Identifier> => returns
+};
+
+FunctionDefinition: ast::Stmt = {
+    <location:@L> "func" ("\n")* <name:Identifier> ("\n")* "(" ")" <returns:FunctionType?> ("\n")* "{" <stmts:Stmts>"}" ("\n")* => {
+        ast::Stmt {
+            location,
+            node: ast::StmtKind::FuncDef { name: name, args: Box::new(ast::Args{location, node: Vec::new()}), body: stmts, returns }
+        }
+    },
+};
+
+// Assign
 
 Assign: ast::Stmt = {
     <location:@L> <target:Expression> "=" <value:Expression> ("\n")* => {
@@ -50,6 +73,8 @@ Expression: ast::Expr = {
         node: ast::ExprKind::Constant { value: ast::Constant::Int(i)}
     },
 };
+
+// Literals
 
 Identifier: String = <s:name> => {
     match s {
@@ -82,5 +107,6 @@ extern {
         ")" => Token::RParen,
         "{" => Token::LBrace,
         "}" => Token::RBrace,
+        "," => Token::Comma,
       }
 }
