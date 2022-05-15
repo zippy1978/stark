@@ -1,13 +1,13 @@
 #[cfg(test)]
 use crate::ast;
-use crate::parser::Parser;
+use crate::{parser::Parser, ast::Stmts};
 
 type TestError = String;
 
 fn assert_variable_definition(stmt: &ast::StmtKind) -> Result<(), TestError> {
     match stmt {
         ast::StmtKind::VarDef {
-            variable: _,
+            name: _,
             var_type: _,
         } => Result::Ok(()),
         _ => Result::Err(String::from("Failed to parse declaration")),
@@ -58,8 +58,8 @@ fn assert_statment(
     let parser = Parser::new();
 
     match parser.parse(input) {
-        Ok(unit) => {
-            let stmt = unit.get(0).unwrap();
+        Ok(stmts) => {
+            let stmt = stmts.get(0).unwrap();
             return assert_fn(&stmt.node);
         }
         Err(_) => error,
@@ -77,8 +77,8 @@ fn parse_statements() {
              * comment */
         "#;
     let parser = Parser::new();
-    let unit = parser.parse(input).unwrap();
-    assert_eq!(unit.len(), 2);
+    let stmts = parser.parse(input).unwrap();
+    assert_eq!(stmts.len(), 2);
 }
 
 #[test]

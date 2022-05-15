@@ -48,7 +48,7 @@ impl Compiler {
         }
     }
 
-    pub fn compile_ast(&self, ast: &ast::Unit) -> CompileResult {
+    pub fn compile_ast(&self, ast: &ast::Stmts) -> CompileResult {
         /*let mut compile_output = CompileOutput::new();
         let log = Log::new("code gen is not implemented yet !", LogLevel::Warning);
         compile_output.logs.push(log);

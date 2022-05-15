@@ -4,9 +4,8 @@ use super::Location;
 type Ident = String;
 
 #[derive(Debug, PartialEq)]
-pub struct Located<T, U = ()> {
+pub struct Located<T> {
     pub location: Location,
-    pub custom: U,
     pub node: T,
 }
 
@@ -14,27 +13,40 @@ impl<T> Located<T> {
     pub fn new(location: Location, node: T) -> Self {
         Self {
             location,
-            custom: (),
             node,
         }
     }
 }
 
 #[derive(Debug, PartialEq)]
-pub enum StmtKind<U = ()> {
+pub struct Arg {
+    pub name: Ident,
+    pub var_type: Ident,
+}
+
+pub type Arguments = Located<Vec<Arg>>;
+
+#[derive(Debug, PartialEq)]
+pub enum StmtKind {
     Expr {
-        value: Box<Expr<U>>,
+        value: Box<Expr>,
     },
     VarDef {
-        variable: Ident,
+        name: Ident,
         var_type: Ident,
     },
     Assign {
-        target: Box<Expr<U>>,
-        value: Box<Expr<U>>,
+        target: Box<Expr>,
+        value: Box<Expr>,
+    },
+    FunctionDef {
+        name: Ident,
+        args: Box<Arguments>,
+        body: Vec<Stmt>,
+        returns: Option<Ident>,
     },
 }
-pub type Stmt<U = ()> = Located<StmtKind<U>, U>;
+pub type Stmt = Located<StmtKind>;
 
 #[derive(Debug, PartialEq)]
 pub enum ExprKind<U = ()> {
@@ -42,9 +54,9 @@ pub enum ExprKind<U = ()> {
     Name { id: Ident },
     Constant { value: Constant },
 }
-pub type Expr<U = ()> = Located<ExprKind<U>, U>;
+pub type Expr = Located<ExprKind>;
 
-pub type Unit<U = ()> = Vec<Stmt<U>>;
+pub type Stmts = Vec<Stmt>;
 
 // Notes
 // Use https://github.com/brendanzab/codespan

@@ -5,7 +5,7 @@ use crate::parser::Token;
 
 grammar(filename: &String);
 
-pub Unit: ast::Unit = ("\n")* <Statment*> => <>;
+pub Stmts: ast::Stmts = ("\n")* <Statment*> => <>;
 
 Statment: ast::Stmt = {
     ExpressionStatement,
@@ -16,7 +16,6 @@ Statment: ast::Stmt = {
 ExpressionStatement: ast::Stmt = {
     <location:@L> <e:Expression> ("\n")* => {
         ast::Stmt {
-            custom: (),
             location,
             node: ast::StmtKind::Expr { value: Box::new(e) }
         }
@@ -24,11 +23,10 @@ ExpressionStatement: ast::Stmt = {
 };
 
 VariableDefinition: ast::Stmt = {
-    <location:@L> <variable:Identifier> ":" <var_type:Identifier> ("\n")* => {
+    <location:@L> <name:Identifier> ":" <var_type:Identifier> ("\n")* => {
         ast::Stmt {
-            custom: (),
             location,
-            node: ast::StmtKind::VarDef { variable: variable, var_type: var_type }
+            node: ast::StmtKind::VarDef { name: name, var_type: var_type }
         }
     },
 };
@@ -36,7 +34,6 @@ VariableDefinition: ast::Stmt = {
 Assign: ast::Stmt = {
     <location:@L> <target:Expression> "=" <value:Expression> ("\n")* => {
         ast::Stmt {
-            custom: (),
             location,
             node: ast::StmtKind::Assign { target: Box::new(target), value: Box::new(value) }
         }
@@ -46,12 +43,10 @@ Assign: ast::Stmt = {
 Expression: ast::Expr = {
     <location:@L> <i:Identifier> => ast::Expr {
         location,
-        custom: (),
         node: ast::ExprKind::Name { id: i}
     },
     <location:@L> <i:Integer> => ast::Expr {
         location,
-        custom: (),
         node: ast::ExprKind::Constant { value: ast::Constant::Int(i)}
     },
 };
@@ -75,21 +70,17 @@ extern {
     type Location = ast::Location;
     type Error = LexicalError;
 
-    //enum Tok {
-        //":" => lexer::Tok::Colon,
-        //"=" => lexer::Tok::Equal,
-        //int => lexer::Tok::Int { value: <BigInt> },
-        //double => lexer::Tok::Double { value: <f64> },
-        //name => Tok::Name { name: <String> },
-        //"\n" => lexer::Tok::Newline,
-        
-    //}
-
     enum Token {
         name => Token::Identifier(_),
         integer => Token::Integer(_),
         "\n" => Token::NewLine,
         ":" => Token::Colon,
         "=" => Token::Equal,
+        "func" => Token::Func,
+        "=>" => Token::Arrow,
+        "(" => Token::LParen,
+        ")" => Token::RParen,
+        "{" => Token::LBrace,
+        "}" => Token::RBrace,
       }
 }

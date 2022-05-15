@@ -13,11 +13,11 @@ impl Parser {
     }
 
     /// Parses input string to AST.
-    pub fn parse(&self, input: &str) -> Result<ast::Unit, ParseError> {
+    pub fn parse(&self, input: &str) -> Result<ast::Stmts, ParseError> {
         let filename = String::from("main");
         let lexer = lexer::Lexer::new(input);
-        match stark::UnitParser::new().parse(&filename, lexer) {
-            Ok(unit) => return Result::Ok(unit),
+        match stark::StmtsParser::new().parse(&filename, lexer) {
+            Ok(stmts) => return Result::Ok(stmts),
             Err(err) => return Result::Err(ParseError::from(err)),
         };
     }

@@ -35,8 +35,8 @@ impl<'a> CodeGenBuilder<'a> {
         }
     }
 
-    pub fn build(&mut self, unit: &ast::Unit) -> Result<CodeGenBuilderResult, CodeGenError> {
-        match self.visit_unit(unit) {
+    pub fn build(&mut self, stmts: &ast::Stmts) -> Result<CodeGenBuilderResult, CodeGenError> {
+        match self.visit_stmts(stmts) {
             Ok(_) => Result::Ok(CodeGenBuilderResult {
                 logs: self.logger.logs(),
             }),
@@ -49,12 +49,12 @@ impl<'a> CodeGenBuilder<'a> {
 // https://createlang.rs/01_calculator/ast_traversal.html
 
 impl<'a> Visitor<Result<(), ()>> for CodeGenBuilder<'a> {
-    fn visit_unit(&mut self, unit: &ast::Unit) -> Result<(), ()> {
+    fn visit_stmts(&mut self, stmts: &ast::Stmts) -> Result<(), ()> {
         // Push initial scope
         self.symbol_table
             .push_scope(SymbolScope::new(SymbolScopeType::Global));
 
-        for s in unit {
+        for s in stmts {
             match self.visit_stmt(s) {
                 Ok(_) => (),
                 Err(_) => return Result::Err(()),
@@ -67,7 +67,7 @@ impl<'a> Visitor<Result<(), ()>> for CodeGenBuilder<'a> {
     fn visit_stmt(&mut self, stmt: &ast::Stmt) -> Result<(), ()> {
         match &stmt.node {
             ast::StmtKind::Expr { value } => todo!(),
-            ast::StmtKind::VarDef { variable, var_type } => {
+            ast::StmtKind::VarDef { name: variable, var_type } => {
                 // TO CONTINUE ! :)
                 // Quick and dirty test
                 //self.context.i128_type();

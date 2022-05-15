@@ -27,6 +27,24 @@ pub enum Token {
     #[token("=")]
     Equal,
 
+    #[token("func")]
+    Func,
+
+    #[token("=>")]
+    Arrow,
+
+    #[token("(")]
+    LParen,
+
+    #[token(")")]
+    RParen,
+
+    #[token("{")]
+    LBrace,
+
+    #[token("}")]
+    RBrace,
+
     // Skip spaces
     #[regex(r"[ \t\f]+", logos::skip)]
     // Skip single line comment
@@ -38,7 +56,7 @@ pub enum Token {
 }
 
 impl Display for Token {
-    // TODO : fix display here
+    
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let value_string;
         write!(
@@ -54,6 +72,12 @@ impl Display for Token {
                 Token::Colon => ":",
                 Token::Equal => "=",
                 Token::Error => "ERROR",
+                Token::Func => "func",
+                Token::Arrow => "=>",
+                Token::LParen => "(",
+                Token::RParen => ")",
+                Token::LBrace => "{",
+                Token::RBrace => "}",
             }
         )
     }
