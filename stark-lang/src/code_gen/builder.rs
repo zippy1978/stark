@@ -67,7 +67,7 @@ impl<'a> Visitor<Result<(), ()>> for CodeGenBuilder<'a> {
     fn visit_stmt(&mut self, stmt: &ast::Stmt) -> Result<(), ()> {
         match &stmt.node {
             ast::StmtKind::Expr { value } => todo!(),
-            ast::StmtKind::Declaration { variable, var_type } => {
+            ast::StmtKind::VarDef { variable, var_type } => {
                 // TO CONTINUE ! :)
                 // Quick and dirty test
                 //self.context.i128_type();
@@ -75,7 +75,7 @@ impl<'a> Visitor<Result<(), ()>> for CodeGenBuilder<'a> {
                 self.builder.build_alloca(self.context.i64_type(), &variable);
                 Result::Ok(())
             }
-            ast::StmtKind::Assign => todo!(),
+            _ => todo!(),
         }
     }
 

@@ -9,6 +9,8 @@ pub Unit: ast::Unit = ("\n")* <Statment*> => <>;
 
 Statment: ast::Stmt = {
     ExpressionStatement,
+    VariableDefinition,
+    Assign,
 };
 
 ExpressionStatement: ast::Stmt = {
@@ -18,15 +20,27 @@ ExpressionStatement: ast::Stmt = {
             location,
             node: ast::StmtKind::Expr { value: Box::new(e) }
         }
-    },
+    },   
+};
+
+VariableDefinition: ast::Stmt = {
     <location:@L> <variable:Identifier> ":" <var_type:Identifier> ("\n")* => {
         ast::Stmt {
             custom: (),
             location,
-            node: ast::StmtKind::Declaration { variable: variable, var_type: var_type }
+            node: ast::StmtKind::VarDef { variable: variable, var_type: var_type }
         }
     },
-   
+};
+
+Assign: ast::Stmt = {
+    <location:@L> <target:Expression> "=" <value:Expression> ("\n")* => {
+        ast::Stmt {
+            custom: (),
+            location,
+            node: ast::StmtKind::Assign { target: Box::new(target), value: Box::new(value) }
+        }
+    },
 };
 
 Expression: ast::Expr = {

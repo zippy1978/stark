@@ -22,10 +22,17 @@ impl<T> Located<T> {
 
 #[derive(Debug, PartialEq)]
 pub enum StmtKind<U = ()> {
-    Expr { value: Box<Expr<U>> },
-    Declaration { variable: Ident, var_type: Ident },
-
-    Assign,
+    Expr {
+        value: Box<Expr<U>>,
+    },
+    VarDef {
+        variable: Ident,
+        var_type: Ident,
+    },
+    Assign {
+        target: Box<Expr<U>>,
+        value: Box<Expr<U>>,
+    },
 }
 pub type Stmt<U = ()> = Located<StmtKind<U>, U>;
 
