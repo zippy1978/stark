@@ -79,7 +79,7 @@ fn assert_statment(
 }
 
 #[test]
-fn parse_statements() {
+fn parse_statments() {
     let input = r#"
 
             123

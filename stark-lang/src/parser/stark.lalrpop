@@ -5,17 +5,17 @@ use crate::parser::Token;
 
 grammar(filename: &String);
 
-pub Stmts: ast::Stmts = ("\n")* <Statment*> => <>;
+pub Stmts: ast::Stmts = <Statment*> => <>;
 
 Statment: ast::Stmt = {
-    ExpressionStatement,
+    ExpressionStatment,
     VariableDefinition,
     FunctionDefinition,
     Assign,
 };
 
-ExpressionStatement: ast::Stmt = {
-    <location:@L> <e:Expression> ("\n")* => {
+ExpressionStatment: ast::Stmt = {
+    <location:@L> <e:Expression> => {
         ast::Stmt {
             location,
             node: ast::StmtKind::Expr { value: Box::new(e) }
@@ -26,7 +26,7 @@ ExpressionStatement: ast::Stmt = {
 // Variable
 
 VariableDefinition: ast::Stmt = {
-    <location:@L> <name:Identifier> ":" <var_type:Identifier> ("\n")* => {
+    <location:@L> <name:Identifier> ":" <var_type:Identifier> => {
         ast::Stmt {
             location,
             node: ast::StmtKind::VarDef { name: name, var_type: var_type }
@@ -40,11 +40,11 @@ VariableDefinition: ast::Stmt = {
 //Args: ast::Args = ("\n")* <Arg*> => <>;
 
 FunctionType: String = {
-    ("\n")* "=>" ("\n")* <returns:Identifier> => returns
+     "=>" <returns:Identifier> => returns
 };
 
 FunctionDefinition: ast::Stmt = {
-    <location:@L> "func" ("\n")* <name:Identifier> ("\n")* "(" ")" <returns:FunctionType?> ("\n")* "{" <stmts:Stmts>"}" ("\n")* => {
+    <location:@L> "func" <name:Identifier> "(" ")" <returns:FunctionType?> "{" <stmts:Stmts>"}" => {
         ast::Stmt {
             location,
             node: ast::StmtKind::FuncDef { name: name, args: Box::new(ast::Args{location, node: Vec::new()}), body: stmts, returns }
@@ -55,7 +55,7 @@ FunctionDefinition: ast::Stmt = {
 // Assign
 
 Assign: ast::Stmt = {
-    <location:@L> <target:Expression> "=" <value:Expression> ("\n")* => {
+    <location:@L> <target:Expression> "=" <value:Expression> => {
         ast::Stmt {
             location,
             node: ast::StmtKind::Assign { target: Box::new(target), value: Box::new(value) }
@@ -98,7 +98,6 @@ extern {
     enum Token {
         name => Token::Identifier(_),
         integer => Token::Integer(_),
-        "\n" => Token::NewLine,
         ":" => Token::Colon,
         "=" => Token::Equal,
         "func" => Token::Func,

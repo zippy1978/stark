@@ -30,6 +30,7 @@ impl<'input> Lexer<'input> {
 impl<'input> Iterator for Lexer<'input> {
     type Item = Spanned<Token, Location, LexicalError>;
     fn next(&mut self) -> Option<Self::Item> {
+
         match self.token_stream.next() {
             None => None,
             Some((token, span)) => {
@@ -44,7 +45,8 @@ impl<'input> Iterator for Lexer<'input> {
                         self.row_no += 1;
                         self.column_no = 0;
                         self.line_start = span.start;
-                        Some(Ok((location, token, location)))
+                        // Skip this token !
+                        self.next()
                     }
                     _ => Some(Ok((location, token, location))),
                 }
