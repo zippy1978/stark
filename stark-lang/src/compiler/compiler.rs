@@ -1,4 +1,4 @@
-use inkwell::context::Context;
+use inkwell::{context::Context, memory_buffer::MemoryBuffer};
 
 use crate::{
     ast::{self, Log, LogLevel, Logger},
@@ -12,12 +12,16 @@ use super::CompileError;
 pub struct Config {}
 
 pub struct CompileOutput {
+    pub bitcode: Option<MemoryBuffer>,
     pub logs: Vec<Log>,
 }
 
 impl CompileOutput {
     pub fn new() -> Self {
-        CompileOutput { logs: Vec::new() }
+        CompileOutput {
+            logs: Vec::new(),
+            bitcode: None,
+        }
     }
 }
 
@@ -45,10 +49,38 @@ impl Compiler {
     }
 
     pub fn compile_ast(&self, ast: &ast::Unit) -> CompileResult {
+        /*let mut compile_output = CompileOutput::new();
+        let log = Log::new("code gen is not implemented yet !", LogLevel::Warning);
+        compile_output.logs.push(log);
+        Result::Ok(compile_output)*/
+
+        //------------------- Just for testing
+        let context = Context::create();
+        let module = context.create_module("calculator");
+        let builder = context.create_builder();
+        let i32_type = context.i32_type();
+        let fn_type = i32_type.fn_type(&[i32_type.into(), i32_type.into(), i32_type.into()], false);
+        let function = module.add_function("sum", fn_type, None);
+        let basic_block = context.append_basic_block(function, "entry");
+
+        builder.position_at_end(basic_block);
+
+        let x = function.get_nth_param(0).unwrap().into_int_value();
+        let y = function.get_nth_param(1).unwrap().into_int_value();
+        let z = function.get_nth_param(2).unwrap().into_int_value();
+
+        let sum = builder.build_int_add(x, y, "sum");
+        let sum = builder.build_int_add(sum, z, "sum");
+
+        builder.build_return(Some(&sum));
+
         let mut compile_output = CompileOutput::new();
         let log = Log::new("code gen is not implemented yet !", LogLevel::Warning);
         compile_output.logs.push(log);
+        compile_output.bitcode = Some(module.write_bitcode_to_memory());
         Result::Ok(compile_output)
+
+        //------------------------------
 
         /*
         // TODO : rewrite it all !
