@@ -1,7 +1,6 @@
 use super::Constant;
 use super::Location;
 
-type Ident = String;
 
 #[derive(Debug, PartialEq)]
 pub struct Located<T> {
@@ -55,6 +54,8 @@ pub enum ExprKind<U = ()> {
     Constant { value: Constant },
 }
 pub type Expr = Located<ExprKind>;
+
+pub type Ident = Located<String>;
 
 pub type Stmts = Vec<Stmt>;
 

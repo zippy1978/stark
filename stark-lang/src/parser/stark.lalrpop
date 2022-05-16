@@ -44,8 +44,8 @@ Arg: ast::Arg = {
     },
 };
 
-FunctionType: String = {
-     "=>" <returns:Identifier> => returns
+FunctionType: ast::Ident = {
+    "=>" <returns:Identifier> => returns
 };
 
 FunctionDefinition: ast::Stmt = {
@@ -81,9 +81,9 @@ Expression: ast::Expr = {
 
 // Literals
 
-Identifier: String = <s:name> => {
+Identifier: ast::Ident =  <location:@L> <s:name> => {
     match s {
-        Token::Identifier(name) => name,
+        Token::Identifier(name) => ast::Ident {location, node: name},
         _ => panic!(),
     }
 };

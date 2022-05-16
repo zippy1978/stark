@@ -16,6 +16,10 @@ impl Logger {
     pub fn logs(&self) -> Vec<Log> {
         self.logs.to_vec()
     }
+
+    pub fn clear(&mut self) {
+        self.logs.clear()
+    }
 }
 
 /// A message somewhere in the source code.
@@ -42,11 +46,16 @@ pub struct Log {
 impl Log {
     pub fn new(message: impl Into<String>, level: LogLevel) -> Self {
         Log { message: message.into(), level, labels: Vec::new() }
-    }
+    } 
 
     pub fn with_label(mut self, message: impl Into<String>, location: Location) -> Self {
         self.labels.push(LoglLabel { message: message.into(), location });
         self
+    }
+
+    pub fn new_with_single_label(message: impl Into<String>, level: LogLevel, location: Location) -> Self {
+        let msg: String = message.into();
+        Self::new(msg.clone(), level).with_label(msg, location)
     }
 }
 

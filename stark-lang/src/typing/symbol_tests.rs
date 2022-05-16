@@ -1,13 +1,12 @@
 use inkwell::context::Context;
 
-use crate::ast::{Location, Span};
-use super::symbol::{SymbolTable, SymbolScope, SymbolScopeType, SymbolError};
 #[cfg(test)]
-
-
+use super::typing::TypeKind;
 use super::{
-    typing::{TypeKind, TypeRegistry}, 
+    symbol::{SymbolError, SymbolScope, SymbolScopeType, SymbolTable},
+    TypeRegistry,
 };
+use crate::ast::{Location, Span};
 
 fn table_with_scope<'a>() -> SymbolTable<'a> {
     let mut table = SymbolTable::new();

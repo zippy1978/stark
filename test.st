@@ -5,6 +5,6 @@ a: int
 /**
  * This is my main :)
  */
-func main (d: ?r) => int {
+func main (d: r) => int {
     hello
 }

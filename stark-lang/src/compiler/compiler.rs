@@ -4,7 +4,7 @@ use crate::{
     ast::{self, Log, LogLevel, Logger},
     code_gen::CodeGenBuilder,
     parser::Parser,
-    typing::{SymbolTable, TypeKind, TypeRegistry},
+    typing::{SymbolTable, TypeKind, TypeRegistry, TypeChecker, TypeCheckerContext},
 };
 
 use super::CompileError;
@@ -53,6 +53,15 @@ impl Compiler {
         let log = Log::new("code gen is not implemented yet !", LogLevel::Warning);
         compile_output.logs.push(log);
         Result::Ok(compile_output)*/
+
+        // Type checking
+        let mut type_checker = TypeChecker::new();
+        let mut type_registry = TypeRegistry::new();
+        let mut type_checker_context = TypeCheckerContext::new(&mut type_registry);
+        match type_checker.check(ast, &mut type_checker_context) {
+            Ok(_) => (),
+            Err(err) => return Result::Err(CompileError {logs: err.logs}),
+        };
 
         //------------------- Just for testing
         let context = Context::create();
