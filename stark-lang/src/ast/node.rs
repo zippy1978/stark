@@ -24,14 +24,14 @@ pub struct Arg {
     pub var_type: Ident,
 }
 
-pub type Args = Located<Vec<Arg>>;
+pub type Args = Vec<Arg>;
 
 #[derive(Debug, PartialEq)]
 pub enum StmtKind {
     Expr {
         value: Box<Expr>,
     },
-    VarDef {
+    VarDecl {
         name: Ident,
         var_type: Ident,
     },

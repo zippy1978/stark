@@ -1,16 +1,16 @@
 #[cfg(test)]
 use crate::ast;
-use crate::{parser::Parser, ast::Stmts};
+use crate::parser::Parser;
 
 type TestError = String;
 
-fn assert_variable_definition(stmt: &ast::StmtKind) -> Result<(), TestError> {
+fn assert_variable_declaration(stmt: &ast::StmtKind) -> Result<(), TestError> {
     match stmt {
-        ast::StmtKind::VarDef {
+        ast::StmtKind::VarDecl {
             name: _,
             var_type: _,
         } => Result::Ok(()),
-        _ => Result::Err(String::from("Failed to parse variable definition")),
+        _ => Result::Err(String::from("Failed to parse variable declaration")),
     }
 }
 
@@ -108,9 +108,9 @@ fn parse_identifier() {
 }
 
 #[test]
-fn parse_variable_definition() {
-    assert!(assert_statment("name: string", assert_variable_definition).is_ok());
-    assert!(assert_statment("name: ", assert_variable_definition).is_err());
+fn parse_variable_declaration() {
+    assert!(assert_statment("name: string", assert_variable_declaration).is_ok());
+    assert!(assert_statment("name: ", assert_variable_declaration).is_err());
 }
 
 #[test]
@@ -128,6 +128,11 @@ fn parse_function_definition() {
     "#, assert_function_definition).is_ok());
     assert!(assert_statment(r#"
     func test() => int {
+        a = 1
+    }
+    "#, assert_function_definition).is_ok());
+    assert!(assert_statment(r#"
+    func test(a: float, b: int) => int {
         a = 1
     }
     "#, assert_function_definition).is_ok());

@@ -9,7 +9,7 @@ pub Stmts: ast::Stmts = <Statment*> => <>;
 
 Statment: ast::Stmt = {
     ExpressionStatment,
-    VariableDefinition,
+    VariableDeclaration,
     FunctionDefinition,
     Assign,
 };
@@ -25,29 +25,34 @@ ExpressionStatment: ast::Stmt = {
 
 // Variable
 
-VariableDefinition: ast::Stmt = {
+VariableDeclaration: ast::Stmt = {
     <location:@L> <name:Identifier> ":" <var_type:Identifier> => {
         ast::Stmt {
             location,
-            node: ast::StmtKind::VarDef { name: name, var_type: var_type }
+            node: ast::StmtKind::VarDecl { name: name, var_type: var_type }
         }
     },
 };
 
 // Function
 
-// TODO
-//Args: ast::Args = ("\n")* <Arg*> => <>;
+Args: ast::Args = <Arg*> => <>;
+
+Arg: ast::Arg = {
+    <name:Identifier> ":" <var_type:Identifier> (",")? => {
+        ast::Arg { name: name, var_type: var_type }
+    },
+};
 
 FunctionType: String = {
      "=>" <returns:Identifier> => returns
 };
 
 FunctionDefinition: ast::Stmt = {
-    <location:@L> "func" <name:Identifier> "(" ")" <returns:FunctionType?> "{" <stmts:Stmts>"}" => {
+    <location:@L> "func" <name:Identifier> "(" <args:Args> ")" <returns:FunctionType?> "{" <stmts:Stmts>"}" => {
         ast::Stmt {
             location,
-            node: ast::StmtKind::FuncDef { name: name, args: Box::new(ast::Args{location, node: Vec::new()}), body: stmts, returns }
+            node: ast::StmtKind::FuncDef { name: name, args: Box::new(args), body: stmts, returns }
         }
     },
 };
