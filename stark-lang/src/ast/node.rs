@@ -48,8 +48,7 @@ pub enum StmtKind {
 pub type Stmt = Located<StmtKind>;
 
 #[derive(Debug, PartialEq)]
-pub enum ExprKind<U = ()> {
-    Mock { m: U }, // Remove someday...
+pub enum ExprKind {
     Name { id: Ident },
     Constant { value: Constant },
 }

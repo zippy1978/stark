@@ -1,7 +1,10 @@
 mod symbol;
-#[cfg(test)]
-mod symbol_tests;
 pub(crate) use symbol::*;
+
+mod symbol_table;
+#[cfg(test)]
+mod symbol_table_tests;
+pub(crate) use symbol_table::*;
 
 mod typing;
 pub(crate) use typing::*;

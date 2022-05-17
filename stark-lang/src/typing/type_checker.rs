@@ -1,6 +1,6 @@
-use crate::ast::{self, Location, Log, LogLevel, Logger, Visitor};
+use crate::ast::{self, Log, LogLevel, Logger, Visitor};
 
-use super::{Type, TypeCheckError, TypeCheckerError, TypeRegistry};
+use super::{SymbolTable, Type, TypeCheckError, TypeCheckerError, TypeRegistry};
 
 /// Result returned while visiting AST.
 type TypeCheckResult = Result<Option<Type>, TypeCheckError>;
@@ -9,13 +9,17 @@ type TypeCheckResult = Result<Option<Type>, TypeCheckError>;
 pub type TypeCheckerResult = Result<(), TypeCheckerError>;
 
 /// Type checker context.
-pub struct TypeCheckerContext<'a> {
-    type_registry: &'a mut TypeRegistry,
+pub struct TypeCheckerContext<'ctx> {
+    type_registry: &'ctx mut TypeRegistry,
+    symbol_table: SymbolTable,
 }
 
-impl<'a> TypeCheckerContext<'a> {
-    pub fn new(type_registry: &'a mut TypeRegistry) -> Self {
-        TypeCheckerContext { type_registry }
+impl<'ctx> TypeCheckerContext<'ctx> {
+    pub fn new(type_registry: &'ctx mut TypeRegistry) -> Self {
+        TypeCheckerContext {
+            type_registry,
+            symbol_table: SymbolTable::new(),
+        }
     }
 }
 
@@ -25,7 +29,7 @@ pub struct TypeChecker {
     logger: Logger,
 }
 
-impl<'a> Visitor<TypeCheckResult, &mut TypeCheckerContext<'a>> for TypeChecker {
+impl<'ctx> Visitor<TypeCheckResult, &mut TypeCheckerContext<'ctx>> for TypeChecker {
     fn visit_stmts(
         &mut self,
         stmts: &ast::Stmts,
@@ -69,14 +73,29 @@ impl<'a> Visitor<TypeCheckResult, &mut TypeCheckerContext<'a>> for TypeChecker {
         context: &mut TypeCheckerContext,
     ) -> TypeCheckResult {
         match &expr.node {
-            ast::ExprKind::Mock { m } => todo!(),
-            ast::ExprKind::Name { id } => todo!(),
-            ast::ExprKind::Constant { value } => todo!(),
+            ast::ExprKind::Name { id } => match context.symbol_table.lookup_symbol(&id.node) {
+                Some(symbol) => Result::Ok(Some(symbol.symbol_type.clone())),
+                None => Result::Err(TypeCheckError::SymbolNotFound(id.node.clone())),
+            },
+            ast::ExprKind::Constant { value } => match value {
+                ast::Constant::Bool(_) => Result::Ok(Some(
+                    context.type_registry.lookup_type("bool").unwrap().clone(),
+                )),
+                ast::Constant::Str(_) => Result::Ok(Some(
+                    context.type_registry.lookup_type("string").unwrap().clone(),
+                )),
+                ast::Constant::Int(_) => Result::Ok(Some(
+                    context.type_registry.lookup_type("string").unwrap().clone(),
+                )),
+                ast::Constant::Float(_) => Result::Ok(Some(
+                    context.type_registry.lookup_type("float").unwrap().clone(),
+                )),
+            },
         }
     }
 }
 
-impl TypeChecker {
+impl<'ctx> TypeChecker {
     pub fn new() -> Self {
         TypeChecker {
             logger: Logger::new(),
@@ -86,15 +105,18 @@ impl TypeChecker {
     pub fn check(
         &mut self,
         ast: &ast::Stmts,
-        context: &mut TypeCheckerContext,
+        context: &mut TypeCheckerContext<'ctx>,
     ) -> TypeCheckerResult {
+
+        // Clear logs
         self.logger.clear();
 
-        // Add builtin types
+        // Set initial (global) scope
         context
-            .type_registry
-            .insert("int", super::TypeKind::Primary, None);
+            .symbol_table
+            .push_scope(super::SymbolScope::new(super::SymbolScopeType::Global));
 
+        // Visit
         match self.visit_stmts(ast, context) {
             Ok(_) => Result::Ok(()),
             Err(_) => Result::Err(TypeCheckerError {
@@ -103,6 +125,7 @@ impl TypeChecker {
         }
     }
 
+    /// Checks variable declaration.
     fn check_var_decl(
         &mut self,
         name: &ast::Ident,
@@ -112,10 +135,60 @@ impl TypeChecker {
         // Check if type exists
         match context.type_registry.lookup_type(&var_type.node) {
             Some(ty) => {
-                // Check that variable was not already defined
-                // Or define it !
-                // TODO
-                Result::Ok(None)
+                // Try to insert new symbol
+                match context
+                    .symbol_table
+                    .insert(&name.node, ty.clone(), name.location)
+                {
+                    Ok(_) => Result::Ok(None),
+                    Err(err) => match err {
+                        // Symbol is already defined
+                        super::SymbolError::AlreadyDefined(symbol) => {
+                            self.logger.add(
+                                Log::new(
+                                    format!("`{}` is already defined", &name.node),
+                                    LogLevel::Error,
+                                )
+                                .with_label(
+                                    format!("`{}` was previously defined here ", &name.node),
+                                    symbol.definition_location,
+                                )
+                                .with_label(
+                                    format!("`{}` is redefined here ", &name.node),
+                                    name.location,
+                                ),
+                            );
+                            Result::Err(TypeCheckError::SymbolAlreadyDeclared(
+                                name.node.to_string(),
+                            ))
+                        }
+                        // Symbol is already defined in upper scope
+                        super::SymbolError::AlreadyDefinedInUpperScope(symbol) => {
+                            self.logger.add(
+                                Log::new(
+                                    format!("`{}` is already defined", &name.node),
+                                    LogLevel::Error,
+                                )
+                                .with_label(
+                                    format!(
+                                        "`{}` was previously defined in upper scope here ",
+                                        &name.node
+                                    ),
+                                    symbol.definition_location,
+                                )
+                                .with_label(
+                                    format!("`{}` is redefined here ", &name.node),
+                                    name.location,
+                                ),
+                            );
+                            Result::Err(TypeCheckError::SymbolAlreadyDeclared(
+                                name.node.to_string(),
+                            ))
+                        }
+                        // Scope error
+                        super::SymbolError::NoScope => Result::Err(TypeCheckError::Scope),
+                    },
+                }
             }
             None => {
                 self.logger.add(Log::new_with_single_label(

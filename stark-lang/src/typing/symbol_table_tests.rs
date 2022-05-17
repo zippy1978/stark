@@ -1,18 +1,7 @@
-use inkwell::context::Context;
-
 #[cfg(test)]
 use super::typing::TypeKind;
-use super::{
-    symbol::{SymbolError, SymbolScope, SymbolScopeType, SymbolTable},
-    TypeRegistry,
-};
+use super::{SymbolError, SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry};
 use crate::ast::{Location, Span};
-
-fn table_with_scope<'a>() -> SymbolTable<'a> {
-    let mut table = SymbolTable::new();
-    table.push_scope(SymbolScope::new(SymbolScopeType::Global));
-    table
-}
 
 #[test]
 fn push_scope() {
@@ -44,7 +33,6 @@ fn pop_scope() {
 
 #[test]
 fn lookup_symbol<'a>() {
-    let context = Context::create();
     let mut type_registry = TypeRegistry::new();
     type_registry.insert("int", TypeKind::Primary, None);
     let mut table = SymbolTable::new();
@@ -53,7 +41,7 @@ fn lookup_symbol<'a>() {
     // Insert var1
     let insert_result1 = table.insert(
         "var1",
-        type_registry.lookup_type("int").unwrap(),
+        type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
     );
 
@@ -69,7 +57,7 @@ fn lookup_symbol<'a>() {
     // Insert var1 a second time (same scope)
     let insert_result2 = table.insert(
         "var1",
-        type_registry.lookup_type("int").unwrap(),
+        type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
     );
 
@@ -92,7 +80,7 @@ fn lookup_symbol<'a>() {
     // Insert var1 a third time
     let insert_result3 = table.insert(
         "var1",
-        type_registry.lookup_type("int").unwrap(),
+        type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
     );
 
@@ -112,7 +100,7 @@ fn lookup_symbol<'a>() {
     // Insert var2
     let insert_result4 = table.insert(
         "var2",
-        type_registry.lookup_type("int").unwrap(),
+        type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
     );
 

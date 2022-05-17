@@ -2,11 +2,10 @@ use num_bigint::BigInt;
 
 #[derive(Debug, PartialEq)]
 pub enum Constant {
-    None,
     Bool(bool),
     Str(String),
     Int(BigInt),
-    Double(f64),
+    Float(f64),
 }
 
 impl From<String> for Constant {

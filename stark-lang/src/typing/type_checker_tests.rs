@@ -16,7 +16,17 @@ fn type_check_assign() {
     assert!(type_checker
         .check(&ast_from("a: int"), &mut context)
         .is_ok());
+
     assert!(type_checker
         .check(&ast_from("a: unknown"), &mut context)
+        .is_err());
+
+    assert!(type_checker
+        .check(&ast_from(r#"
+        
+        a: int
+        a: int
+        
+        "#), &mut context)
         .is_err());
 }

@@ -8,3 +8,7 @@ a: int
 func main (d: r) => int {
     hello
 }
+
+a: int
+
+

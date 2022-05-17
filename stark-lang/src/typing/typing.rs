@@ -1,9 +1,8 @@
 use crate::ast::Location;
-use inkwell::types::IntType as LLVMIntType;
-use std::{collections::HashMap, fmt::Display};
+use std::fmt::Display;
 
 /// Defines a type kind.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TypeKind {
     Primary,
     Complex,
@@ -15,6 +14,16 @@ pub struct Type {
     pub name: String,
     pub kind: TypeKind,
     pub definition_location: Option<Location>,
+}
+
+impl Clone for Type {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            kind: self.kind.clone(),
+            definition_location: self.definition_location.clone(),
+        }
+    }
 }
 
 impl Display for Type {

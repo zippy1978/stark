@@ -16,7 +16,7 @@ pub struct CodeGenBuilder<'a> {
     context: &'a Context,
     builder: &'a Builder<'a>,
     type_registry: &'a mut TypeRegistry,
-    symbol_table: &'a mut SymbolTable<'a>,
+    symbol_table: &'a mut SymbolTable,
     logger: &'a Logger,
 }
 
@@ -25,7 +25,7 @@ impl<'a> CodeGenBuilder<'a> {
         context: &'a Context,
         builder: &'a Builder,
         type_registry: &'a mut TypeRegistry,
-        symbol_table: &'a mut SymbolTable<'a>,
+        symbol_table: &'a mut SymbolTable,
         logger: &'a Logger,
     ) -> Self {
         CodeGenBuilder {
