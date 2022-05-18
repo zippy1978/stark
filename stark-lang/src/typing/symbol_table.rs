@@ -79,7 +79,7 @@ impl SymbolTable {
         for scope in self.scopes.iter().rev() {
             match scope.lookup_symbol(name) {
                 Some(symbol) => return Some(symbol),
-                None => todo!(),
+                None => (),
             }
         }
 

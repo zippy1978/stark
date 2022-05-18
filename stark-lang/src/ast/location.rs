@@ -8,6 +8,7 @@ pub struct Span {
     end: usize,
 }
 
+/// A span.
 impl Span {
     pub fn new(start: usize, end: usize) -> Self {
         Span { start, end }

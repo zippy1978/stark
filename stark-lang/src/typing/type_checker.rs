@@ -1,12 +1,12 @@
-use crate::ast::{self, Log, LogLevel, Logger, Visitor};
+use crate::ast::{
+    self, clone_expr, clone_expr_with_context, Expr, Folder, Log, LogLevel, Logger, StmtKind,
+    Visitor,
+};
 
-use super::{SymbolTable, Type, TypeCheckError, TypeCheckerError, TypeRegistry};
-
-/// Result returned while visiting AST.
-type TypeCheckResult = Result<Option<Type>, TypeCheckError>;
+use super::{SymbolTable, Type, TypeCheckerError, TypeRegistry};
 
 /// Result returned by type checker.
-pub type TypeCheckerResult = Result<(), TypeCheckerError>;
+pub type TypeCheckerResult = Result<ast::Stmts<TypeInfo>, TypeCheckerError>;
 
 /// Type checker context.
 pub struct TypeCheckerContext<'ctx> {
@@ -22,6 +22,18 @@ impl<'ctx> TypeCheckerContext<'ctx> {
         }
     }
 }
+#[derive(Debug, PartialEq)]
+pub struct TypeInfo {
+    pub type_name: Option<String>,
+}
+
+impl Clone for TypeInfo {
+    fn clone(&self) -> Self {
+        Self {
+            type_name: self.type_name.clone(),
+        }
+    }
+}
 
 /// Type checker.
 /// Visits the AST to resolve expression types and enforce type rules.
@@ -29,6 +41,80 @@ pub struct TypeChecker {
     logger: Logger,
 }
 
+impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
+    fn fold_expr(
+        &mut self,
+        expr: &ast::Expr,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) -> ast::StmtKind<TypeInfo> {
+        // Check and determine type
+        match &expr.node {
+            // Name
+            ast::ExprKind::Name { id } => match context.symbol_table.lookup_symbol(&id.node) {
+                Some(symbol) => {
+                    let type_name = Some(symbol.symbol_type.name.to_string());
+                    StmtKind::Expr {
+                        value: Box::new(clone_expr_with_context(expr, TypeInfo { type_name })),
+                    }
+                }
+                None => {
+                    self.logger.add(Log::new_with_single_label(
+                        format!("symbol `{}` is undefined", &id.node),
+                        LogLevel::Error,
+                        id.location,
+                    ));
+
+                    StmtKind::Expr {
+                        value: Box::new(clone_expr(expr)),
+                    }
+                }
+            },
+            // Constant
+            ast::ExprKind::Constant { value } => {
+                let type_name = match value {
+                    ast::Constant::Bool(_) => Some(
+                        context
+                            .type_registry
+                            .lookup_type("bool")
+                            .unwrap()
+                            .name
+                            .to_string(),
+                    ),
+                    ast::Constant::Str(_) => Some(
+                        context
+                            .type_registry
+                            .lookup_type("string")
+                            .unwrap()
+                            .name
+                            .to_string(),
+                    ),
+                    ast::Constant::Int(_) => Some(
+                        context
+                            .type_registry
+                            .lookup_type("int")
+                            .unwrap()
+                            .name
+                            .to_string(),
+                    ),
+                    ast::Constant::Float(_) => Some(
+                        context
+                            .type_registry
+                            .lookup_type("float")
+                            .unwrap()
+                            .name
+                            .to_string(),
+                    ),
+                };
+
+                StmtKind::Expr {
+                    value: Box::new(clone_expr_with_context(expr, TypeInfo { type_name })),
+                }
+            }
+        }
+    }
+}
+
+/*
 impl<'ctx> Visitor<TypeCheckResult, &mut TypeCheckerContext<'ctx>> for TypeChecker {
     fn visit_stmts(
         &mut self,
@@ -93,7 +179,7 @@ impl<'ctx> Visitor<TypeCheckResult, &mut TypeCheckerContext<'ctx>> for TypeCheck
             },
         }
     }
-}
+}*/
 
 impl<'ctx> TypeChecker {
     pub fn new() -> Self {
@@ -107,7 +193,6 @@ impl<'ctx> TypeChecker {
         ast: &ast::Stmts,
         context: &mut TypeCheckerContext<'ctx>,
     ) -> TypeCheckerResult {
-
         // Clear logs
         self.logger.clear();
 
@@ -116,15 +201,18 @@ impl<'ctx> TypeChecker {
             .symbol_table
             .push_scope(super::SymbolScope::new(super::SymbolScopeType::Global));
 
-        // Visit
-        match self.visit_stmts(ast, context) {
-            Ok(_) => Result::Ok(()),
-            Err(_) => Result::Err(TypeCheckerError {
+        // Fold
+        let typed_ast = self.fold_stmts(ast, context);
+        if self.logger.has_error() {
+            Result::Err(TypeCheckerError {
                 logs: self.logger.logs(),
-            }),
+            })
+        } else {
+            Result::Ok(typed_ast)
         }
     }
 
+    /*
     /// Checks variable declaration.
     fn check_var_decl(
         &mut self,
@@ -219,5 +307,5 @@ impl<'ctx> TypeChecker {
         context: &mut TypeCheckerContext,
     ) -> TypeCheckResult {
         Result::Ok(None)
-    }
+    }*/
 }

@@ -38,18 +38,20 @@ impl<'a> CodeGenBuilder<'a> {
     }
 
     pub fn build(&mut self, stmts: &ast::Stmts) -> Result<CodeGenBuilderResult, CodeGenError> {
-        match self.visit_stmts(stmts, ()) {
+        /*match self.visit_stmts(stmts, ()) {
             Ok(_) => Result::Ok(CodeGenBuilderResult {
                 logs: self.logger.logs(),
             }),
             Err(_) => todo!(),
-        }
+        }*/
+        Result::Ok(CodeGenBuilderResult {logs: Vec::new()})
     }
 }
 
 // TO CONTINUE
 // https://createlang.rs/01_calculator/ast_traversal.html
 
+/*
 impl<'a> Visitor<Result<(), ()>, ()> for CodeGenBuilder<'a> {
     fn visit_stmts(&mut self, stmts: &ast::Stmts, context: ()) -> Result<(), ()> {
         // Push initial scope
@@ -88,4 +90,4 @@ impl<'a> Visitor<Result<(), ()>, ()> for CodeGenBuilder<'a> {
     fn visit_expr(&mut self, expr: &ast::Expr, context: ()) -> Result<(), ()> {
         todo!()
     }
-}
+}*/
