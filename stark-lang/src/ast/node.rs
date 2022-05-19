@@ -2,51 +2,68 @@ use super::Constant;
 use super::Location;
 
 #[derive(Debug, PartialEq)]
-pub struct Located<T, C = ()> {
-    pub location: Location,
-    pub node: T,
-    pub context: Option<C>,
+pub struct NodeInfo {
+    pub type_name: Option<String>,
 }
 
-impl<T> Located<T> {
-    pub fn new(location: Location, node: T) -> Self {
-        Self { location, node, context: None }
+impl NodeInfo {
+    pub fn new() -> Self {
+        NodeInfo { type_name: None }
+    }
+}
+
+impl Clone for NodeInfo {
+    fn clone(&self) -> Self {
+        Self { type_name: self.type_name.clone() }
     }
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Arg<C = ()> {
-    pub name: Ident<C>,
-    pub var_type: Ident<C>,
+pub struct Located<T> {
+    pub location: Location,
+    pub node: T,
+    pub info: NodeInfo,
 }
 
-pub type Args<C = ()> = Vec<Arg<C>>;
+impl<T> Located<T> {
+    pub fn new(location: Location, node: T) -> Self {
+        Self { location, node, info: NodeInfo::new() }
+    }
+}
 
 #[derive(Debug, PartialEq)]
-pub enum StmtKind<C = ()> {
+pub struct Arg {
+    pub name: Ident,
+    pub var_type: Ident,
+}
+
+pub type Args = Vec<Arg>;
+
+#[derive(Debug, PartialEq)]
+pub enum StmtKind {
     Expr {
-        value: Box<Expr<C>>,
+        value: Box<Expr>,
     },
     VarDecl {
-        name: Ident<C>,
-        var_type: Ident<C>,
+        name: Ident,
+        var_type: Ident,
     },
     Assign {
-        target: Box<Expr<C>>,
-        value: Box<Expr<C>>,
+        target: Box<Expr>,
+        value: Box<Expr>,
     },
     FuncDef {
-        name: Ident<C>,
-        args: Box<Args<C>>,
-        body: Stmts<C>,
-        returns: Option<Ident<C>>,
+        name: Ident,
+        args: Box<Args>,
+        body: Stmts,
+        returns: Option<Ident>,
     },
 }
-pub type Stmt<C =()> = Located<StmtKind<C>, C>;
+pub type Stmt = Located<StmtKind>;
 
 #[derive(Debug, PartialEq)]
-pub enum ExprKind<C = ()> {
-    Name { id: Ident<C> },
+pub enum ExprKind {
+    Name { id: Ident },
     Constant { value: Constant },
 }
 
@@ -57,7 +74,7 @@ impl Clone for ExprKind {
                 id: Ident {
                     location: id.location,
                     node: id.node.clone(),
-                    context: id.context.clone(),
+                    info: id.info.clone(),
                 },
             },
             ExprKind::Constant { value } => ExprKind::Constant {
@@ -67,8 +84,8 @@ impl Clone for ExprKind {
     }
 }
 
-pub type Expr<C =()> = Located<ExprKind, C>;
+pub type Expr = Located<ExprKind>;
 
-pub type Ident<C =()> = Located<String, C>;
+pub type Ident = Located<String>;
 
-pub type Stmts<C =()> = Vec<Stmt<C>>;
+pub type Stmts = Vec<Stmt>;

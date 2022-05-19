@@ -2,8 +2,8 @@ use super::{clone_args, clone_expr, clone_ident, Args, Expr, Ident, Stmt, StmtKi
 
 /// Folder. Allows generating a new AST by traversing an AST.
 /// Note that in this default implentation AST nodes are cloned without context data.
-pub trait Folder<A: Clone = (), C = ()> {
-    fn fold_stmts(&mut self, stmts: &Stmts, context: &mut C) -> Stmts<A> {
+pub trait Folder<C = ()> {
+    fn fold_stmts(&mut self, stmts: &Stmts, context: &mut C) -> Stmts {
         let mut result = Stmts::new();
         for stmt in stmts {
             result.push(self.fold_stmt(stmt, context))
@@ -11,7 +11,7 @@ pub trait Folder<A: Clone = (), C = ()> {
         result
     }
 
-    fn fold_stmt(&mut self, stmt: &Stmt, context: &mut C) -> Stmt<A> {
+    fn fold_stmt(&mut self, stmt: &Stmt, context: &mut C) -> Stmt {
         Stmt {
             location: stmt.location,
             node: match &stmt.node {
@@ -25,11 +25,11 @@ pub trait Folder<A: Clone = (), C = ()> {
                     returns,
                 } => self.fold_func_def(name, args, body, returns, context),
             },
-            context: None,
+            info: stmt.info.clone(),
         }
     }
 
-    fn fold_expr(&mut self, expr: &Expr, _context: &mut C) -> StmtKind<A> {
+    fn fold_expr(&mut self, expr: &Expr, _context: &mut C) -> StmtKind {
         StmtKind::Expr {
             value: Box::new(clone_expr(expr)),
         }
@@ -40,14 +40,14 @@ pub trait Folder<A: Clone = (), C = ()> {
         name: &Ident,
         var_type: &Ident,
         _context: &mut C,
-    ) -> StmtKind<A> {
+    ) -> StmtKind {
         StmtKind::VarDecl {
             name: clone_ident(name),
             var_type: clone_ident(var_type),
         }
     }
 
-    fn fold_assign(&mut self, target: &Expr, value: &Expr, _context: &mut C) -> StmtKind<A> {
+    fn fold_assign(&mut self, target: &Expr, value: &Expr, _context: &mut C) -> StmtKind {
         StmtKind::Assign {
             target: Box::new(clone_expr(target)),
             value: Box::new(clone_expr(value)),
@@ -61,7 +61,7 @@ pub trait Folder<A: Clone = (), C = ()> {
         body: &Stmts,
         returns: &Option<Ident>,
         context: &mut C,
-    ) -> StmtKind<A> {
+    ) -> StmtKind {
         StmtKind::FuncDef {
             name: clone_ident(name),
             args: Box::new(clone_args(args)),

@@ -1,3 +1,5 @@
+use crate::ast::NodeInfo;
+
 use super::Folder;
 
 #[cfg(test)]
@@ -15,12 +17,12 @@ fn fold_ast() {
     let int_type_ident = Ident {
         location: dummy_location,
         node: "int".to_string(),
-        context: None
+        info: NodeInfo::new()
     };
     let var_name_ident = Ident {
         location: dummy_location,
         node: "varName".to_string(),
-        context: None
+        info: NodeInfo::new()
     };
     let var_decl_stmt = Stmt {
         location: dummy_location,
@@ -28,7 +30,7 @@ fn fold_ast() {
             name: var_name_ident,
             var_type: int_type_ident,
         },
-        context: None
+        info: NodeInfo::new()
     };
 
     let mut ast = Stmts::new();

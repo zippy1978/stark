@@ -19,7 +19,7 @@ ExpressionStatment: ast::Stmt = {
         ast::Stmt {
             location,
             node: ast::StmtKind::Expr { value: Box::new(e) },
-            context: None,
+            info: ast::NodeInfo::new(),
         }
     },   
 };
@@ -31,7 +31,7 @@ VariableDeclaration: ast::Stmt = {
         ast::Stmt {
             location,
             node: ast::StmtKind::VarDecl { name: name, var_type: var_type },
-            context: None,
+            info: ast::NodeInfo::new(),
         }
     },
 };
@@ -55,7 +55,7 @@ FunctionDefinition: ast::Stmt = {
         ast::Stmt {
             location,
             node: ast::StmtKind::FuncDef { name: name, args: Box::new(args), body: stmts, returns },
-            context: None,
+            info: ast::NodeInfo::new(),
         }
     },
 };
@@ -67,7 +67,7 @@ Assign: ast::Stmt = {
         ast::Stmt {
             location,
             node: ast::StmtKind::Assign { target: Box::new(target), value: Box::new(value) },
-            context: None,
+            info: ast::NodeInfo::new(),
         }
     },
 };
@@ -76,12 +76,12 @@ Expression: ast::Expr = {
     <location:@L> <i:Identifier> => ast::Expr {
         location,
         node: ast::ExprKind::Name { id: i},
-        context: None,
+        info: ast::NodeInfo::new(),
     },
     <location:@L> <i:Integer> => ast::Expr {
         location,
         node: ast::ExprKind::Constant { value: ast::Constant::Int(i)},
-        context: None,
+        info: ast::NodeInfo::new(),
     },
 };
 
@@ -89,7 +89,7 @@ Expression: ast::Expr = {
 
 Identifier: ast::Ident =  <location:@L> <s:name> => {
     match s {
-        Token::Identifier(name) => ast::Ident {location, node: name, context: None,},
+        Token::Identifier(name) => ast::Ident {location, node: name, info: ast::NodeInfo::new(),},
         _ => panic!(),
     }
 };

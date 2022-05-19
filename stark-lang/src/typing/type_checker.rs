@@ -1,12 +1,11 @@
 use crate::ast::{
-    self, clone_expr, clone_expr_with_context, clone_ident, Folder,
-    Log, LogLevel, Logger, StmtKind,
+    self, clone_expr, clone_expr_with_info, clone_ident, Folder, Log, LogLevel, Logger, StmtKind, NodeInfo,
 };
 
 use super::{SymbolError, SymbolTable, TypeCheckerError, TypeRegistry};
 
 /// Result returned by type checker.
-pub type TypeCheckerResult = Result<ast::Stmts<TypeInfo>, TypeCheckerError>;
+pub type TypeCheckerResult = Result<ast::Stmts, TypeCheckerError>;
 
 /// Type checker context.
 pub struct TypeCheckerContext<'ctx> {
@@ -22,18 +21,6 @@ impl<'ctx> TypeCheckerContext<'ctx> {
         }
     }
 }
-#[derive(Debug, PartialEq)]
-pub struct TypeInfo {
-    pub type_name: Option<String>,
-}
-
-impl Clone for TypeInfo {
-    fn clone(&self) -> Self {
-        Self {
-            type_name: self.type_name.clone(),
-        }
-    }
-}
 
 /// Type checker.
 /// Visits the AST to resolve expression types and enforce type rules.
@@ -41,12 +28,12 @@ pub struct TypeChecker {
     logger: Logger,
 }
 
-impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
+impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
     fn fold_expr(
         &mut self,
         expr: &ast::Expr,
         context: &mut TypeCheckerContext<'ctx>,
-    ) -> ast::StmtKind<TypeInfo> {
+    ) -> ast::StmtKind {
         // Check and determine type
         match &expr.node {
             // Name
@@ -54,7 +41,7 @@ impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
                 Some(symbol) => {
                     let type_name = Some(symbol.symbol_type.name.to_string());
                     StmtKind::Expr {
-                        value: Box::new(clone_expr_with_context(expr, TypeInfo { type_name })),
+                        value: Box::new(clone_expr_with_info(expr, NodeInfo { type_name })),
                     }
                 }
                 None => {
@@ -107,7 +94,7 @@ impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
                 };
 
                 StmtKind::Expr {
-                    value: Box::new(clone_expr_with_context(expr, TypeInfo { type_name })),
+                    value: Box::new(clone_expr_with_info(expr, NodeInfo { type_name })),
                 }
             }
         }
@@ -118,7 +105,7 @@ impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
         name: &ast::Ident,
         var_type: &ast::Ident,
         context: &mut TypeCheckerContext<'ctx>,
-    ) -> StmtKind<TypeInfo> {
+    ) -> StmtKind {
         // Check if type exists
         match context.type_registry.lookup_type(&var_type.node) {
             Some(ty) => {
@@ -191,6 +178,8 @@ impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
             var_type: clone_ident(var_type),
         }
     }
+
+    
 }
 
 /*

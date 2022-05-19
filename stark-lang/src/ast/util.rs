@@ -1,48 +1,48 @@
 //! AST manipulation utilities.
-use super::{Args, Ident, Expr, Arg};
+use super::{Args, Ident, Expr, Arg, NodeInfo};
 
-pub fn clone_ident<A: Clone>(ident: &Ident) -> Ident<A> {
+pub fn clone_ident(ident: &Ident) -> Ident {
     
     Ident {
         location: ident.location,
         node: ident.node.clone(),
-        context: None,
+        info: ident.info.clone(),
     }
 }
 
-pub fn clone_ident_with_context<A: Clone>(ident: &Ident, context: A) -> Ident<A> {
+pub fn clone_ident_with_info(ident: &Ident, info: NodeInfo) -> Ident {
     
     Ident {
         location: ident.location,
         node: ident.node.clone(),
-        context: Some(context),
+        info: ident.info.clone(),
     }
 }
 
-pub fn clone_expr<A: Clone>(expr: &Expr) -> Expr<A> {
+pub fn clone_expr(expr: &Expr) -> Expr {
     Expr {
         location: expr.location,
         node: expr.node.clone(),
-        context: None,
+        info: expr.info.clone(),
     }
 }
 
-pub fn clone_expr_with_context<A: Clone>(expr: &Expr, context: A) -> Expr<A> {
+pub fn clone_expr_with_info(expr: &Expr, info: NodeInfo) -> Expr {
     Expr {
         location: expr.location,
         node: expr.node.clone(),
-        context: Some(context),
+        info: expr.info.clone(),
     }
 }
 
-pub fn clone_arg<A: Clone>(arg: &Arg) -> Arg<A> {
+pub fn clone_arg(arg: &Arg) -> Arg {
     Arg {
         name: clone_ident(&arg.name),
         var_type: clone_ident(&arg.var_type),
     }
 }
 
-pub fn clone_args<A: Clone>(args: &Args) -> Args<A> {
+pub fn clone_args(args: &Args) -> Args {
     let mut new_args = Args::new();
     for arg in args {
         new_args.push(clone_arg(arg));
