@@ -33,7 +33,7 @@ impl Compiler {
         Compiler {}
     }
     pub fn compile_string(&self, input: &str) -> CompileResult {
-        let parser = Parser {};
+        let parser = Parser::new();
 
         match parser.parse(input) {
             Ok(ast) => self.compile_ast(&ast),

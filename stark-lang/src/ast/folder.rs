@@ -1,7 +1,6 @@
 use super::{clone_args, clone_expr, clone_ident, Args, Expr, Ident, Stmt, StmtKind, Stmts};
 
 /// Folder. Allows generating a new AST by traversing an AST.
-/// Note that in this default implentation AST nodes are cloned without context data.
 pub trait Folder<C = ()> {
     fn fold_stmts(&mut self, stmts: &Stmts, context: &mut C) -> Stmts {
         let mut result = Stmts::new();

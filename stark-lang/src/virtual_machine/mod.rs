@@ -1,5 +1,5 @@
 //! Virtual Machine.
-//! The VM is in charge of running (whit JIT) bitcode.
+//! The VM is in charge of running (with JIT) bitcode.
 mod virtual_machine;
 pub use virtual_machine::*;
 

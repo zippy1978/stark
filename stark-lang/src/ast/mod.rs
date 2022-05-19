@@ -1,23 +1,23 @@
 //! AST modeling and manipulation.
 mod constant;
-pub use constant::*;
+pub(crate) use constant::*;
 
 mod location;
-pub use location::*;
+pub(crate) use location::*;
 
 mod node;
-pub use node::*;
+pub(crate) use node::*;
 
 mod visitor;
-pub use visitor::*;
+pub(crate) use visitor::*;
 
 mod folder;
-pub use folder::*;
+pub(crate) use folder::*;
 #[cfg(test)]
 mod folder_tests;
 
 mod log;
-pub use log::*;
+pub(crate) use log::*;
 
 mod util;
-pub use util::*;
+pub(crate) use util::*;

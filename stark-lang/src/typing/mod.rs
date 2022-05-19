@@ -1,3 +1,4 @@
+//! Type system.
 mod symbol;
 pub(crate) use symbol::*;
 

@@ -63,7 +63,4 @@ impl TypeRegistry {
         self.entries.get(name)
     }
 
-    pub fn clear(&mut self) {
-        self.entries.clear();
-    }
 }

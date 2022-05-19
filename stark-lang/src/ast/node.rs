@@ -1,6 +1,7 @@
 use super::Constant;
 use super::Location;
 
+/// Holds informaton (such as type name) of an AST node.
 #[derive(Debug, PartialEq)]
 pub struct NodeInfo {
     pub type_name: Option<String>,
@@ -18,6 +19,7 @@ impl Clone for NodeInfo {
     }
 }
 
+/// An AST node (which is located in source code).
 #[derive(Debug, PartialEq)]
 pub struct Located<T> {
     pub location: Location,
@@ -29,6 +31,11 @@ impl<T> Located<T> {
     pub fn new(location: Location, node: T) -> Self {
         Self { location, node, info: NodeInfo::new() }
     }
+
+    pub fn with_type_name(mut self, type_name: String) -> Self {
+        self.info.type_name = Some(type_name);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -39,7 +46,7 @@ pub struct Arg {
 
 pub type Args = Vec<Arg>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,)]
 pub enum StmtKind {
     Expr {
         value: Box<Expr>,
@@ -59,6 +66,7 @@ pub enum StmtKind {
         returns: Option<Ident>,
     },
 }
+
 pub type Stmt = Located<StmtKind>;
 
 #[derive(Debug, PartialEq)]

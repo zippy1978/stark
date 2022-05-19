@@ -1,11 +1,9 @@
 //! Code generation.
 mod builder;
-pub use builder::*;
+pub(crate) use builder::*;
 
 mod error;
-pub use error::*;
+pub(crate) use error::*;
 
-mod bitcode;
-pub use bitcode::*;
 
 

@@ -1,4 +1,4 @@
-//! Language parsing.
+//! Source code parser.
 mod parser;
 pub use parser::*;
 #[cfg(test)]

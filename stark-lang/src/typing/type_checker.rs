@@ -1,5 +1,5 @@
 use crate::ast::{
-    self, clone_expr, clone_expr_with_info, clone_ident, Folder, Log, LogLevel, Logger, StmtKind, NodeInfo,
+    self, clone_expr, clone_ident, Folder, Log, LogLevel, Logger, StmtKind,
 };
 
 use super::{SymbolError, SymbolTable, TypeCheckerError, TypeRegistry};
@@ -39,9 +39,8 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
             // Name
             ast::ExprKind::Name { id } => match context.symbol_table.lookup_symbol(&id.node) {
                 Some(symbol) => {
-                    let type_name = Some(symbol.symbol_type.name.to_string());
                     StmtKind::Expr {
-                        value: Box::new(clone_expr_with_info(expr, NodeInfo { type_name })),
+                        value: Box::new(clone_expr(expr).with_type_name(symbol.symbol_type.name.to_string())),
                     }
                 }
                 None => {
@@ -59,42 +58,42 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
             // Constant
             ast::ExprKind::Constant { value } => {
                 let type_name = match value {
-                    ast::Constant::Bool(_) => Some(
+                    ast::Constant::Bool(_) => 
                         context
                             .type_registry
                             .lookup_type("bool")
                             .unwrap()
                             .name
-                            .to_string(),
-                    ),
-                    ast::Constant::Str(_) => Some(
+                            .to_string()
+                    ,
+                    ast::Constant::Str(_) => 
                         context
                             .type_registry
                             .lookup_type("string")
                             .unwrap()
                             .name
-                            .to_string(),
-                    ),
-                    ast::Constant::Int(_) => Some(
+                            .to_string()
+                    ,
+                    ast::Constant::Int(_) => 
                         context
                             .type_registry
                             .lookup_type("int")
                             .unwrap()
                             .name
-                            .to_string(),
-                    ),
-                    ast::Constant::Float(_) => Some(
+                            .to_string()
+                    ,
+                    ast::Constant::Float(_) => 
                         context
                             .type_registry
                             .lookup_type("float")
                             .unwrap()
                             .name
-                            .to_string(),
-                    ),
+                            .to_string()
+                    ,
                 };
 
                 StmtKind::Expr {
-                    value: Box::new(clone_expr_with_info(expr, NodeInfo { type_name })),
+                    value: Box::new(clone_expr(expr).with_type_name(type_name)),
                 }
             }
         }

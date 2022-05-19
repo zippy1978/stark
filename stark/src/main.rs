@@ -10,7 +10,7 @@ use stark_lang::{
 };
 
 #[derive(Parser, Debug)]
-#[clap(name = "Stark compiler", author, version, about, long_about = None)]
+#[clap(author, version, about, long_about = None)]
 struct Cli {
     #[clap(parse(from_os_str))]
     path: std::path::PathBuf,
