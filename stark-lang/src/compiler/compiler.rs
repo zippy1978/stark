@@ -1,10 +1,9 @@
 use inkwell::{context::Context, memory_buffer::MemoryBuffer};
 
 use crate::{
-    ast::{self, Log, LogLevel, Logger},
-    code_gen::CodeGenBuilder,
+    ast::{self, Log, LogLevel},
     parser::Parser,
-    typing::{SymbolTable, TypeKind, TypeRegistry, TypeChecker, TypeCheckerContext},
+    typing::{TypeChecker, TypeCheckerContext, TypeRegistry},
 };
 
 use super::CompileError;
@@ -49,16 +48,16 @@ impl Compiler {
     }
 
     pub fn compile_ast(&self, ast: &ast::Stmts) -> CompileResult {
-      
         // Type checking
         let mut type_checker = TypeChecker::new();
         let mut type_registry = TypeRegistry::new();
         let mut type_checker_context = TypeCheckerContext::new(&mut type_registry);
         match type_checker.check(ast, &mut type_checker_context) {
             Ok(_) => (),
-            Err(err) => return Result::Err(CompileError {logs: err.logs}),
+            Err(err) => return Result::Err(CompileError { logs: err.logs }),
         };
 
+        // Code generation
         //------------------- Just for testing : LLVM code gen !
         let context = Context::create();
         let module = context.create_module("calculator");
@@ -86,6 +85,5 @@ impl Compiler {
         Result::Ok(compile_output)
 
         //------------------------------
-
     }
 }

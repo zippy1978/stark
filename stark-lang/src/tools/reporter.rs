@@ -44,7 +44,7 @@ impl Reporter {
 
         for log in logs {
             let diag = Self::diag_from_log(file_id, log);
-            term::emit(&mut writer.lock(), &config, &files, &diag);
+            term::emit(&mut writer.lock(), &config, &files, &diag).unwrap();
         }
     }
 }

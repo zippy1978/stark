@@ -1,9 +1,9 @@
 use crate::ast::{
-    self, clone_expr, clone_expr_with_context, Expr, Folder, Log, LogLevel, Logger, StmtKind,
-    Visitor,
+    self, clone_expr, clone_expr_with_context, clone_ident, Folder,
+    Log, LogLevel, Logger, StmtKind,
 };
 
-use super::{SymbolTable, Type, TypeCheckerError, TypeRegistry};
+use super::{SymbolError, SymbolTable, TypeCheckerError, TypeRegistry};
 
 /// Result returned by type checker.
 pub type TypeCheckerResult = Result<ast::Stmts<TypeInfo>, TypeCheckerError>;
@@ -110,6 +110,85 @@ impl<'ctx> Folder<TypeInfo, TypeCheckerContext<'ctx>> for TypeChecker {
                     value: Box::new(clone_expr_with_context(expr, TypeInfo { type_name })),
                 }
             }
+        }
+    }
+
+    fn fold_var_decl(
+        &mut self,
+        name: &ast::Ident,
+        var_type: &ast::Ident,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) -> StmtKind<TypeInfo> {
+        // Check if type exists
+        match context.type_registry.lookup_type(&var_type.node) {
+            Some(ty) => {
+                // Try to insert new symbol
+                match context
+                    .symbol_table
+                    .insert(&name.node, ty.clone(), name.location)
+                {
+                    Ok(_) => (),
+                    Err(err) => match err {
+                        // Symbol is already defined
+                        SymbolError::AlreadyDefined(symbol) => {
+                            self.logger.add(
+                                Log::new(
+                                    format!("`{}` is already defined", &name.node),
+                                    LogLevel::Error,
+                                )
+                                .with_label(
+                                    format!("`{}` was previously defined here ", &name.node),
+                                    symbol.definition_location,
+                                )
+                                .with_label(
+                                    format!("`{}` is redefined here ", &name.node),
+                                    name.location,
+                                ),
+                            );
+                        }
+                        // Symbol is already defined in upper scope
+                        SymbolError::AlreadyDefinedInUpperScope(symbol) => {
+                            self.logger.add(
+                                Log::new(
+                                    format!("`{}` is already defined", &name.node),
+                                    LogLevel::Error,
+                                )
+                                .with_label(
+                                    format!(
+                                        "`{}` was previously defined in upper scope here ",
+                                        &name.node
+                                    ),
+                                    symbol.definition_location,
+                                )
+                                .with_label(
+                                    format!("`{}` is redefined here ", &name.node),
+                                    name.location,
+                                ),
+                            );
+                        }
+                        // Scope error
+                        SymbolError::NoScope => {
+                            self.logger.add(Log::new_with_single_label(
+                                "scope error",
+                                LogLevel::Error,
+                                name.location,
+                            ));
+                        }
+                    },
+                }
+            }
+            None => {
+                self.logger.add(Log::new_with_single_label(
+                    format!("unknown type `{}`", &var_type.node),
+                    LogLevel::Error,
+                    var_type.location,
+                ));
+            }
+        };
+
+        StmtKind::VarDecl {
+            name: clone_ident(name),
+            var_type: clone_ident(var_type),
         }
     }
 }

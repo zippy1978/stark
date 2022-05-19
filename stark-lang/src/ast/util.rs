@@ -1,10 +1,21 @@
+//! AST manipulation utilities.
 use super::{Args, Ident, Expr, Arg};
 
 pub fn clone_ident<A: Clone>(ident: &Ident) -> Ident<A> {
+    
     Ident {
         location: ident.location,
         node: ident.node.clone(),
         context: None,
+    }
+}
+
+pub fn clone_ident_with_context<A: Clone>(ident: &Ident, context: A) -> Ident<A> {
+    
+    Ident {
+        location: ident.location,
+        node: ident.node.clone(),
+        context: Some(context),
     }
 }
 

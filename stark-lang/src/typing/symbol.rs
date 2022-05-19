@@ -1,10 +1,10 @@
-/// dfdf
-use std::{collections::HashMap, fmt::Display};
+use std::{fmt::Display};
 
 use crate::ast::Location;
 
 use super::typing::Type;
 
+/// Defines a symbol.
 #[derive(Debug, PartialEq)]
 pub struct Symbol<V = ()> {
     pub name: String,
