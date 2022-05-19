@@ -82,13 +82,120 @@ fn type_check_assign() {
         )
         .is_ok());
 
-    // Diffrent type
+    // Different type
     assert!(type_checker
         .check(
             &ast_from(
                 r#"
         b: float
         b = 1"#
+            ),
+            &mut context
+        )
+        .is_err());
+}
+
+#[test]
+fn type_check_func_def() {
+    let mut type_checker = TypeChecker::new();
+    let mut type_registry = TypeRegistry::new();
+    let mut context = TypeCheckerContext::new(&mut type_registry);
+
+    // New function
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+        func myFunc(a: int) => int {
+            a
+        }   
+            "#
+            ),
+            &mut context
+        )
+        .is_ok());
+
+    // Function wihtout return
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+        func noReturn(a: int) {
+            a
+        }   
+            "#
+            ),
+            &mut context
+        )
+        .is_ok());
+
+    // Already defined symbol
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+        alreadyDefined: int
+        func alreadyDefined(a: int) => int {
+            a
+        }   
+            "#
+            ),
+            &mut context
+        )
+        .is_err());
+
+    // Wrong parameter type
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+            func wrongParam(a: undefined) => int {
+                a
+            }   
+                "#
+            ),
+            &mut context
+        )
+        .is_err());
+
+    // Wrong return type
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+            func wrongReturn(a: int) => undefined {
+                a
+            }   
+                "#
+            ),
+            &mut context
+        )
+        .is_err());
+
+    // Parameter shadowing
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+            func shadowing(a: int) => int {
+                a: float
+            }   
+                "#
+            ),
+            &mut context
+        )
+        .is_err());
+
+    // Wrong return statment
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+            func wrongReturnStmt(a: int) => int {
+                b: float
+                b
+            }   
+                "#
             ),
             &mut context
         )

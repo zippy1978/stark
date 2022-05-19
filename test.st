@@ -5,10 +5,9 @@
 /**
  * This is my main :)
  */
-func main (d: r) => int {
-    a: int
-    b: float
-    a = b
+func myFunc (d: int) => int {
+    g: float
+    g
 }
 
 //a: int

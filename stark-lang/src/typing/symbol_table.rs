@@ -8,6 +8,7 @@ use super::{Type, SymbolError, Symbol};
 #[derive(Debug, PartialEq)]
 pub enum SymbolScopeType {
     Global,
+    Function(String),
 }
 
 #[derive(Debug, PartialEq)]

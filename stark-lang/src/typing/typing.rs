@@ -2,10 +2,24 @@ use crate::ast::Location;
 use std::fmt::Display;
 
 /// Defines a type kind.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq)]
 pub enum TypeKind {
     Primary,
     Complex,
+    Function {
+        args: Vec<String>,
+        returns: Option<String>,
+    },
+}
+
+impl Clone for TypeKind {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Primary => Self::Primary,
+            Self::Complex => Self::Complex,
+            Self::Function { args, returns } => Self::Function { args: args.clone(), returns: returns.clone() },
+        }
+    }
 }
 
 /// Defines a type.
