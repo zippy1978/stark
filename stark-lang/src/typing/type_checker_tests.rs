@@ -63,3 +63,34 @@ fn type_check_var_decl() {
         .check(&ast_from("a: int"), &mut context)
         .is_err());
 }
+
+#[test]
+fn type_check_assign() {
+    let mut type_checker = TypeChecker::new();
+    let mut type_registry = TypeRegistry::new();
+    let mut context = TypeCheckerContext::new(&mut type_registry);
+
+    // Same type
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+        a: int
+        a = 1"#
+            ),
+            &mut context
+        )
+        .is_ok());
+
+    // Diffrent type
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+        b: float
+        b = 1"#
+            ),
+            &mut context
+        )
+        .is_err());
+}

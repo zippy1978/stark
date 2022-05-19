@@ -1,6 +1,4 @@
-use crate::ast::{
-    self, clone_expr, clone_ident, Folder, Log, LogLevel, Logger, StmtKind,
-};
+use crate::ast::{self, clone_expr, clone_ident, Folder, Log, LogLevel, Logger, StmtKind};
 
 use super::{SymbolError, SymbolTable, TypeCheckerError, TypeRegistry};
 
@@ -33,16 +31,12 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         &mut self,
         expr: &ast::Expr,
         context: &mut TypeCheckerContext<'ctx>,
-    ) -> ast::StmtKind {
+    ) -> ast::Expr {
         // Check and determine type
         match &expr.node {
             // Name
             ast::ExprKind::Name { id } => match context.symbol_table.lookup_symbol(&id.node) {
-                Some(symbol) => {
-                    StmtKind::Expr {
-                        value: Box::new(clone_expr(expr).with_type_name(symbol.symbol_type.name.to_string())),
-                    }
-                }
+                Some(symbol) => clone_expr(expr).with_type_name(symbol.symbol_type.name.to_string()),
                 None => {
                     self.logger.add(Log::new_with_single_label(
                         format!("symbol `{}` is undefined", &id.node),
@@ -50,51 +44,19 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
                         id.location,
                     ));
 
-                    StmtKind::Expr {
-                        value: Box::new(clone_expr(expr)),
-                    }
+                    clone_expr(expr)
                 }
             },
             // Constant
             ast::ExprKind::Constant { value } => {
                 let type_name = match value {
-                    ast::Constant::Bool(_) => 
-                        context
-                            .type_registry
-                            .lookup_type("bool")
-                            .unwrap()
-                            .name
-                            .to_string()
-                    ,
-                    ast::Constant::Str(_) => 
-                        context
-                            .type_registry
-                            .lookup_type("string")
-                            .unwrap()
-                            .name
-                            .to_string()
-                    ,
-                    ast::Constant::Int(_) => 
-                        context
-                            .type_registry
-                            .lookup_type("int")
-                            .unwrap()
-                            .name
-                            .to_string()
-                    ,
-                    ast::Constant::Float(_) => 
-                        context
-                            .type_registry
-                            .lookup_type("float")
-                            .unwrap()
-                            .name
-                            .to_string()
-                    ,
+                    ast::Constant::Bool(_) => "bool",
+                    ast::Constant::Str(_) => panic!("strings are not supported yet !"),
+                    ast::Constant::Int(_) => "int",
+                    ast::Constant::Float(_) => "float",
                 };
 
-                StmtKind::Expr {
-                    value: Box::new(clone_expr(expr).with_type_name(type_name)),
-                }
+                clone_expr(expr).with_type_name(type_name.to_string())
             }
         }
     }
@@ -178,75 +140,53 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         }
     }
 
-    
-}
-
-/*
-impl<'ctx> Visitor<TypeCheckResult, &mut TypeCheckerContext<'ctx>> for TypeChecker {
-    fn visit_stmts(
+    fn fold_assign(
         &mut self,
-        stmts: &ast::Stmts,
-        context: &mut TypeCheckerContext,
-    ) -> TypeCheckResult {
-        for stmt in stmts {
-            match self.visit_stmt(stmt, context) {
-                Ok(_) => continue,
-                Err(err) => {
-                    return Result::Err(err);
+        target: &ast::Expr,
+        value: &ast::Expr,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) -> StmtKind {
+
+        let folded_target = self.fold_expr(target, context);
+        let folded_value = self.fold_expr(value, context);
+
+        match &folded_value.info.type_name {
+            Some(target_type_name) => match &folded_target.info.type_name {
+                Some(value_type_name) => {
+                    if target_type_name != value_type_name {
+                        self.logger.add(Log::new_with_single_label(
+                            format!(
+                                "type mismatch, expected `{}`, found `{}`",
+                                target_type_name, value_type_name
+                            ),
+                            LogLevel::Error,
+                            value.location,
+                        ));
+                    }
                 }
-            }
-        }
-
-        Result::Ok(None)
-    }
-
-    fn visit_stmt(
-        &mut self,
-        stmt: &ast::Stmt,
-        context: &mut TypeCheckerContext,
-    ) -> TypeCheckResult {
-        match &stmt.node {
-            ast::StmtKind::Expr { value } => self.visit_expr(value, context),
-            ast::StmtKind::VarDecl { name, var_type } => {
-                self.check_var_decl(name, var_type, context)
-            }
-            ast::StmtKind::Assign { target, value } => self.check_assign(target, value, context),
-            ast::StmtKind::FuncDef {
-                name,
-                args,
-                body,
-                returns,
-            } => self.check_func_def(name, args, body, returns, context),
-        }
-    }
-
-    fn visit_expr(
-        &mut self,
-        expr: &ast::Expr,
-        context: &mut TypeCheckerContext,
-    ) -> TypeCheckResult {
-        match &expr.node {
-            ast::ExprKind::Name { id } => match context.symbol_table.lookup_symbol(&id.node) {
-                Some(symbol) => Result::Ok(Some(symbol.symbol_type.clone())),
-                None => Result::Err(TypeCheckError::SymbolNotFound(id.node.clone())),
+                None => {
+                    self.logger.add(Log::new_with_single_label(
+                        "unable to determine expression type",
+                        LogLevel::Error,
+                        value.location,
+                    ));
+                }
             },
-            ast::ExprKind::Constant { value } => match value {
-                ast::Constant::Bool(_) => Result::Ok(Some(
-                    context.type_registry.lookup_type("bool").unwrap().clone(),
-                )),
-                ast::Constant::Str(_) => Result::Ok(Some(
-                    context.type_registry.lookup_type("string").unwrap().clone(),
-                )),
-                ast::Constant::Int(_) => Result::Ok(Some(
-                    context.type_registry.lookup_type("string").unwrap().clone(),
-                )),
-                ast::Constant::Float(_) => Result::Ok(Some(
-                    context.type_registry.lookup_type("float").unwrap().clone(),
-                )),
-            },
+            None => {
+                self.logger.add(Log::new_with_single_label(
+                    "unable to determine expression type",
+                    LogLevel::Error,
+                    value.location,
+                ));
+            }
+        };
+
+        StmtKind::Assign {
+            target: Box::new(folded_target),
+            value: Box::new(folded_value),
         }
     }
-}*/
+}
 
 impl<'ctx> TypeChecker {
     pub fn new() -> Self {
@@ -255,6 +195,8 @@ impl<'ctx> TypeChecker {
         }
     }
 
+    /// Performs type checking on an input AST.
+    /// A new "typed" AST is outputted as result.
     pub fn check(
         &mut self,
         ast: &ast::Stmts,
@@ -278,101 +220,4 @@ impl<'ctx> TypeChecker {
             Result::Ok(typed_ast)
         }
     }
-
-    /*
-    /// Checks variable declaration.
-    fn check_var_decl(
-        &mut self,
-        name: &ast::Ident,
-        var_type: &ast::Ident,
-        context: &mut TypeCheckerContext,
-    ) -> TypeCheckResult {
-        // Check if type exists
-        match context.type_registry.lookup_type(&var_type.node) {
-            Some(ty) => {
-                // Try to insert new symbol
-                match context
-                    .symbol_table
-                    .insert(&name.node, ty.clone(), name.location)
-                {
-                    Ok(_) => Result::Ok(None),
-                    Err(err) => match err {
-                        // Symbol is already defined
-                        super::SymbolError::AlreadyDefined(symbol) => {
-                            self.logger.add(
-                                Log::new(
-                                    format!("`{}` is already defined", &name.node),
-                                    LogLevel::Error,
-                                )
-                                .with_label(
-                                    format!("`{}` was previously defined here ", &name.node),
-                                    symbol.definition_location,
-                                )
-                                .with_label(
-                                    format!("`{}` is redefined here ", &name.node),
-                                    name.location,
-                                ),
-                            );
-                            Result::Err(TypeCheckError::SymbolAlreadyDeclared(
-                                name.node.to_string(),
-                            ))
-                        }
-                        // Symbol is already defined in upper scope
-                        super::SymbolError::AlreadyDefinedInUpperScope(symbol) => {
-                            self.logger.add(
-                                Log::new(
-                                    format!("`{}` is already defined", &name.node),
-                                    LogLevel::Error,
-                                )
-                                .with_label(
-                                    format!(
-                                        "`{}` was previously defined in upper scope here ",
-                                        &name.node
-                                    ),
-                                    symbol.definition_location,
-                                )
-                                .with_label(
-                                    format!("`{}` is redefined here ", &name.node),
-                                    name.location,
-                                ),
-                            );
-                            Result::Err(TypeCheckError::SymbolAlreadyDeclared(
-                                name.node.to_string(),
-                            ))
-                        }
-                        // Scope error
-                        super::SymbolError::NoScope => Result::Err(TypeCheckError::Scope),
-                    },
-                }
-            }
-            None => {
-                self.logger.add(Log::new_with_single_label(
-                    format!("unknown type `{}`", &var_type.node),
-                    LogLevel::Error,
-                    var_type.location,
-                ));
-                Result::Err(TypeCheckError::UnknownType(var_type.node.to_string()))
-            }
-        }
-    }
-
-    fn check_assign(
-        &mut self,
-        target: &ast::Expr,
-        value: &ast::Expr,
-        context: &mut TypeCheckerContext,
-    ) -> TypeCheckResult {
-        Result::Ok(None)
-    }
-
-    fn check_func_def(
-        &mut self,
-        name: &ast::Ident,
-        args: &ast::Args,
-        body: &ast::Stmts,
-        returns: &Option<ast::Ident>,
-        context: &mut TypeCheckerContext,
-    ) -> TypeCheckResult {
-        Result::Ok(None)
-    }*/
 }

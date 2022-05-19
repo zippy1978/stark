@@ -14,7 +14,9 @@ pub trait Folder<C = ()> {
         Stmt {
             location: stmt.location,
             node: match &stmt.node {
-                StmtKind::Expr { value } => self.fold_expr(&value, context),
+                StmtKind::Expr { value } => StmtKind::Expr {
+                    value: Box::new(self.fold_expr(&value, context)),
+                },
                 StmtKind::VarDecl { name, var_type } => self.fold_var_decl(name, var_type, context),
                 StmtKind::Assign { target, value } => self.fold_assign(target, value, context),
                 StmtKind::FuncDef {
@@ -28,10 +30,8 @@ pub trait Folder<C = ()> {
         }
     }
 
-    fn fold_expr(&mut self, expr: &Expr, _context: &mut C) -> StmtKind {
-        StmtKind::Expr {
-            value: Box::new(clone_expr(expr)),
-        }
+    fn fold_expr(&mut self, expr: &Expr, _context: &mut C) -> Expr {
+        clone_expr(expr)
     }
 
     fn fold_var_decl(
@@ -46,10 +46,12 @@ pub trait Folder<C = ()> {
         }
     }
 
-    fn fold_assign(&mut self, target: &Expr, value: &Expr, _context: &mut C) -> StmtKind {
+    fn fold_assign(&mut self, target: &Expr, value: &Expr, context: &mut C) -> StmtKind {
+
+
         StmtKind::Assign {
-            target: Box::new(clone_expr(target)),
-            value: Box::new(clone_expr(value)),
+            target: Box::new(self.fold_expr(target, context)),
+            value: Box::new(self.fold_expr(value, context)),
         }
     }
 
