@@ -1,10 +1,29 @@
 use crate::ast::Location;
 use std::fmt::Display;
 
+#[derive(Debug, PartialEq)]
+pub enum PrimaryKind {
+    Int(String),
+    Float(String),
+    String(String),
+    Bool(String),
+}
+
+impl Clone for PrimaryKind {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Int(name) => Self::Int(name.clone()),
+            Self::Float(name) => Self::Float(name.clone()),
+            Self::String(name) => Self::String(name.clone()),
+            Self::Bool(name) => Self::Bool(name.clone()),
+        }
+    }
+}
+
 /// Defines a type kind.
 #[derive(Debug, PartialEq)]
 pub enum TypeKind {
-    Primary,
+    Primary(PrimaryKind),
     Complex,
     Function {
         args: Vec<String>,
@@ -15,9 +34,12 @@ pub enum TypeKind {
 impl Clone for TypeKind {
     fn clone(&self) -> Self {
         match self {
-            Self::Primary => Self::Primary,
+            Self::Primary(kind) => Self::Primary(kind.clone()),
             Self::Complex => Self::Complex,
-            Self::Function { args, returns } => Self::Function { args: args.clone(), returns: returns.clone() },
+            Self::Function { args, returns } => Self::Function {
+                args: args.clone(),
+                returns: returns.clone(),
+            },
         }
     }
 }

@@ -34,7 +34,6 @@ fn pop_scope() {
 #[test]
 fn lookup_symbol<'a>() {
     let mut type_registry = TypeRegistry::new();
-    type_registry.insert("int", TypeKind::Primary, None);
     let mut table = SymbolTable::new();
     table.push_scope(SymbolScope::new(SymbolScopeType::Global));
 

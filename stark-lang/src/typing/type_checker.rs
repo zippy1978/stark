@@ -144,27 +144,10 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         returns: &Option<ast::Ident>,
         context: &mut TypeCheckerContext<'ctx>,
     ) -> StmtKind {
-        // Push scope
-        context
-            .symbol_table
-            .push_scope(SymbolScope::new(super::SymbolScopeType::Function(
-                name.node.to_string(),
-            )));
-
         // Check arg types
         for arg in args {
             match context.type_registry.lookup_type(&arg.var_type.node) {
-                Some(ty) => {
-                    // Insert symbol
-                    match context.symbol_table.insert(
-                        &arg.name.node.clone(),
-                        ty.clone(),
-                        arg.name.location,
-                    ) {
-                        Ok(_) => (),
-                        Err(err) => self.log_symbol_error(&err, &arg.name),
-                    }
-                }
+                Some(ty) => (),
                 None => self.log_unknown_type(&arg.var_type),
             }
         }
@@ -201,6 +184,28 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
             Err(err) => self.log_symbol_error(&err, name),
         };
 
+        // Push scope
+        context
+            .symbol_table
+            .push_scope(SymbolScope::new(super::SymbolScopeType::Function(
+                name.node.to_string(),
+            )));
+
+        // Insert args symbols into function scope
+        for arg in args {
+            match context.type_registry.lookup_type(&arg.var_type.node) {
+                Some(ty) => match context.symbol_table.insert(
+                    &arg.name.node.clone(),
+                    ty.clone(),
+                    arg.name.location,
+                ) {
+                    Ok(_) => (),
+                    Err(err) => self.log_symbol_error(&err, &arg.name),
+                },
+                None => (),
+            }
+        }
+
         // Fold body
         let folded_body = self.fold_stmts(body, context);
 
@@ -208,17 +213,26 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         if let Some(returns) = returns {
             match folded_body.last() {
                 Some(last_stmt) => match &last_stmt.node {
-                    StmtKind::Expr { value } =>  match &value.info.type_name {
+                    StmtKind::Expr { value } => match &value.info.type_name {
                         Some(type_name) => {
                             if type_name != &returns.node {
-                                self.logger.add(Log::new_with_single_label(
-                                    format!(
-                                        "type mismatch, expected `{}` return, found `{}`",
-                                        returns.node, type_name
+                                self.logger.add(
+                                    Log::new_with_single_label(
+                                        format!(
+                                            "type mismatch, expected `{}` return, found `{}`",
+                                            returns.node, type_name
+                                        ),
+                                        LogLevel::Error,
+                                        last_stmt.location,
+                                    )
+                                    .with_label(
+                                        format!(
+                                            "function `{}` return type is `{}`",
+                                            &name.node, &returns.node
+                                        ),
+                                        returns.location,
                                     ),
-                                    LogLevel::Error,
-                                    last_stmt.location,
-                                ).with_label(format!("function `{}` return type is `{}`", &name.node, &returns.node), returns.location));
+                                );
                             }
                         }
                         None => {
@@ -235,7 +249,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
                             LogLevel::Error,
                             last_stmt.location,
                         ));
-                    },
+                    }
                 },
                 None => (),
             }

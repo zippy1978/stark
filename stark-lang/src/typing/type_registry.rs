@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::ast::Location;
 
-use super::{Type, TypeKind};
+use super::{Type, TypeKind, PrimaryKind};
 
 /// Holds every type defined.
 pub struct TypeRegistry {
@@ -20,7 +20,7 @@ impl TypeRegistry {
             int_name.to_string(),
             Type {
                 name: int_name.to_string(),
-                kind: super::TypeKind::Primary,
+                kind: super::TypeKind::Primary(PrimaryKind::Int(int_name.to_string())),
                 definition_location: None,
             },
         );
@@ -30,7 +30,7 @@ impl TypeRegistry {
             float_name.to_string(),
             Type {
                 name: float_name.to_string(),
-                kind: super::TypeKind::Primary,
+                kind: super::TypeKind::Primary(PrimaryKind::Int(float_name.to_string())),
                 definition_location: None,
             },
         );
@@ -40,7 +40,7 @@ impl TypeRegistry {
             bool_name.to_string(),
             Type {
                 name: bool_name.to_string(),
-                kind: super::TypeKind::Primary,
+                kind: super::TypeKind::Primary(PrimaryKind::Int(bool_name.to_string())),
                 definition_location: None,
             },
         );
@@ -61,6 +61,14 @@ impl TypeRegistry {
 
     pub fn lookup_type(&self, name: &str) -> Option<&Type> {
         self.entries.get(name)
+    }
+
+    pub fn to_vec(&self) -> Vec<Type> {
+        let mut result = Vec::new();
+        for (_key, value) in &self.entries {
+            result.push(value.clone());
+        }
+        result
     }
 
 }
