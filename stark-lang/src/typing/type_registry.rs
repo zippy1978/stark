@@ -40,7 +40,7 @@ impl TypeRegistry {
             bool_name.to_string(),
             Type {
                 name: bool_name.to_string(),
-                kind: super::TypeKind::Primary(PrimaryKind::Int(bool_name.to_string())),
+                kind: super::TypeKind::Primary(PrimaryKind::Bool(bool_name.to_string())),
                 definition_location: None,
             },
         );

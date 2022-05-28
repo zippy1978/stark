@@ -51,6 +51,12 @@ pub enum Token {
     #[token(",")]
     Comma,
 
+    #[token("true")]
+    True,
+
+    #[token("false")]
+    False,
+
     // Skip spaces
     #[regex(r"[ \t\f]+", logos::skip)]
     // Skip single line comment
@@ -88,6 +94,8 @@ impl Display for Token {
                 Token::LBrace => "{",
                 Token::RBrace => "}",
                 Token::Comma => ",",
+                Token::True => "true",
+                Token::False => "false",
             }
         )
     }

@@ -94,6 +94,11 @@ Constants: ast::Expr = {
         node: ast::ExprKind::Constant { value: ast::Constant::Float(f)},
         info: ast::NodeInfo::new(),
     },
+    <location:@L> <b:Boolean> => ast::Expr {
+        location,
+        node: ast::ExprKind::Constant { value: ast::Constant::Bool(b)},
+        info: ast::NodeInfo::new(),
+    },
 };
 
 Identifier: ast::Ident =  <location:@L> <s:name> => {
@@ -117,6 +122,11 @@ Float: f64 = <f:float> => {
     }
 };
 
+Boolean: bool = {
+    "true" => true,
+    "false" => false,
+};
+
 // Hook external lexer:
 extern {
     type Location = ast::Location;
@@ -135,5 +145,7 @@ extern {
         "{" => Token::LBrace,
         "}" => Token::RBrace,
         "," => Token::Comma,
+        "true" => Token::True,
+        "false" => Token::False,
       }
 }

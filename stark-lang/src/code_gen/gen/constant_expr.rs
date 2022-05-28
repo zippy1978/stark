@@ -1,7 +1,10 @@
 use inkwell::values::BasicValue;
 use num_traits::ToPrimitive;
 
-use crate::{code_gen::{CodeGenerator, CodeGenContext, VisitorResult}, ast};
+use crate::{
+    ast,
+    code_gen::{CodeGenContext, CodeGenerator, VisitorResult},
+};
 
 impl<'ctx> CodeGenerator {
     pub(crate) fn handle_visit_constant_expr(
@@ -10,7 +13,13 @@ impl<'ctx> CodeGenerator {
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
         match constant {
-            ast::Constant::Bool(_) => todo!(),
+            ast::Constant::Bool(value) => Result::Ok(Some(
+                context
+                    .llvm_context
+                    .bool_type()
+                    .const_int(if *value {1} else {0}, false)
+                    .as_basic_value_enum(),
+            )),
             ast::Constant::Str(_) => todo!(),
             ast::Constant::Int(value) => Result::Ok(Some(
                 context
@@ -19,7 +28,7 @@ impl<'ctx> CodeGenerator {
                     .const_int(value.to_u64().unwrap(), false)
                     .as_basic_value_enum(),
             )),
-            ast::Constant::Float(value) =>  Result::Ok(Some(
+            ast::Constant::Float(value) => Result::Ok(Some(
                 context
                     .llvm_context
                     .f64_type()
