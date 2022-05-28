@@ -1,6 +1,4 @@
 //! Code generation.
-mod builder;
-pub(crate) use builder::*;
 
 mod code_gen;
 pub(crate) use code_gen::*;

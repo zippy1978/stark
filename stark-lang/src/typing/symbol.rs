@@ -6,14 +6,14 @@ use super::typing::Type;
 
 /// Defines a symbol.
 #[derive(Debug, PartialEq)]
-pub struct Symbol<V = ()> {
+pub struct Symbol<V: Clone = ()> {
     pub name: String,
     pub symbol_type: Type,
     pub definition_location: Location,
     pub value: V,
 }
 
-impl Clone for Symbol {
+impl<V: Clone> Clone for Symbol<V> {
     fn clone(&self) -> Self {
         Self {
             name: self.name.clone(),

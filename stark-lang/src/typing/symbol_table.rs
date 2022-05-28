@@ -12,12 +12,12 @@ pub enum SymbolScopeType {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct SymbolScope {
-    pub(crate) entries: HashMap<String, Symbol>,
+pub struct SymbolScope<V: Clone = ()> {
+    pub(crate) entries: HashMap<String, Symbol<V>>,
     pub scope_type: SymbolScopeType,
 }
 
-impl SymbolScope {
+impl<V: Clone> SymbolScope<V> {
     pub fn new(scope: SymbolScopeType) -> Self {
         Self {
             entries: HashMap::new(),
@@ -25,17 +25,17 @@ impl SymbolScope {
         }
     }
 
-    pub(crate) fn insert(&mut self, name: &str, symbol_type: Type, definition_location: Location) {
+    pub(crate) fn insert(&mut self, name: &str, symbol_type: Type, definition_location: Location, value: V) {
         let symbol = Symbol {
             name: name.to_string(),
             symbol_type,
             definition_location,
-            value: (),
+            value,
         };
         self.entries.insert(name.to_string(), symbol);
     }
 
-    pub(crate) fn lookup_symbol(&self, name: &str) -> Option<&Symbol> {
+    pub(crate) fn lookup_symbol(&self, name: &str) -> Option<&Symbol<V>> {
         self.entries.get(name)
     }
 }
@@ -51,32 +51,32 @@ impl Display for SymbolScope {
 }
 
 // Holds symbol definitions by scope.
-pub struct SymbolTable {
-    scopes: Vec<SymbolScope>,
+pub struct SymbolTable<V : Clone = ()> {
+    scopes: Vec<SymbolScope<V>>,
 }
 
-impl SymbolTable {
+impl<V: Clone> SymbolTable<V> {
     pub fn new() -> Self {
         Self { scopes: Vec::new() }
     }
 
-    pub fn push_scope(&mut self, scope: SymbolScope) {
+    pub fn push_scope(&mut self, scope: SymbolScope<V>) {
         self.scopes.push(scope);
     }
 
-    pub fn pop_scope(&mut self) -> Option<SymbolScope> {
+    pub fn pop_scope(&mut self) -> Option<SymbolScope<V>> {
         self.scopes.pop()
     }
 
-    pub fn current_scope(&self) -> Option<&SymbolScope> {
+    pub fn current_scope(&self) -> Option<&SymbolScope<V>> {
         self.scopes.last()
     }
 
-    pub fn current_scope_mut(&mut self) -> Option<&mut SymbolScope> {
+    pub fn current_scope_mut(&mut self) -> Option<&mut SymbolScope<V>> {
         self.scopes.last_mut()
     }
 
-    pub fn lookup_symbol(&self, name: &str) -> Option<&Symbol> {
+    pub fn lookup_symbol(&self, name: &str) -> Option<&Symbol<V>> {
         for scope in self.scopes.iter().rev() {
             match scope.lookup_symbol(name) {
                 Some(symbol) => return Some(symbol),
@@ -93,7 +93,8 @@ impl SymbolTable {
         name: &str,
         symbol_type: Type,
         definition_location: Location,
-    ) -> Result<(), SymbolError> {
+        value: V,
+    ) -> Result<(), SymbolError<V>> {
         if self.scopes.len() == 0 {
             return Result::Err(SymbolError::NoScope);
         }
@@ -114,7 +115,7 @@ impl SymbolTable {
                 let symbol = scope.entries.get(name).unwrap();
 
                 if i == self.scopes.len() - 1 {
-                    return Result::Err(SymbolError::AlreadyDefined(symbol.clone()));
+                    return Result::Err(SymbolError::AlreadyDefined((*symbol).clone()));
                 } else {
                     return Result::Err(SymbolError::AlreadyDefinedInUpperScope(symbol.clone()));
                 }
@@ -122,7 +123,7 @@ impl SymbolTable {
             None => {
                 self.current_scope_mut()
                     .unwrap()
-                    .insert(name, symbol_type, definition_location);
+                    .insert(name, symbol_type, definition_location, value);
                 Result::Ok(())
             }
         }

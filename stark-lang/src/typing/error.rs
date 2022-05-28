@@ -8,8 +8,8 @@ pub struct TypeCheckerError {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum SymbolError {
-    AlreadyDefined(Symbol),
-    AlreadyDefinedInUpperScope(Symbol),
+pub enum SymbolError<V: Clone> {
+    AlreadyDefined(Symbol<V>),
+    AlreadyDefinedInUpperScope(Symbol<V>),
     NoScope,
 }

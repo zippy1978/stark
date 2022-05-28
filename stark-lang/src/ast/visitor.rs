@@ -1,4 +1,4 @@
-use super::{Args, Expr, Ident, Stmt, StmtKind, Stmts};
+use super::{Args, Expr, Ident, Stmt, StmtKind, Stmts, Constant};
 
 /// Visitor. used to traverse an AST and collecting results.
 /// But cannot modify it.
@@ -18,7 +18,16 @@ pub trait Visitor<R = (), C = ()> {
             } => self.visit_func_def(name, args, body, returns, context),
         }
     }
-    fn visit_expr(&mut self, expr: &Expr, context: &mut C) -> R;
+    fn visit_expr(&mut self, expr: &Expr, context: &mut C) -> R {
+        match &expr.node {
+            super::ExprKind::Name { id } => self.visit_name_expr(id, context),
+            super::ExprKind::Constant { value } => self.visit_constant_expr(value, context),
+        }
+    }
+
+    fn visit_name_expr(&mut self, name: &Ident, context: &mut C) -> R;
+
+    fn visit_constant_expr(&mut self, constant: &Constant, context: &mut C) -> R;
 
     fn visit_var_decl(&mut self, name: &Ident, var_type: &Ident, _context: &mut C) -> R;
 

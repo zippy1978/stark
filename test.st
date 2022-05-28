@@ -6,20 +6,21 @@
  * This is my main :)
  */
 func main () => int {
-    123
+    50
 }
 
- func myFunc(a: int) => int {
-            a
-        }   
+/*
+func myFunc(a: int) => int {
+    a
+}
 
 func noReturn(a: int) {
-            a
-        } 
+    a
+}
 //a: int
 
- 
-        func alreadyDefined(a: int) => int {
-            a
-        }  
+
+func alreadyDefined(a: int) => int {
+    a
+}*/
 

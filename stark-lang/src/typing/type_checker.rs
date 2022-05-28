@@ -75,7 +75,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
                 // Try to insert new symbol
                 match context
                     .symbol_table
-                    .insert(&name.node, ty.clone(), name.location)
+                    .insert(&name.node, ty.clone(), name.location, ())
                 {
                     Ok(_) => (),
                     Err(err) => self.log_symbol_error(&err, name),
@@ -179,6 +179,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
                 definition_location: Some(name.location),
             },
             name.location,
+            ()
         ) {
             Ok(_) => (),
             Err(err) => self.log_symbol_error(&err, name),
@@ -198,6 +199,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
                     &arg.name.node.clone(),
                     ty.clone(),
                     arg.name.location,
+                    (),
                 ) {
                     Ok(_) => (),
                     Err(err) => self.log_symbol_error(&err, &arg.name),
@@ -314,7 +316,7 @@ impl<'ctx> TypeChecker {
         ));
     }
 
-    fn log_symbol_error(&mut self, error: &SymbolError, name: &ast::Ident) {
+    fn log_symbol_error(&mut self, error: &SymbolError<()>, name: &ast::Ident) {
         match error {
             // Symbol is already defined
             SymbolError::AlreadyDefined(symbol) => {

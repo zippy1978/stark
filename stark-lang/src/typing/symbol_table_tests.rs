@@ -5,7 +5,7 @@ use crate::ast::{Location, Span};
 
 #[test]
 fn push_scope() {
-    let mut table = SymbolTable::new();
+    let mut table = SymbolTable::<()>::new();
 
     if let Some(_current_scope) = table.current_scope() {
         panic!();
@@ -21,7 +21,7 @@ fn push_scope() {
 
 #[test]
 fn pop_scope() {
-    let mut table = SymbolTable::new();
+    let mut table = SymbolTable::<()>::new();
     table.push_scope(SymbolScope::new(SymbolScopeType::Global));
     table.pop_scope();
 
@@ -42,6 +42,7 @@ fn lookup_symbol<'a>() {
         "var1",
         type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
+        (),
     );
 
     // Expect to be ok
@@ -58,6 +59,7 @@ fn lookup_symbol<'a>() {
         "var1",
         type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
+        (),
     );
 
     // Expect to be error
@@ -81,6 +83,7 @@ fn lookup_symbol<'a>() {
         "var1",
         type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
+        (),
     );
 
     // Expect to be error
@@ -101,6 +104,7 @@ fn lookup_symbol<'a>() {
         "var2",
         type_registry.lookup_type("int").unwrap().clone(),
         Location::new(0, 0, Span::new(0, 0)),
+        (),
     );
 
     // Expect to be ok
