@@ -28,8 +28,10 @@ fn type_check_expr_name() {
         .check(
             &ast_from(
                 r#"
-            defined: int
-            defined
+            func definedSymbol() {
+                defined: int
+                defined
+            }
         "#
             ),
             &mut context
@@ -48,19 +50,52 @@ fn type_check_var_decl() {
     let mut type_registry = TypeRegistry::new();
     let mut context = TypeCheckerContext::new(&mut type_registry);
 
+    // Global scope declaration is forbidden
+    assert!(type_checker
+        .check(&ast_from("forbidden: int"), &mut context)
+        .is_err());
+
     // Existing type
     assert!(type_checker
-        .check(&ast_from("a: int"), &mut context)
+        .check(
+            &ast_from(
+                r#"
+        func existingType() {
+            a: int
+        }
+        "#
+            ),
+            &mut context
+        )
         .is_ok());
 
     // Unknown type
     assert!(type_checker
-        .check(&ast_from("a: unknown"), &mut context)
+        .check(
+            &ast_from(
+                r#"
+        func unknownType() {
+            a: unknown
+        }
+        "#
+            ),
+            &mut context
+        )
         .is_err());
 
     // Already defined
     assert!(type_checker
-        .check(&ast_from("a: int"), &mut context)
+        .check(
+            &ast_from(
+                r#"
+        func alreadyDefined() {
+            a: float
+            a: int
+        }
+        "#
+            ),
+            &mut context
+        )
         .is_err());
 }
 
@@ -75,8 +110,10 @@ fn type_check_assign() {
         .check(
             &ast_from(
                 r#"
-        a: int
-        a = 1"#
+        func sameType() {
+            a: int
+            a = 1
+        }"#
             ),
             &mut context
         )
@@ -87,8 +124,10 @@ fn type_check_assign() {
         .check(
             &ast_from(
                 r#"
-        b: float
-        b = 1"#
+        func diffType() {
+            b: float
+            b = 1
+        }"#
             ),
             &mut context
         )
@@ -194,6 +233,22 @@ fn type_check_func_def() {
             func wrongReturnStmt(a: int) => int {
                 b: float
                 b
+            }   
+                "#
+            ),
+            &mut context
+        )
+        .is_err());
+
+    // Function into function is forbidden
+    assert!(type_checker
+        .check(
+            &ast_from(
+                r#"
+            func nested() => int {
+                func child() {
+                    
+                }
             }   
                 "#
             ),

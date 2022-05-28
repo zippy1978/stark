@@ -69,6 +69,20 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         var_type: &ast::Ident,
         context: &mut TypeCheckerContext<'ctx>,
     ) -> StmtKind {
+        // Check current scope
+        // Variable declaration is not allowed in global scope
+        match context.symbol_table.current_scope() {
+            Some(scope) => match scope.scope_type {
+                super::SymbolScopeType::Global => self.logger.add(Log::new_with_single_label(
+                    "variable delcaration is not allowed on global scope",
+                    LogLevel::Error,
+                    name.location,
+                )),
+                _ => (),
+            },
+            None => panic!("no scope"),
+        };
+
         // Check if type exists
         match context.type_registry.lookup_type(&var_type.node) {
             Some(ty) => {
@@ -144,6 +158,21 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         returns: &Option<ast::Ident>,
         context: &mut TypeCheckerContext<'ctx>,
     ) -> StmtKind {
+
+        // Check current scope
+        // Function declaration in only allowed on global scope
+        match context.symbol_table.current_scope() {
+            Some(scope) => match scope.scope_type {
+                super::SymbolScopeType::Global => (),
+                _ => self.logger.add(Log::new_with_single_label(
+                    "function delcaration is not allowed in this scope",
+                    LogLevel::Error,
+                    name.location,
+                )),
+            },
+            None => panic!("no scope"),
+        };
+
         // Check arg types
         for arg in args {
             match context.type_registry.lookup_type(&arg.var_type.node) {
@@ -179,7 +208,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
                 definition_location: Some(name.location),
             },
             name.location,
-            ()
+            (),
         ) {
             Ok(_) => (),
             Err(err) => self.log_symbol_error(&err, name),

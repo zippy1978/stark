@@ -4,10 +4,17 @@
 
 func myFunc(a: int) => int {
     a
+    func toto() => float {
+    1.2
+}
 }
 
 func toto() => float {
     1.2
+}
+
+func empt() {
+    123
 }
 
 /**
