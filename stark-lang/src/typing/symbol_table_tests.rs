@@ -1,5 +1,4 @@
-#[cfg(test)]
-use super::typing::TypeKind;
+
 use super::{SymbolError, SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry};
 use crate::ast::{Location, Span};
 
@@ -33,7 +32,7 @@ fn pop_scope() {
 
 #[test]
 fn lookup_symbol<'a>() {
-    let mut type_registry = TypeRegistry::new();
+    let type_registry = TypeRegistry::new();
     let mut table = SymbolTable::new();
     table.push_scope(SymbolScope::new(SymbolScopeType::Global));
 

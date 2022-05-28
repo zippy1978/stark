@@ -10,6 +10,8 @@ pub(crate) use symbol_table::*;
 mod typing;
 pub(crate) use typing::*;
 
+mod check;
+
 
 mod type_registry;
 #[cfg(test)]
