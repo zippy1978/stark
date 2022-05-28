@@ -82,7 +82,13 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
                     .const_int(value.to_u64().unwrap(), false)
                     .as_basic_value_enum(),
             )),
-            ast::Constant::Float(_) => todo!(),
+            ast::Constant::Float(value) =>  Result::Ok(Some(
+                context
+                    .llvm_context
+                    .f64_type()
+                    .const_float(*value)
+                    .as_basic_value_enum(),
+            )),
         }
     }
 
@@ -91,7 +97,17 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         name: &ast::Ident,
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
-        todo!();
+        let symbol = context.symbol_table.lookup_symbol(&name.node).unwrap();
+        match symbol.value.get_type() {
+            inkwell::types::AnyTypeEnum::ArrayType(_) => Result::Ok(Some(symbol.value.into_array_value().as_basic_value_enum())),
+            inkwell::types::AnyTypeEnum::FloatType(_) => Result::Ok(Some(symbol.value.into_float_value().as_basic_value_enum())),
+            inkwell::types::AnyTypeEnum::FunctionType(_) => todo!(),
+            inkwell::types::AnyTypeEnum::IntType(_) => Result::Ok(Some(symbol.value.into_int_value().as_basic_value_enum())),
+            inkwell::types::AnyTypeEnum::PointerType(_) => todo!(),
+            inkwell::types::AnyTypeEnum::StructType(_) => todo!(),
+            inkwell::types::AnyTypeEnum::VectorType(_) => todo!(),
+            inkwell::types::AnyTypeEnum::VoidType(_) => todo!(),
+        }
     }
 
     fn visit_func_def(
@@ -158,14 +174,12 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         context.builder.position_at_end(basic_block);
 
         // Insert arguments on symbol table
-        // TODO
-        /*let x = function.get_nth_param(0).unwrap().into_int_value();
-        let y = function.get_nth_param(1).unwrap().into_int_value();
-        let z = function.get_nth_param(2).unwrap().into_int_value();
-
-        let sum = context.builder.build_int_add(x, y, "sum");
-        let sum = context.builder.build_int_add(sum, z, "sum");*/
-
+        for (i, arg) in args.iter().enumerate() {
+            let symbol_type = context.type_registry.lookup_type(&arg.var_type.node).unwrap();
+            let value = function.get_nth_param(i.try_into().unwrap()).unwrap().as_any_value_enum();
+            context.symbol_table.insert(&arg.name.node, symbol_type.clone(), arg.name.location, value).unwrap();
+        }
+    
         // Visit body
         match self.visit_stmts(body, context) {
             Ok(result) => match result {

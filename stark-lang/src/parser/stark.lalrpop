@@ -73,6 +73,12 @@ Assign: ast::Stmt = {
 };
 
 Expression: ast::Expr = {
+    Constants,
+};
+
+// Literals
+
+Constants: ast::Expr = {
     <location:@L> <i:Identifier> => ast::Expr {
         location,
         node: ast::ExprKind::Name { id: i},
@@ -83,9 +89,12 @@ Expression: ast::Expr = {
         node: ast::ExprKind::Constant { value: ast::Constant::Int(i)},
         info: ast::NodeInfo::new(),
     },
+    <location:@L> <f:Float> => ast::Expr {
+        location,
+        node: ast::ExprKind::Constant { value: ast::Constant::Float(f)},
+        info: ast::NodeInfo::new(),
+    },
 };
-
-// Literals
 
 Identifier: ast::Ident =  <location:@L> <s:name> => {
     match s {
@@ -101,6 +110,13 @@ Integer: BigInt = <i:integer> => {
     }
 };
 
+Float: f64 = <f:float> => {
+    match f {
+        Token::Float(float) => float,
+        _ => panic!(),
+    }
+};
+
 // Hook external lexer:
 extern {
     type Location = ast::Location;
@@ -109,6 +125,7 @@ extern {
     enum Token {
         name => Token::Identifier(_),
         integer => Token::Integer(_),
+        float => Token::Float(_),
         ":" => Token::Colon,
         "=" => Token::Equal,
         "func" => Token::Func,

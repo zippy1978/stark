@@ -18,6 +18,9 @@ pub enum Token {
     #[regex(r"[0-9]+", big_int)]
     Integer(BigInt),
 
+    #[regex(r"[0-9]+\.[0-9]*", |lex| lex.slice().parse().ok())]
+    Float(f64),
+
     #[token("\n")]
     NewLine,
 
@@ -67,6 +70,10 @@ impl Display for Token {
             match self {
                 Token::Identifier(value) => value,
                 Token::Integer(value) => {
+                    value_string = value.to_string();
+                    value_string.as_str()
+                }
+                Token::Float(value) => {
                     value_string = value.to_string();
                     value_string.as_str()
                 }
