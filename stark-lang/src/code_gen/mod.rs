@@ -1,4 +1,5 @@
 //! Code generation.
+mod gen;
 
 mod code_gen;
 pub(crate) use code_gen::*;
