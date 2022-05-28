@@ -63,10 +63,10 @@ FunctionDefinition: ast::Stmt = {
 // Assign
 
 Assign: ast::Stmt = {
-    <location:@L> <target:Expression> "=" <value:Expression> => {
+    <location:@L> <target:Identifier> "=" <value:Expression> => {
         ast::Stmt {
             location,
-            node: ast::StmtKind::Assign { target: Box::new(target), value: Box::new(value) },
+            node: ast::StmtKind::Assign { target: target, value: Box::new(value) },
             info: ast::NodeInfo::new(),
         }
     },

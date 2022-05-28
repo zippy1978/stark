@@ -1,38 +1,12 @@
 
-// a test
-//a: int
-
-func myFunc(a: int) => int {
-    a
-    func toto() => float {
-    1.2
-}
-}
-
-func toto() => float {
-    1.2
-}
-
-func empt() {
-    123
-}
-
 /**
  * This is my main :)
  */
 func main () => int {
-    
-    50
+    b: float
+    b = 1.23
+    //a :int
+    //a = 50
+    //a
+    2
 }
-
-/*
-func noReturn(a: int) {
-    a
-}
-//a: int
-
-
-func alreadyDefined(a: int) => int {
-    a
-}*/
-

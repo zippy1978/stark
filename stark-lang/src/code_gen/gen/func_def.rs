@@ -1,7 +1,4 @@
-use inkwell::{
-    types::{BasicMetadataTypeEnum, BasicType},
-    values::AnyValue,
-};
+use inkwell::types::{BasicMetadataTypeEnum, BasicType};
 
 use crate::{
     ast,
@@ -57,7 +54,7 @@ impl<'ctx> CodeGenerator {
                     definition_location: Some(name.location),
                 },
                 name.location,
-                function.as_any_value_enum(),
+                function.as_global_value().as_pointer_value(),
             )
             .unwrap();
 
@@ -75,23 +72,22 @@ impl<'ctx> CodeGenerator {
 
         // Insert arguments on symbol table
         for (i, arg) in args.iter().enumerate() {
-            let symbol_type = context
+            let ty = context
                 .type_registry
                 .lookup_type(&arg.var_type.node)
                 .unwrap();
-            let value = function
-                .get_nth_param(i.try_into().unwrap())
-                .unwrap()
-                .as_any_value_enum();
-            context
-                .symbol_table
-                .insert(
-                    &arg.name.node,
-                    symbol_type.clone(),
-                    arg.name.location,
+
+            if let Some(basic_type) = resolve_llvm_type(&ty.name, context) {
+                let value = context.builder.build_alloca(basic_type, &name.node);
+                context
+                    .symbol_table
+                    .insert(&arg.name.node, ty.clone(), arg.name.location, value)
+                    .unwrap();
+                context.builder.build_store(
                     value,
-                )
-                .unwrap();
+                    function.get_nth_param(i.try_into().unwrap()).unwrap(),
+                );
+            };
         }
 
         // Visit body

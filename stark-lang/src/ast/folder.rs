@@ -46,11 +46,11 @@ pub trait Folder<C = ()> {
         }
     }
 
-    fn fold_assign(&mut self, target: &Expr, value: &Expr, context: &mut C) -> StmtKind {
+    fn fold_assign(&mut self, target: &Ident, value: &Expr, context: &mut C) -> StmtKind {
 
 
         StmtKind::Assign {
-            target: Box::new(self.fold_expr(target, context)),
+            target: clone_ident(target),
             value: Box::new(self.fold_expr(value, context)),
         }
     }

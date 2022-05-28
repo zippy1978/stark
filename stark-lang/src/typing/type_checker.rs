@@ -135,7 +135,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
 
     fn fold_assign(
         &mut self,
-        target: &ast::Expr,
+        target: &ast::Ident,
         value: &ast::Expr,
         context: &mut TypeCheckerContext<'ctx>,
     ) -> StmtKind {

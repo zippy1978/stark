@@ -31,7 +31,7 @@ pub trait Visitor<R = (), C = ()> {
 
     fn visit_var_decl(&mut self, name: &Ident, var_type: &Ident, _context: &mut C) -> R;
 
-    fn visit_assign(&mut self, target: &Expr, value: &Expr, context: &mut C) -> R;
+    fn visit_assign(&mut self, target: &Ident, value: &Expr, context: &mut C) -> R;
 
     fn visit_func_def(
         &mut self,

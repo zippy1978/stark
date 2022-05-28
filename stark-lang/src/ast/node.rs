@@ -56,7 +56,7 @@ pub enum StmtKind {
         var_type: Ident,
     },
     Assign {
-        target: Box<Expr>,
+        target: Ident,
         value: Box<Expr>,
     },
     FuncDef {

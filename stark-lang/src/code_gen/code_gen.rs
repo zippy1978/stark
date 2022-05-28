@@ -3,7 +3,7 @@ use inkwell::{
     context::Context,
     memory_buffer::MemoryBuffer,
     module::Module,
-    values::{AnyValueEnum, BasicValueEnum},
+    values::{BasicValueEnum, PointerValue},
 };
 
 use crate::{
@@ -16,7 +16,7 @@ use super::CodeGenError;
 pub struct CodeGenContext<'ctx> {
     pub(crate) llvm_context: &'ctx Context,
     pub(crate) type_registry: &'ctx TypeRegistry,
-    pub(crate) symbol_table: SymbolTable<AnyValueEnum<'ctx>>,
+    pub(crate) symbol_table: SymbolTable<PointerValue<'ctx>>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) module: Module<'ctx>,
 }
@@ -25,7 +25,7 @@ impl<'ctx> CodeGenContext<'ctx> {
     pub fn new(type_registry: &'ctx TypeRegistry, llvm_context: &'ctx Context) -> Self {
         CodeGenContext {
             type_registry,
-            symbol_table: SymbolTable::<AnyValueEnum>::new(),
+            symbol_table: SymbolTable::<PointerValue>::new(),
             llvm_context,
             builder: llvm_context.create_builder(),
             module: llvm_context.create_module("calculator"),
@@ -73,7 +73,7 @@ impl<'ctx> CodeGenerator {
                 bitcode: Some(context.module.write_bitcode_to_memory()),
                 logs: self.logger.logs(),
             }),
-            Err(err) => Result::Err(CodeGenError {
+            Err(_) => Result::Err(CodeGenError {
                 logs: self.logger.logs(),
             }),
         }
@@ -100,7 +100,6 @@ impl<'ctx> CodeGenerator {
         //------------------------------
     }
 }
-
 
 impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator {
     fn visit_stmts(
@@ -144,15 +143,15 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         var_type: &ast::Ident,
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
-        todo!()
+        self.handle_visit_var_decl(name, var_type, context)
     }
 
     fn visit_assign(
         &mut self,
-        target: &ast::Expr,
+        target: &ast::Ident,
         value: &ast::Expr,
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
-        todo!()
+        self.handle_visit_assign(target, value, context)
     }
 }

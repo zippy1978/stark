@@ -30,7 +30,7 @@ impl TypeRegistry {
             float_name.to_string(),
             Type {
                 name: float_name.to_string(),
-                kind: super::TypeKind::Primary(PrimaryKind::Int(float_name.to_string())),
+                kind: super::TypeKind::Primary(PrimaryKind::Float(float_name.to_string())),
                 definition_location: None,
             },
         );
