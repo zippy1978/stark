@@ -108,18 +108,34 @@ Identifier: ast::Ident =  <location:@L> <s:name> => {
     }
 };
 
-Integer: BigInt = <i:integer> => {
-    match i {
-        Token::Integer(int) => int,
-        _ => panic!(),
-    }
+Integer: BigInt = {
+    <i:integer> => {
+        match i {
+            Token::Integer(int) => int,
+            _ => panic!(),
+        }
+    },
+    "-" <i:integer> => {
+        match i {
+            Token::Integer(int) => int * -1,
+            _ => panic!(),
+        }
+    },
 };
 
-Float: f64 = <f:float> => {
-    match f {
-        Token::Float(float) => float,
-        _ => panic!(),
-    }
+Float: f64 = {
+    <f:float> => {
+        match f {
+            Token::Float(float) => float,
+            _ => panic!(),
+        }
+    },
+    "-" <f:float> => {
+        match f {
+            Token::Float(float) => float * -1.0,
+            _ => panic!(),
+        }
+    },
 };
 
 Boolean: bool = {
@@ -147,5 +163,6 @@ extern {
         "," => Token::Comma,
         "true" => Token::True,
         "false" => Token::False,
+        "-" => Token::Minus,
       }
 }

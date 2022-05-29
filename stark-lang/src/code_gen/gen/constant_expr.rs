@@ -25,6 +25,8 @@ impl<'ctx> CodeGenerator {
                 context
                     .llvm_context
                     .i64_type()
+                    // FIXME
+                    //.const_int_from_string(slice, radix)
                     .const_int(value.to_u64().unwrap(), false)
                     .as_basic_value_enum(),
             )),

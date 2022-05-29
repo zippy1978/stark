@@ -20,8 +20,6 @@ pub(crate) use type_registry::*;
 
 mod type_checker;
 pub(crate) use type_checker::*;
-#[cfg(test)]
-mod type_checker_tests;
 
 mod error;
 pub(crate) use error::*;
