@@ -1,4 +1,4 @@
-use inkwell::values::BasicValue;
+use inkwell::{types::StringRadix, values::BasicValue};
 use num_traits::ToPrimitive;
 
 use crate::{
@@ -17,7 +17,7 @@ impl<'ctx> CodeGenerator {
                 context
                     .llvm_context
                     .bool_type()
-                    .const_int(if *value {1} else {0}, false)
+                    .const_int(if *value { 1 } else { 0 }, false)
                     .as_basic_value_enum(),
             )),
             ast::Constant::Str(_) => todo!(),
@@ -25,9 +25,8 @@ impl<'ctx> CodeGenerator {
                 context
                     .llvm_context
                     .i64_type()
-                    // FIXME
-                    //.const_int_from_string(slice, radix)
-                    .const_int(value.to_u64().unwrap(), false)
+                    .const_int_from_string(&value.to_string(), StringRadix::Decimal)
+                    .unwrap()
                     .as_basic_value_enum(),
             )),
             ast::Constant::Float(value) => Result::Ok(Some(

@@ -8,7 +8,7 @@ func main () => int {
     c: bool
     c = false
     a :int
-    a = -5
+    a = 5
     a
     
 }
