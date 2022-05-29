@@ -1,4 +1,7 @@
 
+func tt(a: int, b: bool) {
+
+}
 /**
  * This is my main :)
  */
@@ -9,6 +12,7 @@ func main () => int {
     c = false
     a :int
     a = 5
+    tt(12)
     a
     
 }

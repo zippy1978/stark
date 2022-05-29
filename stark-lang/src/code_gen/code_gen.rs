@@ -126,6 +126,10 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         self.handle_visit_name_expr(name, context)
     }
 
+    fn visit_call_expr(&mut self, id: &ast::Ident, params: &ast::Params, context: &mut CodeGenContext<'ctx>) -> VisitorResult<'ctx> {
+        self.handle_visit_call_expr(id, params, context)
+    }
+
     fn visit_func_def(
         &mut self,
         name: &ast::Ident,
@@ -154,4 +158,5 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
     ) -> VisitorResult<'ctx> {
         self.handle_visit_assign(target, value, context)
     }
+
 }

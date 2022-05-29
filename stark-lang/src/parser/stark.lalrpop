@@ -7,6 +7,14 @@ grammar(filename: &String);
 
 pub Stmts: ast::Stmts = <Statment*> => <>;
 
+Comma<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T> => {
+      let mut v = v;
+      v.push(e);
+      v
+    },
+};
+
 Statment: ast::Stmt = {
     ExpressionStatment,
     VariableDeclaration,
@@ -38,10 +46,8 @@ VariableDeclaration: ast::Stmt = {
 
 // Function
 
-Args: ast::Args = <Arg*> => <>;
-
 Arg: ast::Arg = {
-    <name:Identifier> ":" <var_type:Identifier> (",")? => {
+    <name:Identifier> ":" <var_type:Identifier> => {
         ast::Arg { name: name, var_type: var_type }
     },
 };
@@ -51,10 +57,18 @@ FunctionType: ast::Ident = {
 };
 
 FunctionDefinition: ast::Stmt = {
-    <location:@L> "func" <name:Identifier> "(" <args:Args> ")" <returns:FunctionType?> "{" <stmts:Stmts>"}" => {
+    <location:@L> "func" <name:Identifier> "(" <args:Comma<Arg>?> ")" <returns:FunctionType?> "{" <stmts:Stmts>"}" => {
         ast::Stmt {
             location,
-            node: ast::StmtKind::FuncDef { name: name, args: Box::new(args), body: stmts, returns },
+            node: ast::StmtKind::FuncDef { 
+                name: name, 
+                args: match args {
+                    Some(a) => Box::new(a),
+                    None => Box::new(ast::Args::new()),
+                }, 
+                body: stmts, 
+                returns 
+            },
             info: ast::NodeInfo::new(),
         }
     },
@@ -72,11 +86,30 @@ Assign: ast::Stmt = {
     },
 };
 
+// Expressions
+
 Expression: ast::Expr = {
     Constants,
+    Call,
 };
 
-// Literals
+// Call
+
+Call: ast::Expr = {
+    <location:@L> <i:Identifier> "("  <params:Comma<Expression>?> ")" => ast::Expr {
+        location,
+        node: ast::ExprKind::Call {
+            id: i, 
+            params: match params {
+                Some(p) => Box::new(p),
+                None => Box::new(ast::Params::new())
+            }
+        },
+        info: ast::NodeInfo::new(),
+    },
+};
+
+// Literals 
 
 Constants: ast::Expr = {
     <location:@L> <i:Identifier> => ast::Expr {

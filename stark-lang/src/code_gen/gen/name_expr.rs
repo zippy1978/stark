@@ -17,15 +17,9 @@ impl<'ctx> CodeGenerator {
                 Result::Ok(Some(context.builder.build_load(symbol.value, "load")))
             }
             crate::typing::TypeKind::Complex => todo!(),
-            crate::typing::TypeKind::Function { args, returns } => {
-                Result::Ok(Some(BasicValueEnum::PointerValue(
-                    context
-                        .module
-                        .get_function(&name.node)
-                        .unwrap()
-                        .as_global_value()
-                        .as_pointer_value(),
-                )))
+            crate::typing::TypeKind::Function { args: _, returns: _ } => {
+                // For functions return a function pointer (stored as value in symbol table)
+                Result::Ok(Some(BasicValueEnum::PointerValue(symbol.value)))
             }
         }
     }

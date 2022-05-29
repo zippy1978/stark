@@ -18,15 +18,15 @@ fn assert_function_definition(stmt: &ast::StmtKind) -> Result<(), TestError> {
     match stmt {
         ast::StmtKind::FuncDef {
             name: _,
-            args:_,
-            body:_,
-            returns:_,
+            args: _,
+            body: _,
+            returns: _,
         } => Result::Ok(()),
         _ => Result::Err(String::from("Failed to parse function declaration")),
     }
 }
 
-fn assert_assign(stmt: &ast::StmtKind)  -> Result<(), TestError> {
+fn assert_assign(stmt: &ast::StmtKind) -> Result<(), TestError> {
     match stmt {
         ast::StmtKind::Assign {
             target: _,
@@ -69,6 +69,17 @@ fn assert_float(stmt: &ast::StmtKind) -> Result<(), TestError> {
                 ast::Constant::Float(_) => Result::Ok(()),
                 _ => error,
             },
+            _ => error,
+        },
+        _ => error,
+    }
+}
+
+fn assert_call(stmt: &ast::StmtKind) -> Result<(), TestError> {
+    let error = Result::<(), TestError>::Err(String::from("Failed to parse call"));
+    match stmt {
+        ast::StmtKind::Expr { value } => match &value.node {
+            ast::ExprKind::Call { id: _, params: _ } => Result::Ok(()),
             _ => error,
         },
         _ => error,
@@ -166,19 +177,49 @@ fn parse_assign() {
 
 #[test]
 fn parse_function_definition() {
-    assert!(assert_statment(r#"
+    assert!(assert_statment(
+        r#"
     func test() {
         a = 1
     }
-    "#, assert_function_definition).is_ok());
-    assert!(assert_statment(r#"
+    "#,
+        assert_function_definition
+    )
+    .is_ok());
+    assert!(assert_statment(
+        r#"
     func test() => int {
         a = 1
     }
-    "#, assert_function_definition).is_ok());
-    assert!(assert_statment(r#"
+    "#,
+        assert_function_definition
+    )
+    .is_ok());
+    assert!(assert_statment(
+        r#"
     func test(a: float, b: int) => int {
         a = 1
     }
-    "#, assert_function_definition).is_ok());
+    "#,
+        assert_function_definition
+    )
+    .is_ok());
+}
+
+#[test]
+fn parse_call() {
+    assert!(assert_statment(
+        r#"
+        myFunc()
+        "#,
+        assert_call
+    )
+    .is_ok());
+    assert!(assert_statment(
+        r#"
+        myFunc(123)
+        "#,
+        assert_call
+    )
+    .is_ok());
 }

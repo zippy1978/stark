@@ -121,7 +121,11 @@ impl<'ctx> TypeChecker {
 
 impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
     fn fold_expr(&mut self, expr: &ast::Expr, context: &mut TypeCheckerContext<'ctx>) -> ast::Expr {
-        self.handle_fold_expr(expr, context)
+        match &expr.node {
+            ast::ExprKind::Name { id } => self.handle_fold_name_expr(expr, id, context),
+            ast::ExprKind::Constant { value } => self.handle_fold_contant_expr(expr, value, context),
+            ast::ExprKind::Call { id, params } => self.handle_fold_call_expr(id, params, context),
+        }
     }
 
     fn fold_var_decl(

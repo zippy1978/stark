@@ -1,5 +1,7 @@
+use super::clone_ident;
 use super::Constant;
 use super::Location;
+use super::clone_params;
 
 /// Holds informaton (such as type name) of an AST node.
 #[derive(Debug, PartialEq)]
@@ -15,7 +17,9 @@ impl NodeInfo {
 
 impl Clone for NodeInfo {
     fn clone(&self) -> Self {
-        Self { type_name: self.type_name.clone() }
+        Self {
+            type_name: self.type_name.clone(),
+        }
     }
 }
 
@@ -29,7 +33,11 @@ pub struct Located<T> {
 
 impl<T> Located<T> {
     pub fn new(location: Location, node: T) -> Self {
-        Self { location, node, info: NodeInfo::new() }
+        Self {
+            location,
+            node,
+            info: NodeInfo::new(),
+        }
     }
 
     pub fn with_type_name(mut self, type_name: String) -> Self {
@@ -46,7 +54,9 @@ pub struct Arg {
 
 pub type Args = Vec<Arg>;
 
-#[derive(Debug, PartialEq,)]
+pub type Params = Vec<Expr>;
+
+#[derive(Debug, PartialEq)]
 pub enum StmtKind {
     Expr {
         value: Box<Expr>,
@@ -73,20 +83,21 @@ pub type Stmt = Located<StmtKind>;
 pub enum ExprKind {
     Name { id: Ident },
     Constant { value: Constant },
+    Call { id: Ident, params: Box<Params> },
 }
 
 impl Clone for ExprKind {
     fn clone(&self) -> Self {
         match self {
             ExprKind::Name { id } => ExprKind::Name {
-                id: Ident {
-                    location: id.location,
-                    node: id.node.clone(),
-                    info: id.info.clone(),
-                },
+                id: clone_ident(id),
             },
             ExprKind::Constant { value } => ExprKind::Constant {
                 value: value.clone(),
+            },
+            ExprKind::Call { id, params } => ExprKind::Call {
+                id: clone_ident(id),
+                params: Box::new(clone_params(params)),
             },
         }
     }

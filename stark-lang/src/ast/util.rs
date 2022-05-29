@@ -1,5 +1,5 @@
 //! AST manipulation utilities.
-use super::{Args, Ident, Expr, Arg};
+use super::{Args, Ident, Expr, Arg, Params};
 
 pub fn clone_ident(ident: &Ident) -> Ident {
     
@@ -31,4 +31,12 @@ pub fn clone_args(args: &Args) -> Args {
         new_args.push(clone_arg(arg));
     }
     new_args
+}
+
+pub fn clone_params(params: &Params) -> Params {
+    let mut new_params = Params::new();
+    for expr in params {
+        new_params.push(clone_expr(expr));
+    }
+    new_params
 }

@@ -4,6 +4,7 @@ mod func_def;
 mod stmts;
 mod var_decl;
 mod assign;
+mod call_expr;
 
 #[cfg(test)]
 mod test_util;
