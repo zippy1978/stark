@@ -15,7 +15,7 @@ impl<'ctx> CodeGenerator {
         let visited_value = self.visit_expr(value, context).unwrap().unwrap();
         context
             .builder
-            .build_store(symbol_pointer_value, visited_value);
+            .build_store(symbol_pointer_value,  visited_value);
 
         Result::Ok(None)
     }

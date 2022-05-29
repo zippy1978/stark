@@ -26,10 +26,9 @@ fn main() {
 
     match fs::read_to_string(&args.path) {
         Ok(input) => match compiler.compile_string(&input) {
-            Ok(output) => match output.bitcode {
-                Some(bitcode) => {
+            Ok(output) => {
                     let vm = VirtualMachine::new(VirtualMachineConfig::default());
-                    match vm.run_bitcode(&bitcode) {
+                    match vm.run_bitcode(&output.bitcode) {
                         Ok(result) => std::process::exit(result),
                         Err(err) => {
                             match err {
@@ -43,9 +42,7 @@ fn main() {
                             std::process::exit(exitcode::NOINPUT);
                         }
                     }
-                }
-                // This should never happen !
-                None => panic!(),
+               
             },
             Err(err) => {
                 reporter.report_logs(&filename, &input, err.logs);

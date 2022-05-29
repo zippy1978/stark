@@ -12,15 +12,15 @@ use super::CompileError;
 pub struct Config {}
 
 pub struct CompileOutput {
-    pub bitcode: Option<MemoryBuffer>,
+    pub bitcode: MemoryBuffer,
     pub logs: Vec<Log>,
 }
 
 impl CompileOutput {
-    pub fn new() -> Self {
+    pub fn new(bitcode: MemoryBuffer) -> Self {
         CompileOutput {
             logs: Vec::new(),
-            bitcode: None,
+            bitcode,
         }
     }
 }

@@ -7,9 +7,9 @@ use crate::typing::{PrimaryKind, TypeKind};
 
 use super::CodeGenContext;
 
-pub fn resolve_llvm_type<'ctx>(
+pub(crate) fn resolve_llvm_type<'ctx>(
     type_name: &str,
-    context: & CodeGenContext<'ctx>,
+    context: &CodeGenContext<'ctx>,
 ) -> Option<BasicTypeEnum<'ctx>> {
     match context.type_registry.lookup_type(type_name) {
         Some(ty) => Some(match &ty.kind {

@@ -34,7 +34,7 @@ impl<'ctx> CodeGenContext<'ctx> {
 }
 
 pub struct CodeGenOutput {
-    pub bitcode: Option<MemoryBuffer>,
+    pub bitcode: MemoryBuffer,
     pub logs: Vec<Log>,
 }
 
@@ -70,7 +70,7 @@ impl<'ctx> CodeGenerator {
         // Visit
         match self.visit_stmts(ast, context) {
             Ok(_) => Result::Ok(CodeGenOutput {
-                bitcode: Some(context.module.write_bitcode_to_memory()),
+                bitcode:context.module.write_bitcode_to_memory(),
                 logs: self.logger.logs(),
             }),
             Err(_) => Result::Err(CodeGenError {
