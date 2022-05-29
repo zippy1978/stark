@@ -1,5 +1,4 @@
 use inkwell::{types::StringRadix, values::BasicValue};
-use num_traits::ToPrimitive;
 
 use crate::{
     ast,

@@ -61,6 +61,34 @@ fn assert_integer(stmt: &ast::StmtKind) -> Result<(), TestError> {
     }
 }
 
+fn assert_float(stmt: &ast::StmtKind) -> Result<(), TestError> {
+    let error = Result::<(), TestError>::Err(String::from("Failed to parse float"));
+    match stmt {
+        ast::StmtKind::Expr { value } => match &value.node {
+            ast::ExprKind::Constant { value } => match value {
+                ast::Constant::Float(_) => Result::Ok(()),
+                _ => error,
+            },
+            _ => error,
+        },
+        _ => error,
+    }
+}
+
+fn assert_boolean(stmt: &ast::StmtKind) -> Result<(), TestError> {
+    let error = Result::<(), TestError>::Err(String::from("Failed to parse boolean"));
+    match stmt {
+        ast::StmtKind::Expr { value } => match &value.node {
+            ast::ExprKind::Constant { value } => match value {
+                ast::Constant::Bool(_) => Result::Ok(()),
+                _ => error,
+            },
+            _ => error,
+        },
+        _ => error,
+    }
+}
+
 fn assert_statment(
     input: &str,
     assert_fn: fn(stmt: &ast::StmtKind) -> Result<(), TestError>,
@@ -96,8 +124,25 @@ fn parse_statments() {
 #[test]
 fn parse_integer() {
     assert!(assert_statment("123", assert_integer).is_ok());
+    assert!(assert_statment("-123", assert_integer).is_ok());
     assert!(assert_statment("1.23", assert_integer).is_err());
     assert!(assert_statment("abc", assert_integer).is_err());
+}
+
+#[test]
+fn parse_float() {
+    assert!(assert_statment("1.23", assert_float).is_ok());
+    assert!(assert_statment("-1.23", assert_float).is_ok());
+    assert!(assert_statment("123", assert_float).is_err());
+    assert!(assert_statment("abc", assert_float).is_err());
+}
+
+#[test]
+fn parse_boolean() {
+    assert!(assert_statment("true", assert_boolean).is_ok());
+    assert!(assert_statment("false", assert_boolean).is_ok());
+    assert!(assert_statment("123", assert_boolean).is_err());
+    assert!(assert_statment("abc", assert_boolean).is_err());
 }
 
 #[test]
