@@ -12,7 +12,7 @@ func main () => int {
     c = false
     a :int
     a = 5
-    tt(12)
+    a = tt(12, true)
     a
     
 }

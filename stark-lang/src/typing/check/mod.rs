@@ -19,3 +19,4 @@ mod func_def_tests;
 mod name_expr_tests;
 #[cfg(test)]
 mod var_decl_tests;
+#[cfg(test)] mod call_expr_tests;

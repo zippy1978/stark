@@ -1,5 +1,5 @@
 use crate::{
-    ast::{self, clone_expr, Log, LogLevel},
+    ast::{self, clone_expr},
     typing::{TypeChecker, TypeCheckerContext},
 };
 
@@ -13,11 +13,7 @@ impl<'ctx> TypeChecker {
         match context.symbol_table.lookup_symbol(&id.node) {
             Some(symbol) => clone_expr(expr).with_type_name(symbol.symbol_type.name.to_string()),
             None => {
-                self.logger.add(Log::new_with_single_label(
-                    format!("symbol `{}` is undefined", &id.node),
-                    LogLevel::Error,
-                    id.location,
-                ));
+                self.log_undefined_symbol(id);
 
                 clone_expr(expr)
             }

@@ -44,6 +44,11 @@ impl<T> Located<T> {
         self.info.type_name = Some(type_name);
         self
     }
+
+    pub fn with_node(mut self, node: T) -> Self {
+        self.node = node;
+        self
+    }
 }
 
 #[derive(Debug, PartialEq)]

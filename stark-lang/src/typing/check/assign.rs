@@ -29,22 +29,10 @@ impl<'ctx> TypeChecker {
                             ));
                         }
                     },
-                    None => {
-                        self.logger.add(Log::new_with_single_label(
-                            "unable to determine expression type",
-                            LogLevel::Error,
-                            value.location,
-                        ));
-                    },
+                    None => self.log_undetermined_expression_type(value),
                 }
             },
-            None => {
-                self.logger.add(Log::new_with_single_label(
-                    format!("symbol `{}` is undefined", &target.node),
-                    LogLevel::Error,
-                    target.location,
-                ));
-            }
+            None => self.log_undefined_symbol(&target)
         };
 
         ast::StmtKind::Assign {

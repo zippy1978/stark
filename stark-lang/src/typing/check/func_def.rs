@@ -121,7 +121,7 @@ impl<'ctx> TypeChecker {
                         }
                         None => {
                             self.logger.add(Log::new_with_single_label(
-                                "unable to determine expression type",
+                                "unable to determine last expression type",
                                 LogLevel::Error,
                                 last_stmt.location,
                             ));

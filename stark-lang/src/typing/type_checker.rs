@@ -59,9 +59,25 @@ impl<'ctx> TypeChecker {
         }
     }
 
+    pub(crate) fn log_undetermined_expression_type(&mut self, expr: &ast::Expr) {
+        self.logger.add(Log::new_with_single_label(
+            "unable to determine expression type",
+            LogLevel::Error,
+            expr.location,
+        ))
+    }
+
     pub(crate) fn log_unknown_type(&mut self, ident: &ast::Ident) {
         self.logger.add(Log::new_with_single_label(
             format!("unknown type `{}`", &ident.node),
+            LogLevel::Error,
+            ident.location,
+        ));
+    }
+
+    pub(crate) fn log_undefined_symbol(&mut self, ident: &ast::Ident) {
+        self.logger.add(Log::new_with_single_label(
+            format!("symbol `{}` is undefined", &ident.node),
             LogLevel::Error,
             ident.location,
         ));
@@ -124,7 +140,7 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         match &expr.node {
             ast::ExprKind::Name { id } => self.handle_fold_name_expr(expr, id, context),
             ast::ExprKind::Constant { value } => self.handle_fold_contant_expr(expr, value, context),
-            ast::ExprKind::Call { id, params } => self.handle_fold_call_expr(id, params, context),
+            ast::ExprKind::Call { id, params } => self.handle_fold_call_expr(expr, id, params, context),
         }
     }
 
