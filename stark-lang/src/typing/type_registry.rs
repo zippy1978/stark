@@ -63,12 +63,4 @@ impl TypeRegistry {
         self.entries.get(name)
     }
 
-    pub fn to_vec(&self) -> Vec<Type> {
-        let mut result = Vec::new();
-        for (_key, value) in &self.entries {
-            result.push(value.clone());
-        }
-        result
-    }
-
 }

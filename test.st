@@ -1,5 +1,9 @@
 
-func tt(a: int, b: bool) {
+func tt(a: int, b: bool) => int {
+    a
+}
+
+func gg() {
 
 }
 /**
@@ -13,6 +17,7 @@ func main () => int {
     a :int
     a = 5
     a = tt(12, true)
+    c = gg()
     a
     
 }

@@ -24,7 +24,10 @@ pub(crate) fn resolve_llvm_type<'ctx>(
                 PrimaryKind::Bool(_) => context.llvm_context.bool_type().as_basic_type_enum(),
             },
             TypeKind::Complex => todo!(),
-            TypeKind::Function { args, returns } => todo!(),
+            TypeKind::Function {
+                args: _,
+                returns: _,
+            } => todo!(),
         }),
         None => None,
     }
