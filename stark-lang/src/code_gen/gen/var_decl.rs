@@ -16,7 +16,7 @@ impl<'ctx> CodeGenerator {
             let value = context.builder.build_alloca(basic_type, &name.node);
             context
                 .symbol_table
-                .insert(&name.node, ty.clone(), name.location, value)
+                .insert(&name.node, ty.clone(), name.location.clone(), value)
                 .unwrap();
         }
 

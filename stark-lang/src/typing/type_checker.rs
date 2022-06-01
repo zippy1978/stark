@@ -61,25 +61,28 @@ impl<'ctx> TypeChecker {
 
     pub(crate) fn log_undetermined_expression_type(&mut self, expr: &ast::Expr) {
         self.logger.add(Log::new_with_single_label(
+            expr.location.filename.clone(),
             "unable to determine expression type",
             LogLevel::Error,
-            expr.location,
+            expr.location.clone(),
         ))
     }
 
     pub(crate) fn log_unknown_type(&mut self, ident: &ast::Ident) {
         self.logger.add(Log::new_with_single_label(
+            ident.location.filename.clone(),
             format!("unknown type `{}`", &ident.node),
             LogLevel::Error,
-            ident.location,
+            ident.location.clone(),
         ));
     }
 
     pub(crate) fn log_undefined_symbol(&mut self, ident: &ast::Ident) {
         self.logger.add(Log::new_with_single_label(
+            ident.location.filename.clone(),
             format!("symbol `{}` is undefined", &ident.node),
             LogLevel::Error,
-            ident.location,
+            ident.location.clone(),
         ));
     }
 
@@ -89,16 +92,17 @@ impl<'ctx> TypeChecker {
             SymbolError::AlreadyDefined(symbol) => {
                 self.logger.add(
                     Log::new(
+                        name.location.filename.clone(),
                         format!("`{}` is already defined", &name.node),
                         LogLevel::Error,
                     )
                     .with_label(
                         format!("`{}` was previously defined here ", &name.node),
-                        symbol.definition_location,
+                        symbol.definition_location.clone(),
                     )
                     .with_label(
                         format!("`{}` is redefined here ", &name.node),
-                        name.location,
+                        name.location.clone(),
                     ),
                 );
             }
@@ -106,6 +110,7 @@ impl<'ctx> TypeChecker {
             SymbolError::AlreadyDefinedInUpperScope(symbol) => {
                 self.logger.add(
                     Log::new(
+                        name.location.filename.clone(),
                         format!("`{}` is already defined", &name.node),
                         LogLevel::Error,
                     )
@@ -114,20 +119,21 @@ impl<'ctx> TypeChecker {
                             "`{}` was previously defined in upper scope here ",
                             &name.node
                         ),
-                        symbol.definition_location,
+                        symbol.definition_location.clone(),
                     )
                     .with_label(
                         format!("`{}` is redefined here ", &name.node),
-                        name.location,
+                        name.location.clone(),
                     ),
                 );
             }
             // Scope error
             SymbolError::NoScope => {
                 self.logger.add(Log::new_with_single_label(
+                    name.location.filename.clone(),
                     "scope error",
                     LogLevel::Error,
-                    name.location,
+                    name.location.clone(),
                 ));
             }
         };

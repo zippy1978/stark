@@ -6,7 +6,7 @@ use crate::{
 
 pub(crate) fn ast_from(input: &str) -> ast::Stmts {
     let parser = Parser::new();
-    parser.parse(input).unwrap()
+    parser.parse("-", input).unwrap()
 }
 
 pub(crate) fn type_check(input: &str) -> TypeCheckerResult {

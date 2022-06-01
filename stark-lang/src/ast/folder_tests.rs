@@ -13,19 +13,19 @@ fn fold_ast() {
 
     use super::Stmts;
 
-    let dummy_location = Location::new(0, 0, Span::new(0, 0));
+    let dummy_location = Location::new(0, 0, Span::new(0, 0), "-");
     let int_type_ident = Ident {
-        location: dummy_location,
+        location: dummy_location.clone(),
         node: "int".to_string(),
         info: NodeInfo::new()
     };
     let var_name_ident = Ident {
-        location: dummy_location,
+        location: dummy_location.clone(),
         node: "varName".to_string(),
         info: NodeInfo::new()
     };
     let var_decl_stmt = Stmt {
-        location: dummy_location,
+        location: dummy_location.clone(),
         node: StmtKind::VarDecl {
             name: var_name_ident,
             var_type: int_type_ident,

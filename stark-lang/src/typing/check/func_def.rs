@@ -18,9 +18,10 @@ impl<'ctx> TypeChecker {
             Some(scope) => match scope.scope_type {
                 SymbolScopeType::Global => (),
                 _ => self.logger.add(Log::new_with_single_label(
+                    name.location.filename.clone(),
                     "function delcaration is not allowed in this scope",
                     LogLevel::Error,
-                    name.location,
+                    name.location.clone(),
                 )),
             },
             None => panic!("no scope"),
@@ -58,9 +59,9 @@ impl<'ctx> TypeChecker {
                         None => None,
                     },
                 },
-                definition_location: Some(name.location),
+                definition_location: Some(name.location.clone()),
             },
-            name.location,
+            name.location.clone(),
             (),
         ) {
             Ok(_) => (),
@@ -80,7 +81,7 @@ impl<'ctx> TypeChecker {
                 Some(ty) => match context.symbol_table.insert(
                     &arg.name.node.clone(),
                     ty.clone(),
-                    arg.name.location,
+                    arg.name.location.clone(),
                     (),
                 ) {
                     Ok(_) => (),
@@ -102,36 +103,39 @@ impl<'ctx> TypeChecker {
                             if type_name != &returns.node {
                                 self.logger.add(
                                     Log::new_with_single_label(
+                                        last_stmt.location.filename.clone(),
                                         format!(
                                             "type mismatch, expected `{}` return, found `{}`",
                                             returns.node, type_name
                                         ),
                                         LogLevel::Error,
-                                        last_stmt.location,
+                                        last_stmt.location.clone(),
                                     )
                                     .with_label(
                                         format!(
                                             "function `{}` return type is `{}`",
                                             &name.node, &returns.node
                                         ),
-                                        returns.location,
+                                        returns.location.clone(),
                                     ),
                                 );
                             }
                         }
                         None => {
                             self.logger.add(Log::new_with_single_label(
+                                last_stmt.location.filename.clone(),
                                 "unable to determine last expression type",
                                 LogLevel::Error,
-                                last_stmt.location,
+                                last_stmt.location.clone(),
                             ));
                         }
                     },
                     _ => {
                         self.logger.add(Log::new_with_single_label(
+                            last_stmt.location.filename.clone(),
                             "function return is missing",
                             LogLevel::Error,
-                            last_stmt.location,
+                            last_stmt.location.clone(),
                         ));
                     }
                 },

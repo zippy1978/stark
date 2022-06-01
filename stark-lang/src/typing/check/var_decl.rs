@@ -15,9 +15,10 @@ impl<'ctx> TypeChecker {
         match context.symbol_table.current_scope() {
             Some(scope) => match scope.scope_type {
                 SymbolScopeType::Global => self.logger.add(Log::new_with_single_label(
+                    name.location.filename.clone(),
                     "variable delcaration is not allowed on global scope",
                     LogLevel::Error,
-                    name.location,
+                    name.location.clone(),
                 )),
                 _ => (),
             },
@@ -30,7 +31,7 @@ impl<'ctx> TypeChecker {
                 // Try to insert new symbol
                 match context
                     .symbol_table
-                    .insert(&name.node, ty.clone(), name.location, ())
+                    .insert(&name.node, ty.clone(), name.location.clone(), ())
                 {
                     Ok(_) => (),
                     Err(err) => self.log_symbol_error(&err, name),

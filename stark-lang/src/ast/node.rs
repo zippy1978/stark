@@ -1,7 +1,10 @@
+use super::clone_args;
+use super::clone_expr;
 use super::clone_ident;
+use super::clone_params;
 use super::Constant;
 use super::Location;
-use super::clone_params;
+use super::clone_stmts;
 
 /// Holds informaton (such as type name) of an AST node.
 #[derive(Debug, PartialEq)]
@@ -80,6 +83,38 @@ pub enum StmtKind {
         body: Stmts,
         returns: Option<Ident>,
     },
+}
+
+impl Clone for StmtKind {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Expr { value } => Self::Expr {
+                value: Box::new(clone_expr(value)),
+            },
+            Self::VarDecl { name, var_type } => Self::VarDecl {
+                name: clone_ident(name),
+                var_type: clone_ident(var_type),
+            },
+            Self::Assign { target, value } => Self::Assign {
+                target: clone_ident(target),
+                value: Box::new(clone_expr(value)),
+            },
+            Self::FuncDef {
+                name,
+                args,
+                body,
+                returns,
+            } => Self::FuncDef {
+                name: clone_ident(name),
+                args: Box::new(clone_args(args)),
+                body: clone_stmts(body),
+                returns: match returns {
+                    Some(r) => Some(clone_ident(r)),
+                    None => None,
+                },
+            },
+        }
+    }
 }
 
 pub type Stmt = Located<StmtKind>;

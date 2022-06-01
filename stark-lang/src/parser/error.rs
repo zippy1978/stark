@@ -14,13 +14,13 @@ pub struct LexicalError {
 }
 
 /// Represents an error during parsing.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ParseError {
     pub error_type: ParseErrorType,
     pub location: Location,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ParseErrorType {
     /// Parser encountered an unexpected end of input.
     Eof,
@@ -32,6 +32,8 @@ pub enum ParseErrorType {
     UnrecognizedToken(Token, Option<String>),
     /// Lexer error
     Lexical,
+    /// File not found
+    FileNotFound(String),
 }
 
 impl Display for ParseError {
@@ -47,6 +49,7 @@ impl Display for ParseError {
                     format!("unrecognized token `{}`", token)
                 }
                 ParseErrorType::Lexical => "unknown token".to_string(),
+                ParseErrorType::FileNotFound(filename) => format!("file not found `{}`", filename),
             }
         )
     }

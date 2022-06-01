@@ -1,0 +1,3 @@
+func before() {
+    5
+}

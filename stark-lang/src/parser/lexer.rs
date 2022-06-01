@@ -13,16 +13,18 @@ pub struct Lexer<'input> {
     row_no: usize,
     column_no: usize,
     line_start: usize,
+    filename: String,
 }
 
 impl<'input> Lexer<'input> {
     /// Creates a new lexer.
-    pub fn new(input: &'input str) -> Self {
+    pub fn new(filename: &str, input: &'input str) -> Self {
         Self {
             token_stream: Token::lexer(input).spanned(),
             row_no: 0,
             column_no: 0,
             line_start: 0,
+            filename: filename.to_string()
         }
     }
 }
@@ -38,6 +40,7 @@ impl<'input> Iterator for Lexer<'input> {
                     self.row_no,
                     span.start - self.line_start,
                     Span::new(span.start, span.end),
+                    &self.filename.to_string(),
                 );
                 match token {
                     Token::Error => Some(Err(LexicalError { location: location })),
@@ -48,7 +51,7 @@ impl<'input> Iterator for Lexer<'input> {
                         // Skip this token !
                         self.next()
                     }
-                    _ => Some(Ok((location, token, location))),
+                    _ => Some(Ok((location.clone(), token, location))),
                 }
             }
         }

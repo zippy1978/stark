@@ -17,12 +17,13 @@ impl<'ctx> TypeChecker {
                 Some(value_type_name) => {
                     if value_type_name != &symbol.symbol_type.name {
                         self.logger.add(Log::new_with_single_label(
+                            value.location.filename.clone(),
                             format!(
                                 "type mismatch, expected `{}`, found `{}`",
                                 symbol.symbol_type.name, value_type_name
                             ),
                             LogLevel::Error,
-                            value.location,
+                            value.location.clone(),
                         ));
                     }
                 }

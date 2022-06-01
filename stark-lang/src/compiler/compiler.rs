@@ -1,8 +1,11 @@
+//! Compiler.
+use std::path::PathBuf;
+
 use inkwell::{context::Context, memory_buffer::MemoryBuffer};
 
 use crate::{
     ast::{self, Log, LogLevel},
-    code_gen::{CodeGenerator, CodeGenContext},
+    code_gen::{CodeGenContext, CodeGenerator},
     parser::Parser,
     typing::{TypeChecker, TypeCheckerContext, TypeRegistry},
 };
@@ -33,21 +36,27 @@ impl Compiler {
     pub fn new() -> Self {
         Compiler {}
     }
-    pub fn compile_string(&self, input: &str) -> CompileResult {
+
+    /// Compiles input string.
+    pub fn compile(&self, filename: &str, input: &str) -> CompileResult {
         let parser = Parser::new();
 
-        match parser.parse(input) {
+        match parser.parse(filename, input) {
             Ok(ast) => self.compile_ast(&ast),
-            Err(err) => {
-                let mut compile_error = CompileError::new();
-                let log = Log::new("syntax error", LogLevel::Error)
-                    .with_label(err.to_string(), err.location);
-                compile_error.logs.push(log);
-                Result::Err(compile_error)
-            }
+            Err(err) => Result::Err(CompileError::from(err)),
         }
     }
 
+    /// Compiles files.
+    pub fn compile_files(&self, paths: &[PathBuf]) -> CompileResult {
+        let parser = Parser::new();
+        match parser.parse_files(paths) {
+            Ok(ast) => self.compile_ast(&ast),
+            Err(err) => Result::Err(CompileError::from(err)),
+        }
+    }
+
+    /// Compiles AST
     pub fn compile_ast(&self, ast: &ast::Stmts) -> CompileResult {
         // Type checking
         let mut type_checker = TypeChecker::new();
@@ -60,9 +69,10 @@ impl Compiler {
                 let mut code_gen_context = CodeGenContext::new(&type_registry, &llvm_context);
                 let mut code_gen = CodeGenerator::new();
                 match code_gen.generate(&typed_ast, &mut code_gen_context) {
-                    Ok(output) =>  {
-                        Result::Ok(CompileOutput {bitcode: output.bitcode, logs: output.logs})
-                    },
+                    Ok(output) => Result::Ok(CompileOutput {
+                        bitcode: output.bitcode,
+                        logs: output.logs,
+                    }),
                     Err(err) => Result::Err(CompileError { logs: err.logs }),
                 }
             }

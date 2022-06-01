@@ -21,3 +21,5 @@ pub(crate) use log::*;
 
 mod util;
 pub(crate) use util::*;
+#[cfg(test)]
+mod util_tests;

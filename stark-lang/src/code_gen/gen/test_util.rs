@@ -4,7 +4,7 @@ pub(crate) type RunCodeResult = Result<i32, String>;
 
 pub(crate) fn run_code(input: &str) -> RunCodeResult {
     let compiler = Compiler::new();
-    match compiler.compile_string(input) {
+    match compiler.compile("-", input) {
         Ok(output) => {
             let vm = VirtualMachine::new(VirtualMachineConfig::default());
             match vm.run_bitcode(&output.bitcode) {

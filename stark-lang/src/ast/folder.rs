@@ -12,7 +12,7 @@ pub trait Folder<C = ()> {
 
     fn fold_stmt(&mut self, stmt: &Stmt, context: &mut C) -> Stmt {
         Stmt {
-            location: stmt.location,
+            location: stmt.location.clone(),
             node: match &stmt.node {
                 StmtKind::Expr { value } => StmtKind::Expr {
                     value: Box::new(self.fold_expr(&value, context)),

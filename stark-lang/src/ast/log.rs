@@ -48,14 +48,16 @@ impl LoglLabel {
 /// A log message.
 #[derive(Debug, PartialEq)]
 pub struct Log {
+    pub filename: String,
     pub message: String,
     pub level: LogLevel,
     pub labels: Vec<LoglLabel>,
 }
 
 impl Log {
-    pub fn new(message: impl Into<String>, level: LogLevel) -> Self {
+    pub fn new(filename: impl Into<String>, message: impl Into<String>, level: LogLevel) -> Self {
         Log {
+            filename: filename.into(),
             message: message.into(),
             level,
             labels: Vec::new(),
@@ -71,18 +73,20 @@ impl Log {
     }
 
     pub fn new_with_single_label(
+        filename: impl Into<String>,
         message: impl Into<String>,
         level: LogLevel,
         location: Location,
     ) -> Self {
         let msg: String = message.into();
-        Self::new(msg.clone(), level).with_label(msg, location)
+        Self::new(filename.into(), msg.clone(), level).with_label(msg, location)
     }
 }
 
 impl Clone for Log {
     fn clone(&self) -> Self {
         Self {
+            filename: self.filename.clone(),
             level: self.level.clone(),
             message: self.message.clone(),
             labels: self.labels.to_vec(),

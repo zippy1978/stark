@@ -40,7 +40,7 @@ fn lookup_symbol<'a>() {
     let insert_result1 = table.insert(
         "var1",
         type_registry.lookup_type("int").unwrap().clone(),
-        Location::new(0, 0, Span::new(0, 0)),
+        Location::new(0, 0, Span::new(0, 0), "-"),
         (),
     );
 
@@ -57,7 +57,7 @@ fn lookup_symbol<'a>() {
     let insert_result2 = table.insert(
         "var1",
         type_registry.lookup_type("int").unwrap().clone(),
-        Location::new(0, 0, Span::new(0, 0)),
+        Location::new(0, 0, Span::new(0, 0), "-"),
         (),
     );
 
@@ -81,7 +81,7 @@ fn lookup_symbol<'a>() {
     let insert_result3 = table.insert(
         "var1",
         type_registry.lookup_type("int").unwrap().clone(),
-        Location::new(0, 0, Span::new(0, 0)),
+        Location::new(0, 0, Span::new(0, 0), "-"),
         (),
     );
 
@@ -102,7 +102,7 @@ fn lookup_symbol<'a>() {
     let insert_result4 = table.insert(
         "var2",
         type_registry.lookup_type("int").unwrap().clone(),
-        Location::new(0, 0, Span::new(0, 0)),
+        Location::new(0, 0, Span::new(0, 0), "-"),
         (),
     );
 

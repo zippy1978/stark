@@ -51,9 +51,9 @@ impl<'ctx> CodeGenerator {
                             None => None,
                         },
                     },
-                    definition_location: Some(name.location),
+                    definition_location: Some(name.location.clone()),
                 },
-                name.location,
+                name.location.clone(),
                 function.as_global_value().as_pointer_value(),
             )
             .unwrap();
@@ -81,7 +81,7 @@ impl<'ctx> CodeGenerator {
                 let value = context.builder.build_alloca(basic_type, &name.node);
                 context
                     .symbol_table
-                    .insert(&arg.name.node, ty.clone(), arg.name.location, value)
+                    .insert(&arg.name.node, ty.clone(), arg.name.location.clone(), value)
                     .unwrap();
                 context.builder.build_store(
                     value,

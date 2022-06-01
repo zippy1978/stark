@@ -1,10 +1,9 @@
 //! AST manipulation utilities.
-use super::{Args, Ident, Expr, Arg, Params};
+use super::{Arg, Args, Expr, Ident, Params, Stmt, Stmts};
 
 pub fn clone_ident(ident: &Ident) -> Ident {
-    
     Ident {
-        location: ident.location,
+        location: ident.location.clone(),
         node: ident.node.clone(),
         info: ident.info.clone(),
     }
@@ -12,7 +11,7 @@ pub fn clone_ident(ident: &Ident) -> Ident {
 
 pub fn clone_expr(expr: &Expr) -> Expr {
     Expr {
-        location: expr.location,
+        location: expr.location.clone(),
         node: expr.node.clone(),
         info: expr.info.clone(),
     }
@@ -39,4 +38,34 @@ pub fn clone_params(params: &Params) -> Params {
         new_params.push(clone_expr(expr));
     }
     new_params
+}
+
+pub fn clone_stmt(stmt: &Stmt) -> Stmt {
+    Stmt {
+        location: stmt.location.clone(),
+        node: stmt.node.clone(),
+        info: stmt.info.clone(),
+    }
+}
+
+pub fn clone_stmts(stmts: &Stmts) -> Stmts {
+    let mut new_stmts = Stmts::new();
+    for stmt in stmts {
+        new_stmts.push(clone_stmt(stmt));
+    }
+    new_stmts
+}
+
+/// Merge ASTs into a sungle AST.
+/// The merge is performed by cloning input ASTs.
+pub fn merge_asts(asts: &[Stmts]) -> Stmts {
+    let mut new_ast = Stmts::new();
+
+    for ast in asts {
+        for stmt in ast {
+            new_ast.push(clone_stmt(stmt));
+        }
+    }
+
+    new_ast
 }

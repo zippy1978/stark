@@ -1,4 +1,5 @@
-use std::ops::Range;
+use std::fs;
+use std::path::PathBuf;
 
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use codespan_reporting::files::SimpleFiles;
@@ -11,40 +12,54 @@ use crate::ast::{Log, LogLevel};
 pub struct Reporter {}
 
 impl Reporter {
-
     pub fn new() -> Self {
         Reporter {}
     }
-    
-    fn diag_from_log(file_id: usize, log: Log) -> Diagnostic<usize> {
+
+    fn diag_from_log(file_id: usize, log: &Log) -> Diagnostic<usize> {
         let diag: Diagnostic<usize> = match log.level {
-            LogLevel::Warning => Diagnostic::warning().with_message(log.message),
-            LogLevel::Error => Diagnostic::error().with_message(log.message),
+            LogLevel::Warning => Diagnostic::warning().with_message(log.message.clone()),
+            LogLevel::Error => Diagnostic::error().with_message(log.message.clone()),
         };
 
         let mut labels = Vec::<Label<usize>>::new();
-        for label in log.labels {
-            let range = Range {
-                start: label.location.span().start(),
-                end: label.location.span().end(),
-            };
-            labels.push(Label::primary(file_id, range).with_message(label.message));
+        for label in &log.labels {
+            labels.push(
+                Label::primary(file_id, label.location.span.to_range())
+                    .with_message(label.message.clone()),
+            );
         }
 
         diag.with_labels(labels)
     }
 
-    /// TODO
-    pub fn report_logs(&self, name: &str, source: &str, logs: Vec<Log>) {
+    pub fn report_logs_for_files(&self, paths: &[PathBuf], logs: Vec<Log>) {
         let mut files = SimpleFiles::new();
-        let file_id = files.add(name, source);
+
+        // Collect source files content
+        for path in paths {
+            match fs::read_to_string(path) {
+                Ok(source) => {
+                    files.add(path.to_str().unwrap(), source);
+                }
+                Err(_) => (),
+            };
+        }
 
         let writer = StandardStream::stderr(ColorChoice::Always);
         let config = codespan_reporting::term::Config::default();
 
-        for log in logs {
-            let diag = Self::diag_from_log(file_id, log);
-            term::emit(&mut writer.lock(), &config, &files, &diag).unwrap();
+        // Report logs by file
+        for (i, path) in paths.iter().enumerate() {
+            let file_logs = logs
+                .iter()
+                .filter(|&log| log.filename == path.to_str().unwrap())
+                .collect::<Vec<&Log>>();
+
+            for log in file_logs {
+                let diag = Self::diag_from_log(i, log);
+                term::emit(&mut writer.lock(), &config, &files, &diag).unwrap();
+            }
         }
     }
 }

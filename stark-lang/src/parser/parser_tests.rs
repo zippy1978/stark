@@ -108,7 +108,7 @@ fn assert_statment(
 
     let parser = Parser::new();
 
-    match parser.parse(input) {
+    match parser.parse("-", input) {
         Ok(stmts) => {
             let stmt = stmts.get(0).unwrap();
             return assert_fn(&stmt.node);
@@ -128,7 +128,7 @@ fn parse_statments() {
              * comment */
         "#;
     let parser = Parser::new();
-    let stmts = parser.parse(input).unwrap();
+    let stmts = parser.parse("-", input).unwrap();
     assert_eq!(stmts.len(), 2);
 }
 

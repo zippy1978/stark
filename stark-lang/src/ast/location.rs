@@ -1,11 +1,11 @@
 //! Datatypes to support source location information.
 
-use std::fmt;
+use std::{fmt, ops::Range};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Span {
-    start: usize,
-    end: usize,
+    pub(crate) start: usize,
+    pub(crate) end: usize,
 }
 
 /// A span.
@@ -14,20 +14,32 @@ impl Span {
         Span { start, end }
     }
 
-    pub fn start(&self) -> usize {
-        self.start
-    }
-
-    pub fn end(&self) -> usize {
-        self.end
+    pub fn to_range(&self) -> Range<usize> {
+        Range {
+            start: self.start,
+            end: self.end,
+        }
     }
 }
+
 /// A location somewhere in the sourcecode.
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Location {
-    row: usize,
-    column: usize,
-    span: Span,
+    pub(crate) row: usize,
+    pub(crate) column: usize,
+    pub(crate) span: Span,
+    pub(crate) filename: String,
+}
+
+impl Clone for Location {
+    fn clone(&self) -> Self {
+        Self {
+            row: self.row.clone(),
+            column: self.column.clone(),
+            span: self.span.clone(),
+            filename: self.filename.clone(),
+        }
+    }
 }
 
 impl fmt::Display for Location {
@@ -37,18 +49,6 @@ impl fmt::Display for Location {
 }
 
 impl Location {
-    pub fn row(&self) -> usize {
-        self.row
-    }
-
-    pub fn column(&self) -> usize {
-        self.column
-    }
-
-    pub fn span(&self) -> Span {
-        self.span
-    }
-
     pub fn visualize<'a>(
         &self,
         line: &'a str,
@@ -72,7 +72,7 @@ impl Location {
             }
         }
         Visualize {
-            loc: *self,
+            loc: self.clone(),
             line,
             desc,
         }
@@ -80,7 +80,21 @@ impl Location {
 }
 
 impl Location {
-    pub fn new(row: usize, column: usize, span: Span) -> Self {
-        Location { row, column, span }
+    pub fn new(row: usize, column: usize, span: Span, filename: &str) -> Self {
+        Location {
+            row,
+            column,
+            span,
+            filename: filename.to_string(),
+        }
+    }
+
+    pub fn start(filename: &str) -> Self {
+        Location {
+            row: 0,
+            column: 0,
+            span: Span::new(0, 0),
+            filename: filename.to_string(),
+        }
     }
 }

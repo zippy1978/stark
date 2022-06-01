@@ -24,9 +24,10 @@ impl<'ctx> TypeChecker {
                         // Check param count
                         if args.len() != params.len() {
                             self.logger.add(Log::new_with_single_label(
+                                id.location.filename.clone(),
                             format!("wrong parameter count: `{}` is exprecting {} parameter(s) not {}", &id.node, args.len(), params.len()),
                             LogLevel::Error,
-                            id.location,
+                            id.location.clone(),
                         ));
                         } else {
                             // Check param type
@@ -35,12 +36,13 @@ impl<'ctx> TypeChecker {
                                     Some(type_name) => {
                                         if type_name != &args[i] {
                                             self.logger.add(Log::new_with_single_label(
+                                                folded_param.location.filename.clone(),
                                                 format!(
                                                     "type mismatch, expected `{}`, found `{}`",
                                                     args[i], type_name
                                                 ),
                                                 LogLevel::Error,
-                                                folded_param.location,
+                                                folded_param.location.clone(),
                                             ))
                                         }
                                     }
@@ -62,9 +64,10 @@ impl<'ctx> TypeChecker {
                     }
                     _ => {
                         self.logger.add(Log::new_with_single_label(
+                            id.location.filename.clone(),
                             format!("`{}` is not callable", &id.node),
                             LogLevel::Error,
-                            id.location,
+                            id.location.clone(),
                         ));
                         clone_expr(expr).with_node(ExprKind::Call {
                             id: clone_ident(id),
