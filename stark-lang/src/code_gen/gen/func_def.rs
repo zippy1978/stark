@@ -1,9 +1,7 @@
-use inkwell::types::{BasicMetadataTypeEnum, BasicType};
-
 use crate::{
     ast,
     code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator, VisitorResult},
-    typing::{SymbolScope, SymbolScopeType, Type, TypeKind},
+    typing::{SymbolScope, SymbolScopeType},
 };
 
 impl<'ctx> CodeGenerator {
@@ -12,11 +10,14 @@ impl<'ctx> CodeGenerator {
         name: &ast::Ident,
         args: &ast::Args,
         body: &ast::Stmts,
-        returns: &Option<ast::Ident>,
+        _returns: &Option<ast::Ident>,
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
-      
-        let function = context.module.get_function(&name.node).unwrap();
+
+        let mangled_function_name = context
+        .mangler
+        .mangle_function_name(context.symbol_table.current_module_name(), &name.node);
+        let function = context.module.get_function(&mangled_function_name).unwrap();
 
         // Push scope
         context

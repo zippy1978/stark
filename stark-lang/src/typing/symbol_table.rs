@@ -1,14 +1,14 @@
-use std::{fmt::Display, collections::HashMap};
+use std::{collections::HashMap, fmt::Display};
 
 use crate::ast::Location;
 
-use super::{Type, SymbolError, Symbol};
-
+use super::{Symbol, SymbolError, Type};
 
 #[derive(Debug, PartialEq)]
 pub enum SymbolScopeType {
     Global,
     Function(String),
+    Module(String),
 }
 
 #[derive(Debug, PartialEq)]
@@ -25,7 +25,13 @@ impl<V: Clone> SymbolScope<V> {
         }
     }
 
-    pub(crate) fn insert(&mut self, name: &str, symbol_type: Type, definition_location: Location, value: V) {
+    pub(crate) fn insert(
+        &mut self,
+        name: &str,
+        symbol_type: Type,
+        definition_location: Location,
+        value: V,
+    ) {
         let symbol = Symbol {
             name: name.to_string(),
             symbol_type,
@@ -51,7 +57,7 @@ impl Display for SymbolScope {
 }
 
 // Holds symbol definitions by scope.
-pub struct SymbolTable<V : Clone = ()> {
+pub struct SymbolTable<V: Clone = ()> {
     scopes: Vec<SymbolScope<V>>,
 }
 
@@ -70,6 +76,16 @@ impl<V: Clone> SymbolTable<V> {
 
     pub fn current_scope(&self) -> Option<&SymbolScope<V>> {
         self.scopes.last()
+    }
+
+    pub fn current_module_name(&self) -> Option<String> {
+        for scope in self.scopes.iter().rev() {
+            match &scope.scope_type {
+                SymbolScopeType::Module(name) => return Some(name.clone()),
+                _ => (),
+            }
+        }
+        None
     }
 
     pub fn current_scope_mut(&mut self) -> Option<&mut SymbolScope<V>> {
@@ -121,9 +137,12 @@ impl<V: Clone> SymbolTable<V> {
                 }
             }
             None => {
-                self.current_scope_mut()
-                    .unwrap()
-                    .insert(name, symbol_type, definition_location, value);
+                self.current_scope_mut().unwrap().insert(
+                    name,
+                    symbol_type,
+                    definition_location,
+                    value,
+                );
                 Result::Ok(())
             }
         }

@@ -10,5 +10,10 @@ pub(crate) use util::*;
 mod error;
 pub(crate) use error::*;
 
+mod mangler;
+pub(crate) use mangler::*;
+#[cfg(test)]
+mod mangler_tests;
+
 
 

@@ -11,7 +11,7 @@ use crate::{
     typing::{SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry},
 };
 
-use super::CodeGenError;
+use super::{CodeGenError, Mangler};
 
 pub struct CodeGenContext<'ctx> {
     pub(crate) llvm_context: &'ctx Context,
@@ -19,6 +19,7 @@ pub struct CodeGenContext<'ctx> {
     pub(crate) symbol_table: SymbolTable<PointerValue<'ctx>>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) module: Module<'ctx>,
+    pub(crate) mangler: Mangler<'ctx>,
 }
 
 impl<'ctx> CodeGenContext<'ctx> {
@@ -29,6 +30,7 @@ impl<'ctx> CodeGenContext<'ctx> {
             llvm_context,
             builder: llvm_context.create_builder(),
             module: llvm_context.create_module("calculator"),
+            mangler: Mangler::default(),
         }
     }
 }

@@ -2,8 +2,8 @@ use inkwell::types::{BasicMetadataTypeEnum, BasicType};
 
 use crate::{
     ast,
-    code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator, VisitorResult},
-    typing::{SymbolScope, SymbolScopeType, Type, TypeKind},
+    code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator},
+    typing::{Type, TypeKind},
 };
 
 impl<'ctx> CodeGenerator {
@@ -31,7 +31,10 @@ impl<'ctx> CodeGenerator {
                 .fn_type(&llvm_args[..], false),
         };
 
-        let function = context.module.add_function(&name.node, fn_type, None);
+        let mangled_function_name = context
+            .mangler
+            .mangle_function_name(context.symbol_table.current_module_name(), &name.node);
+        let function = context.module.add_function(&mangled_function_name, fn_type, None);
 
         // Add function to symbol table
         context

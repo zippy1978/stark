@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use inkwell::{context::Context, memory_buffer::MemoryBuffer};
 
 use crate::{
-    ast::{self, Log, LogLevel},
+    ast::{self, Log},
     code_gen::{CodeGenContext, CodeGenerator},
     parser::Parser,
     typing::{TypeChecker, TypeCheckerContext, TypeRegistry},

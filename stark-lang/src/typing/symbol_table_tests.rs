@@ -31,7 +31,7 @@ fn pop_scope() {
 }
 
 #[test]
-fn lookup_symbol<'a>() {
+fn lookup_symbol() {
     let type_registry = TypeRegistry::new();
     let mut table = SymbolTable::new();
     table.push_scope(SymbolScope::new(SymbolScopeType::Global));
@@ -114,4 +114,16 @@ fn lookup_symbol<'a>() {
         },
         Err(_) => panic!(),
     }
+}
+
+#[test]
+fn current_module_name() {
+
+    let mut table = SymbolTable::<()>::new();
+    table.push_scope(SymbolScope::new(SymbolScopeType::Global));
+    table.push_scope(SymbolScope::new(SymbolScopeType::Module("myModule".to_string())));
+    table.push_scope(SymbolScope::new(SymbolScopeType::Function("myFunc".to_string())));
+
+    assert!(table.current_module_name().is_some());
+    assert_eq!(table.current_module_name().unwrap(), "myModule");
 }

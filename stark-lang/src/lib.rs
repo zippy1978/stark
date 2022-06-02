@@ -3,8 +3,9 @@
 pub mod compiler;
 pub mod tools;
 pub mod virtual_machine;
+pub mod typing;
+pub mod ast;
+pub mod code_gen;
+pub mod parser;
 
-pub(crate) mod code_gen;
-pub(crate) mod parser;
-pub(crate) mod ast;
-pub(crate) mod typing;
+

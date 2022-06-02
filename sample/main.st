@@ -1,3 +1,9 @@
-func before() {
-    5
+/**
+ * This is my main :)
+ */
+func main() => int {
+    assert()
+    before()
+    after()
+
 }
