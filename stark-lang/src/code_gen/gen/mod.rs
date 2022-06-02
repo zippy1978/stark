@@ -6,6 +6,7 @@ mod stmts;
 mod var_decl;
 mod assign;
 mod call_expr;
+mod import;
 
 #[cfg(test)]
 mod test_util;

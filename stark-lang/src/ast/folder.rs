@@ -25,6 +25,7 @@ pub trait Folder<C = ()> {
                     body,
                     returns,
                 } => self.fold_func_def(name, args, body, returns, context),
+                StmtKind::Import { name } => self.fold_import(name, context),
             },
             info: stmt.info.clone(),
         }
@@ -34,12 +35,13 @@ pub trait Folder<C = ()> {
         clone_expr(expr)
     }
 
-    fn fold_var_decl(
-        &mut self,
-        name: &Ident,
-        var_type: &Ident,
-        _context: &mut C,
-    ) -> StmtKind {
+    fn fold_import(&mut self, name: &Ident, _context: &mut C) -> StmtKind {
+        StmtKind::Import {
+            name: clone_ident(name),
+        }
+    }
+
+    fn fold_var_decl(&mut self, name: &Ident, var_type: &Ident, _context: &mut C) -> StmtKind {
         StmtKind::VarDecl {
             name: clone_ident(name),
             var_type: clone_ident(var_type),
@@ -47,8 +49,6 @@ pub trait Folder<C = ()> {
     }
 
     fn fold_assign(&mut self, target: &Ident, value: &Expr, context: &mut C) -> StmtKind {
-
-
         StmtKind::Assign {
             target: clone_ident(target),
             value: Box::new(self.fold_expr(value, context)),

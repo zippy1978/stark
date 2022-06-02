@@ -2,9 +2,9 @@ use super::clone_args;
 use super::clone_expr;
 use super::clone_ident;
 use super::clone_params;
+use super::clone_stmts;
 use super::Constant;
 use super::Location;
-use super::clone_stmts;
 
 /// Holds informaton (such as type name) of an AST node.
 #[derive(Debug, PartialEq)]
@@ -83,6 +83,9 @@ pub enum StmtKind {
         body: Stmts,
         returns: Option<Ident>,
     },
+    Import {
+        name: Ident,
+    },
 }
 
 impl Clone for StmtKind {
@@ -112,6 +115,9 @@ impl Clone for StmtKind {
                     Some(r) => Some(clone_ident(r)),
                     None => None,
                 },
+            },
+            Self::Import { name } => Self::Import {
+                name: clone_ident(name),
             },
         }
     }

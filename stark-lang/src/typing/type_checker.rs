@@ -170,6 +170,10 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         }
     }
 
+    fn fold_import(&mut self, name: &ast::Ident, context: &mut TypeCheckerContext<'ctx>) -> StmtKind {
+        self.handle_fold_import(name, context)
+    }
+
     fn fold_var_decl(
         &mut self,
         name: &ast::Ident,

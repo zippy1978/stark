@@ -20,6 +20,7 @@ Statment: ast::Stmt = {
     VariableDeclaration,
     FunctionDefinition,
     Assign,
+    Import,
 };
 
 ExpressionStatment: ast::Stmt = {
@@ -31,6 +32,17 @@ ExpressionStatment: ast::Stmt = {
         }
     },   
 };
+
+// Import
+Import: ast::Stmt = {
+    <location:@L> "import" <name:Identifier> => {
+        ast::Stmt {
+            location,
+            node: ast::StmtKind::Import { name: name },
+            info: ast::NodeInfo::new(),
+        }
+    },
+}
 
 // Variable
 
@@ -197,5 +209,6 @@ extern {
         "true" => Token::True,
         "false" => Token::False,
         "-" => Token::Minus,
+        "import" => Token::Import,
       }
 }

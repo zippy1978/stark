@@ -7,7 +7,7 @@ use inkwell::{
 };
 
 use crate::{
-    ast::{self, Log, Logger, Visitor, StmtKind},
+    ast::{self, Log, Logger, StmtKind, Visitor},
     typing::{SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry},
 };
 
@@ -63,7 +63,7 @@ impl<'ctx> CodeGenerator {
                 StmtKind::FuncDef {
                     name,
                     args,
-                    body:_,
+                    body: _,
                     returns,
                 } => self.handle_func_decl(name, args, returns, context),
                 _ => (),
@@ -131,6 +131,14 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
         self.handle_visit_call_expr(id, params, context)
+    }
+
+    fn visit_import(
+        &mut self,
+        name: &ast::Ident,
+        context: &mut CodeGenContext<'ctx>,
+    ) -> VisitorResult<'ctx> {
+        self.handle_visit_import(name, context)
     }
 
     fn visit_func_def(

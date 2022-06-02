@@ -16,6 +16,7 @@ pub trait Visitor<R = (), C = ()> {
                 body,
                 returns,
             } => self.visit_func_def(name, args, body, returns, context),
+            StmtKind::Import { name } => self.visit_import(name, context),
         }
     }
     fn visit_expr(&mut self, expr: &Expr, context: &mut C) -> R {
@@ -35,6 +36,8 @@ pub trait Visitor<R = (), C = ()> {
     fn visit_constant_expr(&mut self, constant: &Constant, context: &mut C) -> R;
 
     fn visit_var_decl(&mut self, name: &Ident, var_type: &Ident, _context: &mut C) -> R;
+
+    fn visit_import(&mut self, name: &Ident, _context: &mut C) -> R;
 
     fn visit_assign(&mut self, target: &Ident, value: &Expr, context: &mut C) -> R;
 
