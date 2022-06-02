@@ -33,6 +33,20 @@ impl<'ctx> TypeChecker {
         }
     }
 
+    fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut TypeCheckerContext<'ctx>) {
+        for stmt in stmts {
+            match &stmt.node {
+                StmtKind::FuncDef {
+                    name,
+                    args,
+                    body:_,
+                    returns,
+                } => self.handle_func_decl(name, args, returns, context),
+                _ => (),
+            }
+        }
+    }
+
     /// Performs type checking on an input AST.
     /// A new "typed" AST is outputted as result.
     pub fn check(
@@ -47,6 +61,9 @@ impl<'ctx> TypeChecker {
         context
             .symbol_table
             .push_scope(super::SymbolScope::new(super::SymbolScopeType::Global));
+
+        // Declare globals
+        self.declare_globals(ast, context);
 
         // Fold
         let typed_ast = self.fold_stmts(ast, context);
@@ -140,13 +157,16 @@ impl<'ctx> TypeChecker {
     }
 }
 
-
 impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
     fn fold_expr(&mut self, expr: &ast::Expr, context: &mut TypeCheckerContext<'ctx>) -> ast::Expr {
         match &expr.node {
             ast::ExprKind::Name { id } => self.handle_fold_name_expr(expr, id, context),
-            ast::ExprKind::Constant { value } => self.handle_fold_contant_expr(expr, value, context),
-            ast::ExprKind::Call { id, params } => self.handle_fold_call_expr(expr, id, params, context),
+            ast::ExprKind::Constant { value } => {
+                self.handle_fold_contant_expr(expr, value, context)
+            }
+            ast::ExprKind::Call { id, params } => {
+                self.handle_fold_call_expr(expr, id, params, context)
+            }
         }
     }
 

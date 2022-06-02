@@ -1,5 +1,5 @@
 mod func_def;
-
+mod func_decl;
 mod assign;
 mod call_expr;
 mod constant_expr;

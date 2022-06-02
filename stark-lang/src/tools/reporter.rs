@@ -58,7 +58,10 @@ impl Reporter {
 
             for log in file_logs {
                 let diag = Self::diag_from_log(i, log);
-                term::emit(&mut writer.lock(), &config, &files, &diag).unwrap();
+                match term::emit(&mut writer.lock(), &config, &files, &diag) {
+                    Ok(_) => (),
+                    Err(err) => println!("{}: {}", path.to_str().unwrap(), err),
+                };
             }
         }
     }

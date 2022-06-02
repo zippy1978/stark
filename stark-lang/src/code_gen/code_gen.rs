@@ -7,7 +7,7 @@ use inkwell::{
 };
 
 use crate::{
-    ast::{self, Log, Logger, Visitor},
+    ast::{self, Log, Logger, Visitor, StmtKind},
     typing::{SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry},
 };
 
@@ -55,6 +55,20 @@ impl<'ctx> CodeGenerator {
         }
     }
 
+    fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut CodeGenContext<'ctx>) {
+        for stmt in stmts {
+            match &stmt.node {
+                StmtKind::FuncDef {
+                    name,
+                    args,
+                    body:_,
+                    returns,
+                } => self.handle_func_decl(name, args, returns, context),
+                _ => (),
+            }
+        }
+    }
+
     pub fn generate(
         &mut self,
         ast: &ast::Stmts,
@@ -67,37 +81,19 @@ impl<'ctx> CodeGenerator {
             .symbol_table
             .push_scope(SymbolScope::new(SymbolScopeType::Global));
 
+        // Declare globals
+        self.declare_globals(ast, context);
+
         // Visit
         match self.visit_stmts(ast, context) {
             Ok(_) => Result::Ok(CodeGenOutput {
-                bitcode:context.module.write_bitcode_to_memory(),
+                bitcode: context.module.write_bitcode_to_memory(),
                 logs: self.logger.logs(),
             }),
             Err(_) => Result::Err(CodeGenError {
                 logs: self.logger.logs(),
             }),
         }
-
-        //------------------- Just for testing : LLVM code gen !
-        /*let module = &context.module;
-        let builder = &context.builder;
-        let i32_type = context.llvm_context.i32_type();
-        let fn_type = i32_type.fn_type(&[i32_type.into(), i32_type.into(), i32_type.into()], false);
-        let function = module.add_function("sum", fn_type, None);
-        let basic_block = context.llvm_context.append_basic_block(function, "entry");
-
-        builder.position_at_end(basic_block);
-
-        let x = function.get_nth_param(0).unwrap().into_int_value();
-        let y = function.get_nth_param(1).unwrap().into_int_value();
-        let z = function.get_nth_param(2).unwrap().into_int_value();
-
-        let sum = builder.build_int_add(x, y, "sum");
-        let sum = builder.build_int_add(sum, z, "sum");
-
-        builder.build_return(Some(&sum));*/
-
-        //------------------------------
     }
 }
 
@@ -126,7 +122,12 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         self.handle_visit_name_expr(name, context)
     }
 
-    fn visit_call_expr(&mut self, id: &ast::Ident, params: &ast::Params, context: &mut CodeGenContext<'ctx>) -> VisitorResult<'ctx> {
+    fn visit_call_expr(
+        &mut self,
+        id: &ast::Ident,
+        params: &ast::Params,
+        context: &mut CodeGenContext<'ctx>,
+    ) -> VisitorResult<'ctx> {
         self.handle_visit_call_expr(id, params, context)
     }
 
@@ -158,5 +159,4 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
     ) -> VisitorResult<'ctx> {
         self.handle_visit_assign(target, value, context)
     }
-
 }
