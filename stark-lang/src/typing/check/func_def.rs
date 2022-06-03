@@ -13,10 +13,11 @@ impl<'ctx> TypeChecker {
         context: &mut TypeCheckerContext<'ctx>,
     ) -> ast::StmtKind {
         // Check current scope
-        // Function declaration in only allowed on global scope
+        // Function declaration in only allowed on global or module scope
         match context.symbol_table.current_scope() {
             Some(scope) => match scope.scope_type {
                 SymbolScopeType::Global => (),
+                SymbolScopeType::Module(_) => (),
                 _ => self.logger.add(Log::new_with_single_label(
                     name.location.filename.clone(),
                     "function delcaration is not allowed in this scope",

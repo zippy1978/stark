@@ -26,6 +26,7 @@ pub trait Folder<C = ()> {
                     returns,
                 } => self.fold_func_def(name, args, body, returns, context),
                 StmtKind::Import { name } => self.fold_import(name, context),
+                StmtKind::Module { name, stmts } => self.fold_module(name, stmts, context),
             },
             info: stmt.info.clone(),
         }
@@ -38,6 +39,13 @@ pub trait Folder<C = ()> {
     fn fold_import(&mut self, name: &Ident, _context: &mut C) -> StmtKind {
         StmtKind::Import {
             name: clone_ident(name),
+        }
+    }
+
+    fn fold_module(&mut self, name: &Ident, stmts: &Stmts, context: &mut C) -> StmtKind {
+        StmtKind::Module {
+            name: clone_ident(name),
+            stmts: self.fold_stmts(stmts, context),
         }
     }
 

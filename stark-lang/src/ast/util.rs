@@ -1,5 +1,5 @@
 //! AST manipulation utilities.
-use super::{Arg, Args, Expr, Ident, Params, Stmt, Stmts};
+use super::{Arg, Args, Expr, Ident, Location, NodeInfo, Params, Stmt, StmtKind, Stmts};
 
 pub fn clone_ident(ident: &Ident) -> Ident {
     Ident {
@@ -68,4 +68,23 @@ pub fn merge_asts(asts: &[Stmts]) -> Stmts {
     }
 
     new_ast
+}
+
+/// Wrap an AST into a module.
+pub fn wrap_ast_in_module(ast: &Stmts, module_name: &str) -> Stmts {
+    let module = StmtKind::Module {
+        name: Ident {
+            location: Location::start(module_name),
+            node: module_name.to_string(),
+            info: NodeInfo::new(),
+        },
+        stmts: clone_stmts(ast),
+    };
+    let mut result = Stmts::new();
+    result.push(Stmt {
+        location: Location::start(module_name),
+        node: module,
+        info: NodeInfo::new(),
+    });
+    result
 }

@@ -6,6 +6,7 @@ mod constant_expr;
 mod name_expr;
 mod var_decl;
 mod import;
+mod module;
 
 #[cfg(test)]
 mod test_util;

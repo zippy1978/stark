@@ -1,4 +1,6 @@
 use inkwell::{
+    context::Context,
+    memory_buffer::MemoryBuffer,
     types::{BasicType, BasicTypeEnum},
     AddressSpace,
 };
@@ -31,4 +33,23 @@ pub(crate) fn resolve_llvm_type<'ctx>(
         }),
         None => None,
     }
+}
+
+/// Links a list of bitcode modules to a single bitcode module
+pub(crate) fn link_bitcode_modules(
+    module_name: &str,
+    bitcodes: Vec::<MemoryBuffer>,
+    llvm_context: &Context,
+) -> Result<MemoryBuffer, String> {
+    let result_module = llvm_context.create_module(module_name);
+    for bitcode in bitcodes {
+        match llvm_context.create_module_from_ir(bitcode) {
+            Ok(module) => match result_module.link_in_module(module) {
+                Ok(_) => (),
+                Err(err) => return Result::Err(err.to_string()),
+            },
+            Err(err) => return Result::Err(err.to_string()),
+        };
+    }
+    Result::Ok(result_module.write_bitcode_to_memory())
 }

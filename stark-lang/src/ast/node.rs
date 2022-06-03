@@ -86,6 +86,10 @@ pub enum StmtKind {
     Import {
         name: Ident,
     },
+    Module {
+        name: Ident,
+        stmts: Stmts,
+    },
 }
 
 impl Clone for StmtKind {
@@ -118,6 +122,10 @@ impl Clone for StmtKind {
             },
             Self::Import { name } => Self::Import {
                 name: clone_ident(name),
+            },
+            Self::Module { name, stmts } => Self::Module {
+                name: clone_ident(name),
+                stmts: clone_stmts(stmts),
             },
         }
     }

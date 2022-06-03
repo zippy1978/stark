@@ -23,13 +23,13 @@ pub struct CodeGenContext<'ctx> {
 }
 
 impl<'ctx> CodeGenContext<'ctx> {
-    pub fn new(type_registry: &'ctx TypeRegistry, llvm_context: &'ctx Context) -> Self {
+    pub fn new(type_registry: &'ctx TypeRegistry, llvm_context: &'ctx Context, name: &str) -> Self {
         CodeGenContext {
             type_registry,
             symbol_table: SymbolTable::<PointerValue>::new(),
             llvm_context,
             builder: llvm_context.create_builder(),
-            module: llvm_context.create_module("calculator"),
+            module: llvm_context.create_module(name),
             mangler: Mangler::default(),
         }
     }
@@ -57,7 +57,7 @@ impl<'ctx> CodeGenerator {
         }
     }
 
-    fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut CodeGenContext<'ctx>) {
+    pub(crate) fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut CodeGenContext<'ctx>) {
         for stmt in stmts {
             match &stmt.node {
                 StmtKind::FuncDef {
@@ -139,6 +139,15 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
         self.handle_visit_import(name, context)
+    }
+
+    fn visit_module(
+        &mut self,
+        name: &ast::Ident,
+        stmts: &ast::Stmts,
+        context: &mut CodeGenContext<'ctx>,
+    ) -> VisitorResult<'ctx> {
+        self.handle_visit_module(name, stmts, context)
     }
 
     fn visit_func_def(

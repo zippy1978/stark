@@ -7,6 +7,7 @@ mod var_decl;
 mod assign;
 mod call_expr;
 mod import;
+mod module;
 
 #[cfg(test)]
 mod test_util;

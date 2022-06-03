@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use inkwell::{context::Context, memory_buffer::MemoryBuffer};
 
 use crate::{
-    ast::{self, Log},
-    code_gen::{CodeGenContext, CodeGenerator},
+    ast::{self, Log, ModuleMap},
+    code_gen::{link_bitcode_modules, CodeGenContext, CodeGenerator},
     parser::Parser,
     typing::{TypeChecker, TypeCheckerContext, TypeRegistry},
 };
@@ -42,22 +42,40 @@ impl Compiler {
         let parser = Parser::new();
 
         match parser.parse(filename, input) {
-            Ok(ast) => self.compile_ast(&ast),
+            Ok(ast) => self.compile_ast(&ast, filename),
             Err(err) => Result::Err(CompileError::from(err)),
         }
     }
 
     /// Compiles files.
     pub fn compile_files(&self, paths: &[PathBuf]) -> CompileResult {
-        let parser = Parser::new();
-        match parser.parse_files(paths) {
-            Ok(ast) => self.compile_ast(&ast),
+        match ModuleMap::from_paths(paths) {
+            Ok(module_map) => self.compile_module_map(module_map),
+            Err(err) => Result::Err(CompileError::from(err)),
+        }
+    }
+
+    pub fn compile_module_map(&self, module_map: ModuleMap) -> CompileResult {
+        let mut compiled_modules = Vec::<MemoryBuffer>::new();
+        let mut logs = Vec::<Log>::new();
+        for (name, ast) in module_map.modules() {
+            match self.compile_ast(ast, name) {
+                Ok(mut output) => {
+                    logs.append(&mut output.logs);
+                    compiled_modules.push(output.bitcode);
+                }
+                Err(err) => return Result::Err(err),
+            }
+        }
+        let llvm_context = Context::create();
+        match link_bitcode_modules("main", compiled_modules, &llvm_context) {
+            Ok(bitcode) => Result::Ok(CompileOutput { bitcode, logs }),
             Err(err) => Result::Err(CompileError::from(err)),
         }
     }
 
     /// Compiles AST
-    pub fn compile_ast(&self, ast: &ast::Stmts) -> CompileResult {
+    pub fn compile_ast(&self, ast: &ast::Stmts, name: &str) -> CompileResult {
         // Type checking
         let mut type_checker = TypeChecker::new();
         let mut type_registry = TypeRegistry::new();
@@ -66,7 +84,7 @@ impl Compiler {
             Ok(typed_ast) => {
                 // Code generation
                 let llvm_context = Context::create();
-                let mut code_gen_context = CodeGenContext::new(&type_registry, &llvm_context);
+                let mut code_gen_context = CodeGenContext::new(&type_registry, &llvm_context, name);
                 let mut code_gen = CodeGenerator::new();
                 match code_gen.generate(&typed_ast, &mut code_gen_context) {
                     Ok(output) => Result::Ok(CompileOutput {

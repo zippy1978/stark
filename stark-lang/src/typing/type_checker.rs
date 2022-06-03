@@ -33,13 +33,13 @@ impl<'ctx> TypeChecker {
         }
     }
 
-    fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut TypeCheckerContext<'ctx>) {
+    pub(crate) fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut TypeCheckerContext<'ctx>) {
         for stmt in stmts {
             match &stmt.node {
                 StmtKind::FuncDef {
                     name,
                     args,
-                    body:_,
+                    body: _,
                     returns,
                 } => self.handle_func_decl(name, args, returns, context),
                 _ => (),
@@ -170,7 +170,20 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         }
     }
 
-    fn fold_import(&mut self, name: &ast::Ident, context: &mut TypeCheckerContext<'ctx>) -> StmtKind {
+    fn fold_module(
+        &mut self,
+        name: &ast::Ident,
+        stmts: &ast::Stmts,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) -> StmtKind {
+        self.handle_fold_module(name, stmts, context)
+    }
+
+    fn fold_import(
+        &mut self,
+        name: &ast::Ident,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) -> StmtKind {
         self.handle_fold_import(name, context)
     }
 
