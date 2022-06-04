@@ -40,7 +40,7 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
                 sudo apt-get update 
-                sudo apt-get -y install build-essential cmake ninja-build
+                sudo apt-get -y install build-essential clang cmake ninja-build
           else
                 brew install cmake
                 brew install conan
@@ -58,9 +58,7 @@ jobs:
         uses: actions-rs/cargo@v1
         env:
           LLVM_SYS_120_PREFIX: ${{ runner.temp }}/llvm
-          #CC: ${{ runner.temp }}/llvm/bin/clang
-          CC: /usr/bin/gcc
-          #CXX: ${{ runner.temp }}/llvm/bin/clang++
-          CXX: /usr/bin/g++
+          CC: /usr/bin/clang
+          CXX: /usr/bin/clang++
         with:
           command: test
