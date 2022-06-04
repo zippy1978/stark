@@ -1,4 +1,4 @@
-use inkwell::types::{BasicMetadataTypeEnum, BasicType};
+use inkwell::{types::{BasicMetadataTypeEnum, BasicType}, module::Linkage};
 
 use crate::{
     ast,
@@ -35,7 +35,7 @@ impl<'ctx> CodeGenerator {
         let mangled_function_name = context
             .mangler
             .mangle_function_name(context.symbol_table.current_module_name(), &name.node);
-        let function = context.module.add_function(&mangled_function_name, fn_type, None);
+        let function = context.module.add_function(&mangled_function_name, fn_type, Some(Linkage::External));
 
         // Add function to symbol table
         context

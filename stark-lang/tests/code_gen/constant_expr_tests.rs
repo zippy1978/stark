@@ -1,4 +1,4 @@
-use crate::code_gen::gen::test_util::run_code_in_main;
+use stark_lang::code_gen::run_code_in_main;
 
 #[test]
 fn integer() {

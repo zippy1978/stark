@@ -1,4 +1,4 @@
-use crate::code_gen::gen::test_util::{run_code};
+use stark_lang::code_gen::run_code;
 
 
 

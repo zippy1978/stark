@@ -2,13 +2,19 @@ cmake_minimum_required(VERSION 3.10)
 
 # Project settings
 project(Stark-Runtime VERSION "0.2")
-enable_testing()
-#add_definitions("-std=c++14")
 add_definitions(-fPIC)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# Compiler and linker settings
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g3 -O1")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g3 -O1")
+set (CMAKE_LINKER_FLAGS_RELEASE "${CMAKE_LINKER_FLAGS_RELEASE} -O3")
+
+# Install configuration
 set(INSTALL_LIB_DIR ".")
 
 # Run conan install

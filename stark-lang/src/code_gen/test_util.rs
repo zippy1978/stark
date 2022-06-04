@@ -1,8 +1,11 @@
-use crate::{compiler::Compiler, virtual_machine::{VirtualMachine, VirtualMachineConfig}};
+use crate::{
+    compiler::Compiler,
+    virtual_machine::{VirtualMachine, VirtualMachineConfig},
+};
 
-pub(crate) type RunCodeResult = Result<i32, String>;
+pub type RunCodeResult = Result<i32, String>;
 
-pub(crate) fn run_code(input: &str) -> RunCodeResult {
+pub fn run_code(input: &str) -> RunCodeResult {
     let compiler = Compiler::new();
     match compiler.compile("-", input) {
         Ok(output) => {
@@ -11,12 +14,11 @@ pub(crate) fn run_code(input: &str) -> RunCodeResult {
                 Ok(result) => Result::Ok(result),
                 Err(_) => Result::Err("bitcode execution failed".to_string()),
             }
-            
-        },
+        }
         Err(_) => Result::Err("compilation failed".to_string()),
     }
 }
 
-pub(crate) fn run_code_in_main(input: &str) -> RunCodeResult {
+pub fn run_code_in_main(input: &str) -> RunCodeResult {
     run_code(format!("func main() => int {{{}}}", input).as_str())
 }
