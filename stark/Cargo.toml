@@ -3,6 +3,9 @@ name = "stark"
 version = "0.2.0"
 edition = "2021"
 
+[build]
+rustflags = ["-C", "link-args=-rdynamic"]
+
 [dependencies]
 exitcode = "1.1.2"
 clap = { version = "3.0", features = ["derive"]}
