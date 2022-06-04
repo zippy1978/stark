@@ -25,6 +25,11 @@ pub trait Folder<C = ()> {
                     body,
                     returns,
                 } => self.fold_func_def(name, args, body, returns, context),
+                StmtKind::FuncDecl {
+                    name,
+                    args,
+                    returns,
+                } => self.fold_func_decl(name, args, returns, context),
                 StmtKind::Import { name } => self.fold_import(name, context),
                 StmtKind::Module { name, stmts } => self.fold_module(name, stmts, context),
             },
@@ -75,6 +80,23 @@ pub trait Folder<C = ()> {
             name: clone_ident(name),
             args: Box::new(clone_args(args)),
             body: self.fold_stmts(body, context),
+            returns: match returns {
+                Some(ident) => Some(clone_ident(ident)),
+                None => None,
+            },
+        }
+    }
+
+    fn fold_func_decl(
+        &mut self,
+        name: &Ident,
+        args: &Args,
+        returns: &Option<Ident>,
+        _context: &mut C,
+    ) -> StmtKind {
+        StmtKind::FuncDecl {
+            name: clone_ident(name),
+            args: Box::new(clone_args(args)),
             returns: match returns {
                 Some(ident) => Some(clone_ident(ident)),
                 None => None,

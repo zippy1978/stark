@@ -9,6 +9,7 @@ use tempfile::TempDir;
 
 use crate::ast::ModuleMap;
 
+
 fn paths_from_sources(root_dir: &TempDir, sources: HashMap<String, String>) -> Vec<PathBuf> {
     let mut paths = Vec::<PathBuf>::new();
     for (filename, content) in &sources {
@@ -34,7 +35,7 @@ fn module_map_from_paths() {
     let paths = paths_from_sources(&root_dir, sources);
 
     match ModuleMap::from_paths(&paths[..]) {
-        Ok(module_map) => assert!(module_map.get_globals("main").is_ok()),
+        Ok(module_map) => assert_eq!(module_map.modules().len(), 1),
         Err(err) => panic!("error : {:?}", &err),
     }
 }
@@ -53,8 +54,8 @@ fn module_map_from_paths_with_module() {
 
     match ModuleMap::from_paths(&paths[..]) {
         Ok(module_map) => {
-            assert!(module_map.get_globals("main").is_ok());
-            assert!(module_map.get_globals("lib").is_ok());
+            assert!(module_map.modules().get("main").is_some());
+            assert!(module_map.modules().get("lib").is_some());
         }
         Err(err) => panic!("error : {:?}", &err),
     }

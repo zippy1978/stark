@@ -10,7 +10,7 @@ use crate::{
     typing::{TypeChecker, TypeCheckerContext, TypeRegistry},
 };
 
-use super::CompileError;
+use super::{CompileError};
 
 pub struct Config {}
 
@@ -40,9 +40,10 @@ impl Compiler {
     /// Compiles input string.
     pub fn compile(&self, filename: &str, input: &str) -> CompileResult {
         let parser = Parser::new();
+        let module_map = ModuleMap::empty();
 
         match parser.parse(filename, input) {
-            Ok(ast) => self.compile_ast(&ast, filename),
+            Ok(ast) => self.compile_ast(filename, &ast, &module_map),
             Err(err) => Result::Err(CompileError::from(err)),
         }
     }
@@ -59,7 +60,7 @@ impl Compiler {
         let mut compiled_modules = Vec::<MemoryBuffer>::new();
         let mut logs = Vec::<Log>::new();
         for (name, ast) in module_map.modules() {
-            match self.compile_ast(ast, name) {
+            match self.compile_ast(name, ast, &module_map) {
                 Ok(mut output) => {
                     logs.append(&mut output.logs);
                     compiled_modules.push(output.bitcode);
@@ -75,16 +76,16 @@ impl Compiler {
     }
 
     /// Compiles AST
-    pub fn compile_ast(&self, ast: &ast::Stmts, name: &str) -> CompileResult {
+    pub fn compile_ast(&self, name: &str, ast: &ast::Stmts, module_map: &ModuleMap) -> CompileResult {
         // Type checking
         let mut type_checker = TypeChecker::new();
         let mut type_registry = TypeRegistry::new();
-        let mut type_checker_context = TypeCheckerContext::new(&mut type_registry);
+        let mut type_checker_context = TypeCheckerContext::new(&mut type_registry, module_map);
         match type_checker.check(ast, &mut type_checker_context) {
             Ok(typed_ast) => {
                 // Code generation
                 let llvm_context = Context::create();
-                let mut code_gen_context = CodeGenContext::new(&type_registry, &llvm_context, name);
+                let mut code_gen_context = CodeGenContext::new(&type_registry, &llvm_context, module_map, name);
                 let mut code_gen = CodeGenerator::new();
                 match code_gen.generate(&typed_ast, &mut code_gen_context) {
                     Ok(output) => Result::Ok(CompileOutput {

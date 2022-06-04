@@ -1,4 +1,4 @@
-use crate::ast::{self, Folder, Log, LogLevel, Logger, StmtKind};
+use crate::ast::{self, Folder, Log, LogLevel, Logger, ModuleMap, StmtKind};
 
 use super::{SymbolError, SymbolTable, TypeCheckerError, TypeRegistry};
 
@@ -9,13 +9,15 @@ pub type TypeCheckerResult = Result<ast::Stmts, TypeCheckerError>;
 pub struct TypeCheckerContext<'ctx> {
     pub(crate) type_registry: &'ctx mut TypeRegistry,
     pub(crate) symbol_table: SymbolTable,
+    pub(crate) module_map: &'ctx ModuleMap,
 }
 
 impl<'ctx> TypeCheckerContext<'ctx> {
-    pub fn new(type_registry: &'ctx mut TypeRegistry) -> Self {
+    pub fn new(type_registry: &'ctx mut TypeRegistry, module_map: &'ctx ModuleMap) -> Self {
         TypeCheckerContext {
             type_registry,
             symbol_table: SymbolTable::new(),
+            module_map,
         }
     }
 }
@@ -33,7 +35,11 @@ impl<'ctx> TypeChecker {
         }
     }
 
-    pub(crate) fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut TypeCheckerContext<'ctx>) {
+    pub(crate) fn declare_globals(
+        &mut self,
+        stmts: &ast::Stmts,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) {
         for stmt in stmts {
             match &stmt.node {
                 StmtKind::FuncDef {
@@ -41,9 +47,11 @@ impl<'ctx> TypeChecker {
                     args,
                     body: _,
                     returns,
-                } => self.handle_func_decl(name, args, returns, context),
+                } => {
+                    self.handle_fold_func_decl(name, args, returns, context);
+                }
                 _ => (),
-            }
+            };
         }
     }
 
@@ -214,5 +222,15 @@ impl<'ctx> Folder<TypeCheckerContext<'ctx>> for TypeChecker {
         context: &mut TypeCheckerContext<'ctx>,
     ) -> StmtKind {
         self.handle_fold_func_def(name, args, body, returns, context)
+    }
+
+    fn fold_func_decl(
+        &mut self,
+        name: &ast::Ident,
+        args: &ast::Args,
+        returns: &Option<ast::Ident>,
+        context: &mut TypeCheckerContext<'ctx>,
+    ) -> StmtKind {
+        self.handle_fold_func_decl(name, args, returns, context)
     }
 }

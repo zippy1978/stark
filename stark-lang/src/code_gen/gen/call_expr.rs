@@ -28,10 +28,11 @@ impl<'ctx> CodeGenerator {
                 args: _,
                 returns: _,
             } => {
-
-                let mangled_function_name = context
-                .mangler
-                .mangle_function_name(context.symbol_table.current_module_name(), &id.node);
+                
+                let mangled_function_name = context.mangler.mangle_function_name_from_dotted_name(
+                    context.symbol_table.current_module_name(),
+                    &id.node,
+                );
                 let function = context.module.get_function(&mangled_function_name).unwrap();
 
                 let call_value = context

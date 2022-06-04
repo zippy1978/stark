@@ -108,7 +108,7 @@ Expression: ast::Expr = {
 // Call
 
 Call: ast::Expr = {
-    <location:@L> <i:Identifier> "("  <params:Comma<Expression>?> ")" => ast::Expr {
+    <location:@L> <i:DottedIdentifier> "("  <params:Comma<Expression>?> ")" => ast::Expr {
         location,
         node: ast::ExprKind::Call {
             id: i, 
@@ -124,7 +124,7 @@ Call: ast::Expr = {
 // Literals 
 
 Constants: ast::Expr = {
-    <location:@L> <i:Identifier> => ast::Expr {
+    <location:@L> <i:DottedIdentifier> => ast::Expr {
         location,
         node: ast::ExprKind::Name { id: i},
         info: ast::NodeInfo::new(),
@@ -151,6 +151,35 @@ Identifier: ast::Ident =  <location:@L> <s:name> => {
         Token::Identifier(name) => ast::Ident {location, node: name, info: ast::NodeInfo::new(),},
         _ => panic!(),
     }
+};
+
+DottedIdentifier: ast::Ident = {
+    <location:@L> <s:name> => {
+        match s {
+            Token::Identifier(name) => ast::Ident {location, node: name, info: ast::NodeInfo::new(),},
+            _ => panic!(),
+        }
+    },
+    <location:@L> <s:name> <s2: ("." Identifier)+>  => {
+        match s {
+            Token::Identifier(name) => {
+                let mut r = name.to_string();
+                let mut last_location = location.clone();
+                for (t,l) in s2 {
+                    r.push_str(".");
+                    r.push_str(&l.node);
+                    last_location = l.location.clone();
+                }
+                ast::Ident {
+                    location: ast::Location::new(location.row, location.column, ast::Span::new(location.span.start, last_location.span.end), &location.filename), 
+                    node: r, 
+                    info: ast::NodeInfo::new(),
+                }
+                
+            },
+            _ => panic!(),
+        }
+    },
 };
 
 Integer: BigInt = {
@@ -210,5 +239,6 @@ extern {
         "false" => Token::False,
         "-" => Token::Minus,
         "import" => Token::Import,
+        "." => Token::Dot,
       }
 }

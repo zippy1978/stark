@@ -161,6 +161,7 @@ fn parse_identifier() {
     assert!(assert_statment("abc", assert_identifier).is_ok());
     assert!(assert_statment("123", assert_identifier).is_err());
     assert!(assert_statment(",", assert_identifier).is_err());
+    assert!(assert_statment("a.b.c", assert_identifier).is_ok());
 }
 
 #[test]

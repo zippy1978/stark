@@ -7,7 +7,7 @@ use inkwell::{
 };
 
 use crate::{
-    ast::{self, Log, Logger, StmtKind, Visitor},
+    ast::{self, Log, Logger, StmtKind, Visitor, ModuleMap},
     typing::{SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry},
 };
 
@@ -20,10 +20,11 @@ pub struct CodeGenContext<'ctx> {
     pub(crate) builder: Builder<'ctx>,
     pub(crate) module: Module<'ctx>,
     pub(crate) mangler: Mangler<'ctx>,
+    pub(crate) module_map: &'ctx ModuleMap,
 }
 
 impl<'ctx> CodeGenContext<'ctx> {
-    pub fn new(type_registry: &'ctx TypeRegistry, llvm_context: &'ctx Context, name: &str) -> Self {
+    pub fn new(type_registry: &'ctx TypeRegistry, llvm_context: &'ctx Context, module_map: &'ctx ModuleMap, name: &str) -> Self {
         CodeGenContext {
             type_registry,
             symbol_table: SymbolTable::<PointerValue>::new(),
@@ -31,6 +32,7 @@ impl<'ctx> CodeGenContext<'ctx> {
             builder: llvm_context.create_builder(),
             module: llvm_context.create_module(name),
             mangler: Mangler::default(),
+            module_map,
         }
     }
 }
@@ -57,7 +59,11 @@ impl<'ctx> CodeGenerator {
         }
     }
 
-    pub(crate) fn declare_globals(&mut self, stmts: &ast::Stmts, context: &mut CodeGenContext<'ctx>) {
+    pub(crate) fn declare_globals(
+        &mut self,
+        stmts: &ast::Stmts,
+        context: &mut CodeGenContext<'ctx>,
+    ) {
         for stmt in stmts {
             match &stmt.node {
                 StmtKind::FuncDef {
@@ -65,9 +71,11 @@ impl<'ctx> CodeGenerator {
                     args,
                     body: _,
                     returns,
-                } => self.handle_func_decl(name, args, returns, context),
+                } => {
+                    self.handle_func_decl(name, args, returns, context).unwrap();
+                }
                 _ => (),
-            }
+            };
         }
     }
 
@@ -159,6 +167,16 @@ impl<'ctx> Visitor<VisitorResult<'ctx>, CodeGenContext<'ctx>> for CodeGenerator 
         context: &mut CodeGenContext<'ctx>,
     ) -> VisitorResult<'ctx> {
         self.handle_visit_func_def(name, args, body, returns, context)
+    }
+
+    fn visit_func_decl(
+        &mut self,
+        name: &ast::Ident,
+        args: &ast::Args,
+        returns: &Option<ast::Ident>,
+        context: &mut CodeGenContext<'ctx>,
+    ) -> VisitorResult<'ctx> {
+        self.handle_func_decl(name, args, returns, context)
     }
 
     fn visit_var_decl(

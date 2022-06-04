@@ -25,4 +25,6 @@ pub(crate) use util::*;
 mod util_tests;
 
 mod module;
-pub use module::*;
+pub(crate) use module::*;
+#[cfg(test)]
+mod module_tests;

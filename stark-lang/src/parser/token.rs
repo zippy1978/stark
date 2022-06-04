@@ -63,6 +63,9 @@ pub enum Token {
     #[token("import")]
     Import,
 
+    #[token(".")]
+    Dot,
+
     // Skip spaces
     #[regex(r"[ \t\f]+", logos::skip)]
     // Skip single line comment
@@ -104,6 +107,7 @@ impl Display for Token {
                 Token::False => "false",
                 Token::Minus => "-",
                 Token::Import => "import",
+                Token::Dot => ".",
             }
         )
     }

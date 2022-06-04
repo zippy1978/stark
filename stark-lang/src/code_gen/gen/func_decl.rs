@@ -2,7 +2,7 @@ use inkwell::types::{BasicMetadataTypeEnum, BasicType};
 
 use crate::{
     ast,
-    code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator},
+    code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator, VisitorResult},
     typing::{Type, TypeKind},
 };
 
@@ -13,7 +13,8 @@ impl<'ctx> CodeGenerator {
         args: &ast::Args,
         returns: &Option<ast::Ident>,
         context: &mut CodeGenContext<'ctx>,
-    ) {
+    ) -> VisitorResult<'ctx> {
+
         // Arguments
         let llvm_args = args
             .iter()
@@ -59,5 +60,7 @@ impl<'ctx> CodeGenerator {
                 function.as_global_value().as_pointer_value(),
             )
             .unwrap();
+
+        Result::Ok(None)
     }
 }

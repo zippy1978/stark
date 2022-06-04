@@ -83,6 +83,11 @@ pub enum StmtKind {
         body: Stmts,
         returns: Option<Ident>,
     },
+    FuncDecl {
+        name: Ident,
+        args: Box<Args>,
+        returns: Option<Ident>,
+    },
     Import {
         name: Ident,
     },
@@ -115,6 +120,18 @@ impl Clone for StmtKind {
                 name: clone_ident(name),
                 args: Box::new(clone_args(args)),
                 body: clone_stmts(body),
+                returns: match returns {
+                    Some(r) => Some(clone_ident(r)),
+                    None => None,
+                },
+            },
+            Self::FuncDecl {
+                name,
+                args,
+                returns,
+            } => Self::FuncDecl {
+                name: clone_ident(name),
+                args: Box::new(clone_args(args)),
                 returns: match returns {
                     Some(r) => Some(clone_ident(r)),
                     None => None,

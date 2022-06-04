@@ -57,6 +57,7 @@ impl Display for SymbolScope {
 }
 
 // Holds symbol definitions by scope.
+#[derive(Debug, PartialEq)]
 pub struct SymbolTable<V: Clone = ()> {
     scopes: Vec<SymbolScope<V>>,
 }
@@ -102,6 +103,44 @@ impl<V: Clone> SymbolTable<V> {
 
         // Not found
         None
+    }
+
+    /// Clones current scope entries and add a prefix to each of them.
+    /// Returns and empty [Vec] is there is no current scope
+    pub fn clone_current_scope_symbols_with_prefix(
+        &self,
+        prefix: &str,
+    ) -> Vec<Symbol<V>> {
+        let mut entries_clone = Vec::new();
+        if let Some(scope) = self.current_scope() {
+            for (symbol_name, symbol) in &scope.entries {
+                let new_symbol_name = format!("{}{}", prefix, symbol_name);
+                let mut new_symbol = symbol.clone();
+                new_symbol.name = new_symbol_name.to_string();
+                entries_clone.push(new_symbol);
+            }
+        }
+        entries_clone
+    }
+
+    /// Insert multiple symbols inot current scope
+    pub fn insert_all(
+        &mut self,
+        symbols: Vec<Symbol<V>>,
+    ) -> Result<(), SymbolError<V>> {
+        for symbol in symbols {
+            match self.insert(
+                &symbol.name,
+                symbol.symbol_type,
+                symbol.definition_location,
+                symbol.value,
+            ) {
+                Ok(_) => (),
+                Err(err) => return Result::Err(err),
+            }
+        }
+
+        Result::Ok(())
     }
 
     pub fn insert(

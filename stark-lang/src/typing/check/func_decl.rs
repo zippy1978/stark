@@ -1,16 +1,16 @@
 use crate::{
-    ast::{self},
+    ast::{self, clone_ident, clone_args},
     typing::{Type, TypeChecker, TypeCheckerContext, TypeKind},
 };
 
 impl<'ctx> TypeChecker {
-    pub(crate) fn handle_func_decl(
+    pub(crate) fn handle_fold_func_decl(
         &mut self,
         name: &ast::Ident,
         args: &ast::Args,
         returns: &Option<ast::Ident>,
         context: &mut TypeCheckerContext<'ctx>,
-    ) {
+    ) -> ast::StmtKind {
         
         // Check arg types
         for arg in args {
@@ -52,5 +52,14 @@ impl<'ctx> TypeChecker {
             Ok(_) => (),
             Err(err) => self.log_symbol_error(&err, name),
         };
+
+        ast::StmtKind::FuncDecl {
+            name: clone_ident(name),
+            args: Box::new(clone_args(args)),
+            returns: match returns {
+                Some(ident) => Some(clone_ident(ident)),
+                None => None,
+            },
+        }
     }
 }

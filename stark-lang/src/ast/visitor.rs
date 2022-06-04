@@ -16,6 +16,11 @@ pub trait Visitor<R = (), C = ()> {
                 body,
                 returns,
             } => self.visit_func_def(name, args, body, returns, context),
+            StmtKind::FuncDecl {
+                name,
+                args,
+                returns,
+            } => self.visit_func_decl(name, args, returns, context),
             StmtKind::Import { name } => self.visit_import(name, context),
             StmtKind::Module { name, stmts } => self.visit_module(name, stmts, context),
         }
@@ -47,6 +52,14 @@ pub trait Visitor<R = (), C = ()> {
         name: &Ident,
         args: &Args,
         body: &Stmts,
+        returns: &Option<Ident>,
+        context: &mut C,
+    ) -> R;
+
+    fn visit_func_decl(
+        &mut self,
+        name: &Ident,
+        args: &Args,
         returns: &Option<Ident>,
         context: &mut C,
     ) -> R;
