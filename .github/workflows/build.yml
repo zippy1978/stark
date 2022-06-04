@@ -50,8 +50,6 @@ jobs:
       - name: Install conan
         run: |
           pip3 install conan
-          conan remote remove conan-center
-          conan remote add conan-center https://center.conan.io
           
       - name: Run tests
         uses: actions-rs/cargo@v1
