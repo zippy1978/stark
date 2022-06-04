@@ -18,7 +18,7 @@ set (CMAKE_LINKER_FLAGS_RELEASE "${CMAKE_LINKER_FLAGS_RELEASE} -O3")
 set(INSTALL_LIB_DIR ".")
 
 # Run conan install
-execute_process(COMMAND conan install ${CMAKE_CURRENT_SOURCE_DIR} --build=bdwgc / -if=${CMAKE_BINARY_DIR}/ -pr=default)
+execute_process(COMMAND conan install ${CMAKE_CURRENT_SOURCE_DIR}/ -if=${CMAKE_BINARY_DIR}/ -pr=default)
 
 # Plug conan dependencies
 set(CONAN_DISABLE_CHECK_COMPILER TRUE)
