@@ -50,6 +50,9 @@ jobs:
       - name: Install conan
         run: |
           pip3 install conan
+
+      - name: List bdwgc compliant versions on conan
+        run: conan search bdwgc -r=conancenter
           
       - name: Run tests
         uses: actions-rs/cargo@v1
