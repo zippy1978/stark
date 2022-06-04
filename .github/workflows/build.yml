@@ -2,6 +2,9 @@ name: Build
 
 on: [push]
 
+env:
+  CC: ${{ runner.temp }}/llvm/bin/clang
+  CXX: ${{ runner.temp }}/llvm/bin/clang++
 
 jobs:
   build:
@@ -17,10 +20,19 @@ jobs:
           profile: minimal
           toolchain: stable
       
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: |
+            C:/Program Files/LLVM
+            ./llvm
+          key: llvm-13.0
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "13.0"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
           directory: ${{ runner.temp }}/llvm
 
       - name: Install Python
