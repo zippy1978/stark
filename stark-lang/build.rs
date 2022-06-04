@@ -14,6 +14,10 @@ fn main() {
     // For the moment: runtime is dynamically linked to prevent symbol stripping
     println!("cargo:rustc-link-lib=dylib=stark");
     println!("cargo:rustc-link-lib=dylib=pthread");
+    //println!("cargo:rustc-link-arg=-Wl,–whole-archive stark");
+    println!("cargo:rustc-link-arg=-lpthread");
+    println!("cargo:rustc-link-arg=-no-pie");
+    println!("cargo:rustc-link-arg=-rdynamic");
     // At sometime it whould be interesting to switch to static linking
     // Using the --whole-archive linker flag (seems to be not supported yet)
     //println!("cargo:rustc-link-lib=static=stark");
