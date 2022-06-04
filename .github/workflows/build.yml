@@ -3,8 +3,8 @@ name: Build
 on: [push]
 
 env:
-  CC: ${{ runner.temp }}/llvm/bin/clang
-  CXX: ${{ runner.temp }}/llvm/bin/clang++
+  CC: ./llvm/bin/clang
+  CXX: ./llvm/bin/clang++
 
 jobs:
   build:
