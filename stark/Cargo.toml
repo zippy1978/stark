@@ -11,3 +11,6 @@ stark-lang = { path = "../stark-lang" }
 [[bin]]
 name = "stark"
 path = "src/main.rs"
+
+[build-dependencies]
+cmake = "0.1.48"

@@ -11,7 +11,7 @@ use crate::{
     typing::{SymbolScope, SymbolScopeType, SymbolTable, TypeRegistry},
 };
 
-use super::{CodeGenError, Mangler};
+use super::{CodeGenError, Mangler, runtime};
 
 pub struct CodeGenContext<'ctx> {
     pub(crate) llvm_context: &'ctx Context,
@@ -64,6 +64,10 @@ impl<'ctx> CodeGenerator {
         stmts: &ast::Stmts,
         context: &mut CodeGenContext<'ctx>,
     ) {
+
+        // Runtime globals
+        runtime::declare_globals(context);
+
         for stmt in stmts {
             match &stmt.node {
                 StmtKind::FuncDef {

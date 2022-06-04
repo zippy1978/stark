@@ -15,5 +15,7 @@ pub(crate) use mangler::*;
 #[cfg(test)]
 mod mangler_tests;
 
+mod runtime;
+pub(crate) use runtime::*;
 
 

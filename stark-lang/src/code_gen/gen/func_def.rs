@@ -1,6 +1,6 @@
 use crate::{
     ast,
-    code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator, VisitorResult},
+    code_gen::{resolve_llvm_type, CodeGenContext, CodeGenerator, VisitorResult, runtime},
     typing::{SymbolScope, SymbolScopeType},
 };
 
@@ -30,6 +30,11 @@ impl<'ctx> CodeGenerator {
         let basic_block = context.llvm_context.append_basic_block(function, "entry");
 
         context.builder.position_at_end(basic_block);
+
+        // When generating body on the main: initialize the memory manager
+        if name.node == "main" && context.symbol_table.current_module_name().is_none() {
+            runtime::init_mem_manager(context);
+        }
 
         // Insert arguments on symbol table
         for (i, arg) in args.iter().enumerate() {
