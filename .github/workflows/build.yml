@@ -62,5 +62,6 @@ jobs:
           CC: /usr/bin/gcc
           #CXX: ${{ runner.temp }}/llvm/bin/clang++
           CXX: /usr/bin/g++
+          RUSTFLAGS: -C link-args=-rdynamic
         with:
           command: test

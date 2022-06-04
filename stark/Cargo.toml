@@ -3,9 +3,6 @@ name = "stark"
 version = "0.2.0"
 edition = "2021"
 
-[build]
-rustflags = ["-C", "link-args=-rdynamic"]
-
 [dependencies]
 exitcode = "1.1.2"
 clap = { version = "3.0", features = ["derive"]}
@@ -15,5 +12,3 @@ stark-lang = { path = "../stark-lang" }
 name = "stark"
 path = "src/main.rs"
 
-[build-dependencies]
-cmake = "0.1.48"

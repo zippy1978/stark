@@ -7,9 +7,6 @@ edition = "2021"
 lalrpop = "0.19.7"
 cmake = "0.1.48"
 
-[build]
-rustflags = ["-C", "link-args=-rdynamic"]
-
 [dependencies]
 lalrpop-util = "0.19.7"
 regex = "1"
