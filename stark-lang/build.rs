@@ -12,8 +12,10 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", dst.display());
 
     // For the moment: runtime is dynamically linked to prevent symbol stripping
-    println!("cargo:rustc-link-lib=dylib=stark");
+    //println!("cargo:rustc-link-lib=dylib=stark");
+    println!("cargo:rustc-link-lib=static=stark");
     // At sometime it whould be interesting to switch to static linking
+    println!("cargo:rustc-link-arg=-rdynamic");
     //println!("cargo:rustc-link-arg=-fPIC");
     //println!("cargo:rustc-link-arg=-Wl,-all_load");
     //println!("cargo:rustc-link-arg={}/libstark.a", dst.display());
