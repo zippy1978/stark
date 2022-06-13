@@ -1,11 +1,7 @@
 use std::env;
-
 use cmake::Config;
 
-extern crate lalrpop;
-
 fn main() {
-    lalrpop::process_root().unwrap();
 
     let dst = Config::new("../stark-runtime")
         .define("CMAKE_BUILD_TYPE", "Release")

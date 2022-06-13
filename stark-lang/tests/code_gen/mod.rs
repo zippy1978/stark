@@ -12,4 +12,3 @@ mod stmts_tests;
 mod func_def_tests;
 #[cfg(test)]
 mod call_expr_tests;
-mod runtime_tests;
