@@ -2,6 +2,7 @@
 
 members = [
     "stark-lang",
+    "stark-runtime",
     "stark",
 ]
 

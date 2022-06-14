@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2021"
 
 [build-dependencies]
-cmake = "0.1.48"
+stark-runtime = { path = "../stark-runtime" }
 
 [dependencies]
 exitcode = "1.1.2"

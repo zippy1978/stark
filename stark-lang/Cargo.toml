@@ -5,7 +5,7 @@ edition = "2021"
 
 [build-dependencies]
 lalrpop = "0.19.7"
-cmake = "0.1.48"
+stark-runtime = { path = "../stark-runtime" }
 
 [dependencies]
 lalrpop-util = "0.19.7"
